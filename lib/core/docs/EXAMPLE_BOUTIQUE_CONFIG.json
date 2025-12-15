@@ -1,0 +1,254 @@
+{
+  "boutiques": [
+    {
+      "id": "shop_chicap",
+      "name": "Shop Chicap",
+      "description": "Votre boutique en un click",
+      "type": "boutique_en_ligne",
+      "logoPath": "lib/core/assets/lop.jpeg",
+      "phoneNumber": "+221123456789",
+      "address": "Dakar, Sénégal",
+      "openingHours": {
+        "lundi": "08:00 - 18:00",
+        "mardi": "08:00 - 18:00",
+        "mercredi": "08:00 - 18:00",
+        "jeudi": "08:00 - 18:00",
+        "vendredi": "08:00 - 18:00",
+        "samedi": "09:00 - 14:00",
+        "dimanche": "Fermé"
+      },
+      "directLink": "https://tika.com/shop-chicap",
+      "qrCodeData": "tika://shop-chicap",
+      "primaryColor": "#9C27B0",
+      "secondaryColor": "#E91E63",
+      "bannerImagePath": "lib/core/assets/imgbt.jpeg",
+      "email": "contact@shopchicap.com",
+      "whatsappLink": "https://wa.me/221123456789",
+      "socialMedia": {
+        "facebook": "https://facebook.com/shopchicap",
+        "instagram": "@shopchicap"
+      },
+      "typeSpecificConfig": {
+        "hasDelivery": true,
+        "deliveryFee": 1000,
+        "freeDeliveryThreshold": 25000
+      }
+    },
+    {
+      "id": "restaurant_tika",
+      "name": "Restaurant Tika",
+      "description": "Cuisine raffinée et authentique",
+      "type": "restaurant",
+      "logoPath": "lib/core/assets/logo_restaurant.png",
+      "phoneNumber": "+221123456789",
+      "address": "Avenue Pompidou, Dakar",
+      "openingHours": {
+        "lundi": "11:00 - 15:00, 18:00 - 23:00",
+        "mardi": "11:00 - 15:00, 18:00 - 23:00",
+        "mercredi": "11:00 - 15:00, 18:00 - 23:00",
+        "jeudi": "11:00 - 15:00, 18:00 - 23:00",
+        "vendredi": "11:00 - 15:00, 18:00 - 23:00",
+        "samedi": "11:00 - 23:00",
+        "dimanche": "11:00 - 23:00"
+      },
+      "directLink": "https://tika.com/restaurant",
+      "qrCodeData": "tika://restaurant",
+      "primaryColor": "#FF6B6B",
+      "secondaryColor": "#FFA500",
+      "bannerImagePath": "lib/core/assets/banner_restaurant.jpg",
+      "email": "contact@restaurant-tika.com",
+      "whatsappLink": "https://wa.me/221123456789",
+      "socialMedia": {
+        "facebook": "https://facebook.com/restaurant-tika",
+        "instagram": "@restaurant_tika"
+      },
+      "typeSpecificConfig": {
+        "hasDelivery": true,
+        "hasTakeaway": true,
+        "hasTableReservation": true,
+        "averagePreparationTime": 25,
+        "deliveryFee": 1500,
+        "deliveryRadius": 10,
+        "cuisineTypes": ["Africaine", "Française", "Internationale"]
+      }
+    },
+    {
+      "id": "salon_beaute_tika",
+      "name": "Salon de Beauté Tika",
+      "description": "Beauté et bien-être",
+      "type": "salon_beaute",
+      "logoPath": "lib/core/assets/logo_salon_beaute.png",
+      "phoneNumber": "+221123456789",
+      "address": "Mermoz, Dakar",
+      "openingHours": {
+        "lundi": "09:00 - 19:00",
+        "mardi": "09:00 - 19:00",
+        "mercredi": "09:00 - 19:00",
+        "jeudi": "09:00 - 19:00",
+        "vendredi": "09:00 - 19:00",
+        "samedi": "09:00 - 17:00",
+        "dimanche": "Fermé"
+      },
+      "directLink": "https://tika.com/salon-beaute",
+      "qrCodeData": "tika://salon-beaute",
+      "primaryColor": "#E91E63",
+      "secondaryColor": "#F06292",
+      "bannerImagePath": "lib/core/assets/banner_salon_beaute.jpg",
+      "email": "contact@salonbeaute-tika.com",
+      "whatsappLink": "https://wa.me/221123456789",
+      "socialMedia": {
+        "facebook": "https://facebook.com/salonbeaute-tika",
+        "instagram": "@salonbeaute_tika"
+      },
+      "typeSpecificConfig": {
+        "requiresAppointment": true,
+        "appointmentDuration": 60,
+        "cancellationPolicy": "24h avant",
+        "specialists": [
+          {
+            "id": "sp1",
+            "name": "Marie Diop",
+            "specialties": ["Soins visage", "Maquillage"],
+            "rating": 4.8
+          },
+          {
+            "id": "sp2",
+            "name": "Sophie Fall",
+            "specialties": ["Manucure", "Pédicure"],
+            "rating": 4.9
+          },
+          {
+            "id": "sp3",
+            "name": "Aïcha Ndiaye",
+            "specialties": ["Épilation", "Soins du corps"],
+            "rating": 4.7
+          }
+        ],
+        "serviceCategories": [
+          "Soins du visage",
+          "Manucure/Pédicure",
+          "Maquillage",
+          "Épilation",
+          "Soins du corps",
+          "Massages"
+        ]
+      }
+    },
+    {
+      "id": "salon_coiffure_tika",
+      "name": "Salon de Coiffure Tika",
+      "description": "Coiffure et style",
+      "type": "salon_coiffure",
+      "logoPath": "lib/core/assets/logo_salon_coiffure.png",
+      "phoneNumber": "+221123456789",
+      "address": "Plateau, Dakar",
+      "openingHours": {
+        "lundi": "08:00 - 20:00",
+        "mardi": "08:00 - 20:00",
+        "mercredi": "08:00 - 20:00",
+        "jeudi": "08:00 - 20:00",
+        "vendredi": "08:00 - 20:00",
+        "samedi": "08:00 - 18:00",
+        "dimanche": "10:00 - 16:00"
+      },
+      "directLink": "https://tika.com/salon-coiffure",
+      "qrCodeData": "tika://salon-coiffure",
+      "primaryColor": "#3F51B5",
+      "secondaryColor": "#5C6BC0",
+      "bannerImagePath": "lib/core/assets/banner_salon_coiffure.jpg",
+      "email": "contact@saloncoiffure-tika.com",
+      "whatsappLink": "https://wa.me/221123456789",
+      "socialMedia": {
+        "facebook": "https://facebook.com/saloncoiffure-tika",
+        "instagram": "@saloncoiffure_tika"
+      },
+      "typeSpecificConfig": {
+        "requiresAppointment": true,
+        "appointmentDuration": 45,
+        "cancellationPolicy": "24h avant",
+        "hasGallery": true,
+        "specialists": [
+          {
+            "id": "cf1",
+            "name": "Jean Sow",
+            "specialties": ["Coupes hommes", "Barbe"],
+            "rating": 4.9,
+            "yearsExperience": 10
+          },
+          {
+            "id": "cf2",
+            "name": "Mamadou Ba",
+            "specialties": ["Coupes femmes", "Colorations"],
+            "rating": 4.8,
+            "yearsExperience": 8
+          },
+          {
+            "id": "cf3",
+            "name": "Fatou Sarr",
+            "specialties": ["Tressage", "Nattes"],
+            "rating": 5.0,
+            "yearsExperience": 15
+          }
+        ],
+        "serviceCategories": [
+          "Coupes Hommes",
+          "Coupes Femmes",
+          "Coupes Enfants",
+          "Colorations",
+          "Mèches/Balayage",
+          "Coiffures de mariée",
+          "Lissage/Défrisage",
+          "Tressage",
+          "Soins capillaires"
+        ]
+      }
+    },
+    {
+      "id": "midi_express_tika",
+      "name": "Midi Express Tika",
+      "description": "Restauration rapide et savoureuse",
+      "type": "midi_express",
+      "logoPath": "lib/core/assets/logo_midi_express.png",
+      "phoneNumber": "+221123456789",
+      "address": "Centre-ville, Dakar",
+      "openingHours": {
+        "lundi": "11:00 - 16:00",
+        "mardi": "11:00 - 16:00",
+        "mercredi": "11:00 - 16:00",
+        "jeudi": "11:00 - 16:00",
+        "vendredi": "11:00 - 16:00",
+        "samedi": "11:00 - 16:00",
+        "dimanche": "Fermé"
+      },
+      "directLink": "https://tika.com/midi-express",
+      "qrCodeData": "tika://midi-express",
+      "primaryColor": "#FF9800",
+      "secondaryColor": "#FFC107",
+      "bannerImagePath": "lib/core/assets/banner_midi_express.jpg",
+      "email": "contact@midi-express.com",
+      "whatsappLink": "https://wa.me/221123456789",
+      "socialMedia": {
+        "facebook": "https://facebook.com/midiexpress-tika",
+        "instagram": "@midiexpress_tika"
+      },
+      "typeSpecificConfig": {
+        "hasDelivery": true,
+        "hasTakeaway": true,
+        "isExpress": true,
+        "maxPreparationTime": 15,
+        "deliveryFee": 1000,
+        "deliveryRadius": 5,
+        "hasDailyMenu": true,
+        "hasClickAndCollect": true,
+        "menuCategories": [
+          "Plat du jour",
+          "Sandwichs",
+          "Salades",
+          "Boissons",
+          "Desserts rapides",
+          "Menus combinés"
+        ]
+      }
+    }
+  ]
+}
