@@ -69,7 +69,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     if (fullImageUrl == null || fullImageUrl.isEmpty) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Container(
           color: Colors.grey[300],
           child: Center(
@@ -84,7 +84,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(24),
       child: Image.network(
         fullImageUrl,
         fit: BoxFit.cover,
@@ -159,13 +159,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                            spreadRadius: 2,
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                            spreadRadius: 0,
                           ),
                         ],
                       ),
@@ -191,9 +191,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
@@ -202,6 +202,66 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           onPressed: () => Navigator.pop(context),
                           padding: const EdgeInsets.only(left: 4),
                         ),
+                      ),
+
+                      // Boutons favori et partage
+                      Row(
+                        children: [
+                          // Bouton favori
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.95),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                _isFavorite ? Icons.favorite : Icons.favorite_border,
+                                color: _isFavorite ? Colors.red : Colors.black87,
+                                size: 22,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isFavorite = !_isFavorite;
+                                });
+                                HapticFeedback.lightImpact();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+
+                          // Bouton partage
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.95),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.share_outlined, color: Colors.black87, size: 22),
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                // TODO: Implémenter le partage
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -217,20 +277,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFE91E63), Color(0xFFD81B60)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFE91E63).withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                            color: const Color(0xFFE91E63).withOpacity(0.35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.local_offer, size: 16, color: Colors.white),
+                          const Icon(Icons.local_offer_rounded, size: 16, color: Colors.white),
                           const SizedBox(width: 6),
                           Text(
                             '-$discount%',
@@ -238,6 +300,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
@@ -252,11 +315,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               offset: const Offset(0, -20),
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(151, 243, 240, 243),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(50),
-                    topRight: Radius.circular(50),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
                   ),
                 ),
                 child: Padding(
@@ -267,7 +330,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       // Nom du produit
                       Text(
                         widget.product['name'],
-                        style: GoogleFonts.openSans(
+                        style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF2D2D2D),
@@ -280,32 +343,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       if (widget.product['category'] != null)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: 14,
+                            vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: _primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _primaryColor.withOpacity(0.3),
-                              width: 1,
+                            gradient: LinearGradient(
+                              colors: [
+                                _primaryColor.withOpacity(0.15),
+                                _primaryColor.withOpacity(0.08),
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
                             ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.category_outlined,
+                                Icons.local_offer_rounded,
                                 size: 16,
                                 color: _primaryColor,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 widget.product['category'],
-                                style: GoogleFonts.openSans(
+                                style: GoogleFonts.poppins(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: _primaryColor,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
                             ],
@@ -357,7 +424,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               padding: const EdgeInsets.only(bottom: 4),
                               child: Text(
                                 '$oldPrice',
-                                style: GoogleFonts.openSans(
+                                style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   color: Colors.grey.shade400,
                                   decoration: TextDecoration.lineThrough,
@@ -374,18 +441,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       if (oldPrice != null) ...[
                         const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFE8F0),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: Text(
-                            'Vous économisez $savings FCFA',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFFE91E63),
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFFFFE8F0),
+                                const Color(0xFFFFE8F0).withOpacity(0.7),
+                              ],
                             ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.savings_outlined,
+                                size: 18,
+                                color: Color(0xFFE91E63),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Vous économisez $savings FCFA',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFE91E63),
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -395,23 +479,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       // Badge stock
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
                           color: isOutOfStock
                               ? const Color(0xFFFFEBEE)
                               : const Color(0xFFE8F8F0),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           children: [
                             Icon(
-                              isOutOfStock ? Icons.cancel : Icons.check_circle,
+                              isOutOfStock ? Icons.cancel_rounded : Icons.check_circle_rounded,
                               color: isOutOfStock
                                   ? const Color(0xFFE91E63)
                                   : const Color(0xFF4CAF50),
-                              size: 20,
+                              size: 22,
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 10),
                             Text(
                               isOutOfStock
                                   ? 'Rupture de stock'
@@ -422,6 +506,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 color: isOutOfStock
                                     ? const Color(0xFFE91E63)
                                     : const Color(0xFF4CAF50),
+                                letterSpacing: 0.3,
                               ),
                             ),
                           ],
@@ -436,7 +521,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           children: [
                             Text(
                               'Quantité',
-                              style: GoogleFonts.openSans(
+                              style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF2D2D2D),
@@ -444,7 +529,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             Text(
                               'Max: $stock',
-                              style: GoogleFonts.openSans(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.grey.shade500,
                               ),
@@ -459,19 +544,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             // Bouton -
                             Expanded(
                               child: Container(
-                                height: 40,
+                                height: 56,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF3E5F5),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.remove,
+                                  color: _quantity > 1
+                                      ? _primaryColor.withOpacity(0.1)
+                                      : Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
                                     color: _quantity > 1
-                                        ? _primaryColor
-                                        : Colors.grey.shade400,
+                                        ? _primaryColor.withOpacity(0.3)
+                                        : Colors.grey.shade300,
+                                    width: 1.5,
                                   ),
-                                  onPressed: _decrementQuantity,
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _decrementQuantity,
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.remove,
+                                        color: _quantity > 1
+                                            ? _primaryColor
+                                            : Colors.grey.shade400,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -479,19 +579,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                             // Quantité actuelle
                             Container(
-                              width: 80,
-                              height: 40,
+                              width: 90,
+                              height: 56,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [_primaryColor, _primaryColor],
+                                  colors: [_primaryColor, _primaryColor.withOpacity(0.9)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _primaryColor.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Center(
                                 child: Text(
                                   '$_quantity',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 24,
+                                    fontSize: 28,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -503,19 +612,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             // Bouton +
                             Expanded(
                               child: Container(
-                                height: 40,
+                                height: 56,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF3E5F5),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.add,
+                                  color: _quantity < stock
+                                      ? _primaryColor.withOpacity(0.1)
+                                      : Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
                                     color: _quantity < stock
-                                        ? _primaryColor
-                                        : Colors.grey.shade400,
+                                        ? _primaryColor.withOpacity(0.3)
+                                        : Colors.grey.shade300,
+                                    width: 1.5,
                                   ),
-                                  onPressed: _incrementQuantity,
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _incrementQuantity,
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.add,
+                                        color: _quantity < stock
+                                            ? _primaryColor
+                                            : Colors.grey.shade400,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -537,7 +661,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       // Description
                       Text(
                         'Description',
-                        style: GoogleFonts.openSans(
+                        style: GoogleFonts.poppins(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF2D2D2D),
@@ -546,7 +670,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       const SizedBox(height: 10),
                       Text(
                         _getDescription(),
-                        style: GoogleFonts.openSans(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: Colors.grey.shade700,
                           height: 1.5,
@@ -580,16 +704,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               left: 0,
               right: 0,
               child: Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 24,
+                      offset: const Offset(0, -8),
+                      spreadRadius: 0,
                     ),
                   ],
                 ),
@@ -599,20 +724,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     children: [
                       // Total
                       Expanded(
+                        flex: 2,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               'TOTAL',
-                              style: GoogleFonts.openSans(
-                                fontSize: 10,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
                                 color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.2,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -621,21 +747,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Text(
                                     '$totalPrice',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
                                       color: const Color(0xFF2D2D2D),
                                       height: 1,
                                     ),
                                   ),
-                                  const SizedBox(width: 3),
+                                  const SizedBox(width: 4),
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 1),
+                                    padding: const EdgeInsets.only(bottom: 2),
                                     child: Text(
                                       'FCFA',
                                       style: GoogleFonts.poppins(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF2D2D2D),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.grey.shade700,
                                       ),
                                     ),
                                   ),
@@ -656,11 +782,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
 
                       // Bouton Ajouter
                       Expanded(
-                        flex: 1,
+                        flex: 2,
                         child: GestureDetector(
                           onTapDown: (_) {
                             setState(() => _isPressed = true);
@@ -729,7 +855,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       const SizedBox(width: 12),
                                       Text(
                                         'Produit ajouté avec succès',
-                                        style: GoogleFonts.openSans(
+                                        style: GoogleFonts.poppins(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
@@ -753,7 +879,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               );
 
                               // Attendre 2 secondes puis retourner à l'accueil
-                              await Future.delayed(const Duration(seconds: 1));
+                              await Future.delayed(const Duration(seconds: 0));
 
                               if (mounted) {
                                 Navigator.pop(context); // Fermer ProductDetailScreen
@@ -761,20 +887,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             }
                           },
                           child: AnimatedScale(
-                            scale: _isPressed ? 0.95 : 1.0,
-                            duration: const Duration(milliseconds: 100),
+                            scale: _isPressed ? 0.96 : 1.0,
+                            duration: const Duration(milliseconds: 150),
                             child: Container(
-                              height: 44,
+                              height: 56,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [_primaryColor, _primaryColor],
+                                  colors: [
+                                    _primaryColor,
+                                    _primaryColor.withOpacity(0.85),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _primaryColor.withOpacity(0.25),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
+                                    color: _primaryColor.withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
                                   ),
                                 ],
                               ),
@@ -782,17 +913,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Icon(
-                                    Icons.shopping_bag_outlined,
+                                    Icons.shopping_bag_rounded,
                                     color: Colors.white,
-                                    size: 15,
+                                    size: 20,
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 8),
                                   Text(
                                     'Ajouter',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
                                       color: Colors.white,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                 ],

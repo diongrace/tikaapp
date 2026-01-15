@@ -5,7 +5,8 @@ import '../../../../core/services/boutique_theme_provider.dart';
 /// Widget d'en-tête avec image de fond et boutons d'action
 /// Gère l'affichage conditionnel de la page de couverture:
 /// - Si la boutique a une bannière (bannerUrl), elle est affichée
-/// - Sinon, affiche un fond de couleur avec le thème de la boutique
+/// - Si le banner de l'API échoue ou n'existe pas, affiche le banner par défaut (Black Friday)
+/// - Si le banner par défaut n'existe pas, affiche un fond de couleur avec le thème de la boutique
 class HomeHeader extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onFavoriteToggle;
@@ -55,7 +56,7 @@ class HomeHeader extends StatelessWidget {
       print('   → Chargement: $fullImageUrl');
     } else {
       print('ℹ️  PAS DE COUVERTURE PERSONNALISÉE');
-      print('   → Fond de couleur utilisé (thème boutique)');
+      print('   → Banner par défaut utilisé (Black Friday)');
     }
     print('🎨 Couleur boutique: ${shopTheme.primaryColor}');
     print('════════════════════════════════════');
@@ -80,21 +81,32 @@ class HomeHeader extends StatelessWidget {
                   height: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
                     print('❌ Erreur chargement banner depuis API: $error');
-                    print('   → Affichage fond de couleur à la place');
-                    // En cas d'erreur, afficher un fond de couleur
-                    return Container(
+                    print('   → Affichage banner par défaut (Black Friday)');
+                    // En cas d'erreur, afficher le banner par défaut (Black Friday)
+                    return Image.asset(
+                      'lib/core/assets/couvre.jpeg',
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
                       width: double.infinity,
                       height: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            shopTheme.primary,
-                            shopTheme.secondary,
-                          ],
-                        ),
-                      ),
+                      errorBuilder: (context, error, stackTrace) {
+                        // Si le banner par défaut n'existe pas, afficher le fond de couleur
+                        print('⚠️ Banner par défaut introuvable, affichage fond de couleur');
+                        return Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                shopTheme.primary,
+                                shopTheme.secondary,
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                   loadingBuilder: (context, child, loadingProgress) {
@@ -118,20 +130,37 @@ class HomeHeader extends StatelessWidget {
                   },
                 )
               else
-                // Si pas de page de couverture, afficher un fond de couleur avec le thème de la boutique
-                Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        shopTheme.primary,
-                        shopTheme.secondary,
-                      ],
-                    ),
-                  ),
+                // Si pas de page de couverture, afficher le banner par défaut (Black Friday)
+                Builder(
+                  builder: (context) {
+                    print('📸 Chargement banner par défaut: lib/core/assets/couvre.jpeg');
+                    return Image.asset(
+                      'lib/core/assets/couvre.jpeg',
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Si le banner par défaut n'existe pas, afficher un fond de couleur avec le thème de la boutique
+                        print('⚠️ Banner par défaut introuvable: $error');
+                        print('   → Affichage fond de couleur');
+                        return Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                shopTheme.primary,
+                                shopTheme.secondary,
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
             ],
           ),

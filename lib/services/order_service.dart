@@ -139,6 +139,10 @@ class OrderService {
         print('   - Total: ${orderData['total_amount']}');
         print('   - Status: ${orderData['status']}');
         print('   - Payment Status: ${orderData['payment_status']}');
+
+        // ⚠️ IMPORTANT: L'API backend doit automatiquement décrémenter le stock
+        // des produits commandés. Si ce n'est pas le cas, contactez l'équipe backend.
+        print('⚠️ RAPPEL: Le backend doit décrémenter le stock automatiquement');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         // Retourner les données essentielles
@@ -155,6 +159,8 @@ class OrderService {
           // ✅ GESTION WAVE REDIRECT
           'wave_redirect': data['wave_redirect'] ?? false,
           'wave_url': data['wave_url'],
+          // ✅ Retourner les items pour rafraîchir le stock localement
+          'items': items,
         };
       } else {
         final data = jsonDecode(response.body);

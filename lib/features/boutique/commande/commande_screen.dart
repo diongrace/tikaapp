@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../panier/cart_manager.dart';
 import 'form_widgets.dart';
 import 'loading_success_page.dart';
-import 'order_processing_page.dart';
+import 'order_summary_page.dart';
 import '../../../core/messages/message_modal.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/boutique_theme_provider.dart';
@@ -104,8 +104,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
         _currentStep++;
       });
     } else if (_currentStep == 2) {
-      // Créer la commande avec le mode de paiement
-      _createOrder();
+      // Naviguer vers la page de résumé de commande
+      _showOrderSummary();
     }
   }
 
@@ -196,25 +196,40 @@ class _CommandeScreenState extends State<CommandeScreen> {
     return '$hour:$minute';
   }
 
-  /// Créer la commande via l'API
-  /// LOGIQUE EXACTE: AVEC payment_method (docs-api-flutter)
-  void _createOrder() async {
-    // Afficher le dialog de chargement
+  /// Afficher la page de résumé de commande
+  void _showOrderSummary() async {
     if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => false,
-        child: BoutiqueThemeProvider(
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BoutiqueThemeProvider(
           shop: widget.shop,
-          child: OrderProcessingPage(shop: widget.shop),
+          child: OrderSummaryPage(
+            customerName: _nomController.text,
+            customerPhone: _phoneController.text,
+            customerEmail: _emailController.text.isNotEmpty ? _emailController.text : null,
+            deliveryMode: _selectedDeliveryMode ?? 'Livraison',
+            deliveryAddress: _addressController.text.isNotEmpty ? _addressController.text : null,
+            paymentMethod: _selectedPaymentMethod,
+            onConfirm: () {
+              // Fermer la page de résumé et créer la commande
+              Navigator.of(context).pop();
+              _createOrder();
+            },
+            onBack: () {
+              Navigator.of(context).pop();
+            },
+          ),
         ),
       ),
     );
+  }
 
-    // Délai pour l'animation
-    await Future.delayed(const Duration(milliseconds: 500));
+  /// Créer la commande via l'API
+  /// LOGIQUE EXACTE: AVEC payment_method (docs-api-flutter)
+  void _createOrder() async {
+    // PAS de dialog de chargement, création directe
+    if (!mounted) return;
 
     try {
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -268,13 +283,6 @@ class _CommandeScreenState extends State<CommandeScreen> {
         // TODO: Implémenter la redirection Wave avec WebView ou url_launcher
         // Pour l'instant, on affiche juste un message
         if (mounted) {
-          Navigator.of(context).pop(); // Fermer loading
-
-          // Attendre un peu avant d'afficher le nouveau dialog
-          await Future.delayed(const Duration(milliseconds: 150));
-
-          if (!mounted) return;
-
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -303,7 +311,6 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 TextButton(
                   onPressed: () async {
                     Navigator.of(context).pop();
-                    await Future.delayed(const Duration(milliseconds: 100));
                     if (mounted) {
                       Navigator.of(context).pop(true);
                     }
@@ -314,7 +321,6 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   onPressed: () async {
                     // TODO: Ouvrir wave_url avec url_launcher ou WebView
                     Navigator.of(context).pop();
-                    await Future.delayed(const Duration(milliseconds: 100));
                     if (mounted) {
                       Navigator.of(context).pop(true);
                     }
@@ -373,16 +379,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
       // Vider le panier
       _cartManager.clear();
 
-      // Fermer le dialog de chargement et afficher le succès avec délais pour éviter les conflits
+      // Naviguer directement vers la page de succès (pas de dialog de chargement)
       if (mounted) {
-        // Fermer OrderProcessingPage
-        Navigator.of(context).pop();
-
-        // Attendre un peu avant de naviguer vers la page de succès
-        await Future.delayed(const Duration(milliseconds: 150));
-
-        if (!mounted) return;
-
         // Navigation vers la page de succès
         await Navigator.of(context).push(
           MaterialPageRoute(
@@ -392,9 +390,6 @@ class _CommandeScreenState extends State<CommandeScreen> {
             ),
           ),
         );
-
-        // Attendre un peu avant de retourner à l'accueil
-        await Future.delayed(const Duration(milliseconds: 100));
 
         // Retourner à l'accueil
         if (mounted) {
@@ -412,25 +407,10 @@ class _CommandeScreenState extends State<CommandeScreen> {
         errorMessage = e.toString().replaceAll('Exception:', '').trim();
       }
 
-      // Fermer le dialog de chargement et afficher l'erreur avec microtask pour éviter les conflits
-      Future.microtask(() async {
-        if (!mounted) return;
-
-        // Fermer le dialog de chargement
-        try {
-          Navigator.of(context).pop();
-        } catch (popError) {
-          print('⚠️ Erreur lors de la fermeture du dialog: $popError');
-        }
-
-        // Attendre un peu avant d'afficher l'erreur
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Afficher l'erreur
-        if (mounted) {
-          showErrorModal(context, errorMessage);
-        }
-      });
+      // Afficher l'erreur directement
+      if (mounted) {
+        showErrorModal(context, errorMessage);
+      }
     }
   }
 

@@ -17,8 +17,8 @@ class TikaApp extends StatelessWidget {
         ),
         fontFamily: GoogleFonts.inriaSerif().fontFamily,
       ),
-      initialRoute: '/',
-      routes: appRoutes,
+      initialRoute: RouteNames.splash,
+      onGenerateRoute: onGenerateRoute,
     );
   }
 }

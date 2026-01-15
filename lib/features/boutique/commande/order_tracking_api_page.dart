@@ -6,7 +6,6 @@ import '../../../services/order_service.dart';
 import '../../../services/models/order_model.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../core/services/storage_service.dart';
-import '../home/home_online_screen.dart';
 
 /// Page de suivi de commande utilisant l'API
 class OrderTrackingApiPage extends StatefulWidget {
@@ -102,38 +101,12 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage> {
     }
   }
 
-  /// Récupérer le shopId depuis différentes sources
-  int? _getShopId() {
-    // 1. Depuis la commande chargée
-    if (_order != null && _order!.shopId > 0) {
-      return _order!.shopId;
-    }
-
-    // 2. Depuis le thème de la boutique (contexte)
-    try {
-      final shop = BoutiqueThemeProvider.shopOf(context);
-      if (shop != null && shop.id > 0) {
-        return shop.id;
-      }
-    } catch (e) {
-      // Ignorer si pas de shop dans le contexte
-    }
-
-    return null;
-  }
-
- 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        final shopId = _getShopId();
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => HomeScreen(shopId: shopId),
-          ),
-          (route) => false,
-        );
+        // Simplement revenir à la page précédente
+        Navigator.of(context).pop();
         return false;
       },
       child: Scaffold(
@@ -162,18 +135,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage> {
                         IconButton(
                           icon: const Icon(Icons.arrow_back, color: Colors.white),
                           onPressed: () {
-                            final shopId = _getShopId();
-                            if (shopId != null) {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                  builder: (context) => HomeScreen(shopId: shopId),
-                                ),
-                                (route) => false,
-                              );
-                            } else {
-                              // Si pas de shopId, juste pop
-                              Navigator.of(context).pop();
-                            }
+                            // Simplement revenir à la page précédente
+                            Navigator.of(context).pop();
                           },
                         ),
                         Expanded(

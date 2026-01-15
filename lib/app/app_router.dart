@@ -21,6 +21,30 @@ import '../features/boutique/profile/security_screen.dart';
 import '../features/boutique/profile/help_support_screen.dart';
 import '../features/boutique/home/home_online_screen.dart';
 
+/// Noms des routes de l'application
+class RouteNames {
+  static const String splash = '/';
+  static const String welcome = '/welcome';
+  static const String onboarding1 = '/onboarding-1';
+  static const String onboarding2 = '/onboarding-2';
+  static const String onboarding3 = '/onboarding-3';
+  static const String onboarding4 = '/onboarding-4';
+  static const String accessBoutique = '/access-boutique';
+  static const String qrScanner = '/qr-scanner';
+  static const String home = '/home';
+  static const String loadingSuccess = '/loading-success';
+  static const String favorites = '/favorites';
+  static const String history = '/history';
+  static const String notifications = '/notifications';
+  static const String profile = '/profile';
+  static const String personalInfo = '/personal-info';
+  static const String addresses = '/addresses';
+  static const String paymentMethods = '/payment-methods';
+  static const String profileNotifications = '/profile-notifications';
+  static const String security = '/security';
+  static const String helpSupport = '/help-support';
+}
+
 /// Configuration des routes de l'application
 /// Définit les chemins de navigation entre les différents écrans
 final Map<String, WidgetBuilder> appRoutes = {
@@ -49,16 +73,10 @@ final Map<String, WidgetBuilder> appRoutes = {
   // Routes des commandes
   // Note: CommandeScreen nécessite shopId, utilisez Navigator.push
   '/loading-success': (context) => const LoadingSuccessPage(),
-  // Note: payment-confirmation, order-tracking, et orders-list nécessitent des paramètres
-  // Utilisez Navigator.push avec MaterialPageRoute pour ces écrans
-
+  
   // Routes des favoris et historique
   '/favorites': (context) => const FavoritesBoutiquesScreen(),
   '/history': (context) => const GlobalHistoryScreen(),
-
-  // Routes de fidélité
-  // Note: create-loyalty-card et loyalty-card nécessitent des paramètres
-  // Utilisez Navigator.push avec MaterialPageRoute pour ces écrans
 
   // Route des notifications
   '/notifications': (context) => const NotificationsListScreen(),
@@ -72,3 +90,15 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/security': (context) => const SecurityScreen(),
   '/help-support': (context) => const HelpSupportScreen(),
 };
+
+/// Fonction de génération de routes
+Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+  final builder = appRoutes[settings.name];
+  if (builder != null) {
+    return MaterialPageRoute(
+      builder: builder,
+      settings: settings,
+    );
+  }
+  return null;
+}

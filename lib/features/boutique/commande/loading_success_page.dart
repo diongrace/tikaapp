@@ -28,20 +28,20 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
 
     // Contrôleur principal pour l'animation de succès
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
     _scaleAnimation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.elasticOut,
+      curve: Curves.easeOut,
     );
 
     // Lancer l'animation de succès immédiatement
     _controller.forward();
 
-    // Afficher le modal après 2 secondes pour laisser voir la page de succès
-    Future.delayed(const Duration(seconds: 2), () {
+    // Afficher le modal immédiatement (pas de délai)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _showSuccessModal();
       }
@@ -67,65 +67,40 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
 
     if (!mounted) return;
 
+    // Récupérer le numéro de commande
+    final orderNumber = widget.orderData?['orderNumber'] as String? ?? 'N/A';
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.85),
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        elevation: 10,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 0,
         backgroundColor: Colors.white,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            padding: const EdgeInsets.all(20),
             child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                // Bouton fermer stylisé
-                Align(
-                  alignment: Alignment.topRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop(); // Fermer le modal
-                      Navigator.of(context).pop(); // Fermer la page de chargement
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.close, size: 20, color: Colors.grey.shade700),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-
-                // Icône de succès améliorée
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icône de succès avec cercle vert
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF4CAF50).withOpacity(0.15),
-                        const Color(0xFF4CAF50).withOpacity(0.05),
-                      ],
-                    ),
+                    color: const Color(0xFFD1F2EB),
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF4CAF50).withOpacity(0.2),
-                        blurRadius: 20,
-                        spreadRadius: 5,
-                      ),
-                    ],
                   ),
-                  child: const Icon(Icons.check_circle, size: 48, color: Color(0xFF4CAF50)),
+                  child: const Icon(
+                    Icons.check,
+                    size: 40,
+                    color: Color(0xFF10B981),
+                  ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
 
-                // Titre amélioré
+                // Titre
                 Text(
                   'Commande confirmée !',
                   style: GoogleFonts.openSans(
@@ -134,221 +109,353 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
-                // Message avec meilleure typographie
-                Text(
-                  'Effectué avec succès',
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
-                    color: const Color.fromARGB(255, 49, 49, 49),
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
+                // Numéro de commande
+                Column(
+                  children: [
+                    Text(
+                      'Numéro de commande',
+                      style: GoogleFonts.openSans(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      orderNumber,
+                      style: GoogleFonts.openSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF3B82F6),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-              // Bouton Suivre ma commande (style amélioré)
-              SizedBox(
-                width: double.infinity,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () async {
-                      print('🔍 [LoadingSuccessPage] Bouton Suivre ma commande cliqué');
-                      print('🔍 [LoadingSuccessPage] orderData: ${widget.orderData}');
-
-                      // Naviguer vers la page de suivi en temps réel via l'API
-                      if (widget.orderData != null &&
-                          widget.orderData!['orderNumber'] != null &&
-                          widget.orderData!['customerPhone'] != null) {
-                        // Capturer le navigator et le shop avant de fermer le dialog
+                // Bouton Créer ma carte de fidélité (gradient violet/magenta)
+                if (!_hasLoyaltyCard) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () async {
                         final navigator = Navigator.of(context);
                         final rootNavigator = Navigator.of(context, rootNavigator: true);
                         final shop = BoutiqueThemeProvider.shopOf(context);
-                        final orderNumber = widget.orderData!['orderNumber'];
-                        final customerPhone = widget.orderData!['customerPhone'];
+                        final shopId = widget.orderData?['shopId'] ?? 1;
+                        final boutiqueName = widget.orderData?['boutiqueName'] ?? 'Tika Shop';
 
-                        print('✅ [LoadingSuccessPage] Données valides');
-                        print('   - orderNumber: $orderNumber');
-                        print('   - customerPhone: $customerPhone');
-
-                        // Fermer le modal (dialog)
                         navigator.pop();
-
-                        // Attendre que le dialog soit fermé
                         await Future.delayed(const Duration(milliseconds: 200));
 
-                        print('📱 [LoadingSuccessPage] Navigation vers OrderTrackingApiPage...');
-                        // Utiliser le root navigator pour naviguer vers la page de suivi
+                        rootNavigator.push(
+                          MaterialPageRoute(
+                            builder: (context) => BoutiqueThemeProvider(
+                              shop: shop,
+                              child: CreateLoyaltyCardPage(
+                                shopId: shopId,
+                                boutiqueName: boutiqueName,
+                                shop: shop,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD946EF),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.card_giftcard, size: 16),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Créer carte de fidélité',
+                              style: GoogleFonts.openSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                // Bouton Voir le reçu (bleu)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (widget.orderData != null && widget.orderData!['receiptViewUrl'] != null) {
+                        final receiptViewUrl = widget.orderData!['receiptViewUrl'] as String;
+                        final uri = Uri.parse(receiptViewUrl);
+
+                        try {
+                          final canLaunch = await canLaunchUrl(uri);
+                          if (canLaunch) {
+                            // Ouvrir dans un navigateur in-app avec barre d'outils
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.inAppBrowserView,
+                              webViewConfiguration: const WebViewConfiguration(
+                                enableJavaScript: true,
+                                enableDomStorage: true,
+                              ),
+                            );
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Impossible d\'ouvrir le reçu'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          print('Erreur lors de l\'ouverture du reçu: $e');
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Erreur lors de l\'ouverture du reçu'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Reçu non disponible'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.receipt_long, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Voir le reçu',
+                          style: GoogleFonts.openSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Bouton Télécharger le reçu (vert)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (widget.orderData != null && widget.orderData!['receiptUrl'] != null) {
+                        final receiptUrl = widget.orderData!['receiptUrl'] as String;
+                        final uri = Uri.parse(receiptUrl);
+
+                        try {
+                          final canLaunch = await canLaunchUrl(uri);
+                          if (canLaunch) {
+                            // Afficher un message de chargement
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text('Téléchargement en cours...'),
+                                    ],
+                                  ),
+                                  duration: Duration(seconds: 2),
+                                  backgroundColor: const Color(0xFF10B981),
+                                ),
+                              );
+                            }
+
+                            // Ouvrir dans le navigateur externe pour télécharger
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Impossible de télécharger le reçu'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          print('Erreur lors du téléchargement du reçu: $e');
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Erreur lors du téléchargement du reçu'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Reçu non disponible pour téléchargement'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.download, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Télécharger le reçu',
+                          style: GoogleFonts.openSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Bouton Suivre ma commande (orange)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (widget.orderData != null &&
+                          widget.orderData!['orderNumber'] != null &&
+                          widget.orderData!['customerPhone'] != null) {
+                        final navigator = Navigator.of(context);
+                        final rootNavigator = Navigator.of(context, rootNavigator: true);
+                        final shop = BoutiqueThemeProvider.shopOf(context);
+                        final orderNum = widget.orderData!['orderNumber'];
+                        final customerPhone = widget.orderData!['customerPhone'];
+
+                        navigator.pop();
+                        await Future.delayed(const Duration(milliseconds: 200));
+
                         rootNavigator.push(
                           MaterialPageRoute(
                             builder: (context) => BoutiqueThemeProvider(
                               shop: shop,
                               child: OrderTrackingApiPage(
-                                orderNumber: orderNumber,
+                                orderNumber: orderNum,
                                 customerPhone: customerPhone,
                               ),
                             ),
                           ),
                         );
-                      } else {
-                        print('❌ [LoadingSuccessPage] Données manquantes!');
-                        print('   - orderData null: ${widget.orderData == null}');
-                        print('   - orderNumber null: ${widget.orderData?['orderNumber'] == null}');
-                        print('   - customerPhone null: ${widget.orderData?['customerPhone'] == null}');
-
-                        // Afficher un message d'erreur à l'utilisateur
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Impossible de suivre la commande: numéro de commande manquant'),
-                              backgroundColor: Colors.orange,
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
-                        }
                       }
                     },
-                    borderRadius: BorderRadius.circular(14),
-                    child: Ink(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            BoutiqueThemeProvider.of(context).primary,
-                            BoutiqueThemeProvider.of(context).primary.withOpacity(0.85),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF97316),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.search, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Suivre ma commande',
+                          style: GoogleFonts.openSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: BoutiqueThemeProvider.of(context).primary.withOpacity(0.35),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.local_shipping_outlined, size: 22, color: Colors.white),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Suivre ma commande',
-                            style: GoogleFonts.openSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-              // Bouton Télécharger le reçu (style amélioré)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    // Télécharger le reçu depuis l'URL fournie par l'API
-                    if (widget.orderData != null && widget.orderData!['receiptUrl'] != null) {
-                      final receiptUrl = widget.orderData!['receiptUrl'] as String;
-                      final uri = Uri.parse(receiptUrl);
-
-                      try {
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Impossible de télécharger le reçu'),
-                              backgroundColor: Colors.red,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          );
-                        }
-                      }
-                    }
-                  },
-                  icon: const Icon(Icons.download_outlined, size: 22),
-                  label: Text(
-                    'Télécharger le reçu',
-                    style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: BoutiqueThemeProvider.of(context).primary,
-                    side: BorderSide(color: BoutiqueThemeProvider.of(context).primary.withOpacity(0.3), width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    backgroundColor: BoutiqueThemeProvider.of(context).primary.withOpacity(0.05),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Bouton Créer une carte de fidélité (seulement si l'utilisateur n'en a pas)
-              if (!_hasLoyaltyCard) ...[
+                // Bouton Fermer (gris)
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      print('🔍 [LoadingSuccessPage] Bouton Créer carte de fidélité cliqué');
-
-                      // Capturer le navigator et les données avant de fermer le dialog
-                      final navigator = Navigator.of(context);
-                      final rootNavigator = Navigator.of(context, rootNavigator: true);
-                      final shop = BoutiqueThemeProvider.shopOf(context);
-                      final shopId = widget.orderData?['shopId'] ?? 1;
-                      final boutiqueName = widget.orderData?['boutiqueName'] ?? 'Tika Shop';
-
-                      // Fermer le modal (dialog)
-                      navigator.pop();
-
-                      // Attendre que le dialog soit fermé
-                      await Future.delayed(const Duration(milliseconds: 200));
-
-                      print('📱 [LoadingSuccessPage] Navigation vers CreateLoyaltyCardPage...');
-                      // Utiliser le root navigator pour naviguer vers la page de création de carte
-                      rootNavigator.push(
-                        MaterialPageRoute(
-                          builder: (context) => BoutiqueThemeProvider(
-                            shop: shop,
-                            child: CreateLoyaltyCardPage(
-                              shopId: shopId,
-                              boutiqueName: boutiqueName,
-                              shop: shop,
-                            ),
-                          ),
-                        ),
-                      );
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Fermer le modal
+                      Navigator.of(context).pop(); // Fermer la page de chargement
                     },
-                    icon: const Icon(Icons.credit_card_outlined, size: 22),
-                    label: Text(
-                      'Créer une carte de fidélité',
-                      style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.w600),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade300,
+                      foregroundColor: Colors.grey.shade800,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color.fromARGB(221, 153, 16, 163),
-                      side: BorderSide(color: Colors.grey.shade300, width: 1.5),
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      backgroundColor: Colors.grey.shade50,
+                    child: Text(
+                      'Fermer',
+                      style: GoogleFonts.openSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ], // Ferme le if spread
-            ], // Ferme children du Column
+              ],
             ),
           ),
         ),

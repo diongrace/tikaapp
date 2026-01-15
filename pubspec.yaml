@@ -40,7 +40,6 @@ flutter:
 
   # Déclaration des images et assets
   assets:
-    - assets/
     - lib/core/assets/
 
 
