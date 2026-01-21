@@ -1,6 +1,9 @@
 class Endpoints {
   static const String baseUrl = 'https://prepro.tika-ci.com/api';
 
+  // URL de base pour les fichiers de stockage (images, banners, etc.)
+  static const String storageBaseUrl = 'https://prepro.tika-ci.com/storage';
+
   // Shops
   static const String shops = '$baseUrl/client/shops';
   static String shopDetails(int id) => '$baseUrl/client/shops/$id';
@@ -21,6 +24,10 @@ class Endpoints {
   static String orderCancel(int id) => '$baseUrl/client/orders/$id/cancel';
   static String orderByNumber(String orderNumber) => '$baseUrl/client/orders/number/$orderNumber';
   static const String ordersByDevice = '$baseUrl/client/orders/by-device';
+
+  // Receipts (Reçus de commande)
+  static String orderReceiptDownload(String orderNumber) => '$baseUrl/client/orders/$orderNumber/receipt/download';
+  static String orderReceiptView(String orderNumber) => '$baseUrl/client/orders/$orderNumber/receipt';
 
   // Categories
   static const String categories = '$baseUrl/client/categories';

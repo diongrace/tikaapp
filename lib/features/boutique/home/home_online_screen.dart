@@ -129,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
     try {
       // Toujours recharger la boutique depuis l'API pour avoir toutes les infos (incluant le thème)
-      // Même si un shop est passé, l'API favoris ne retourne pas le thème
+      // Le ShopService.getShopById récupère automatiquement le cover_image depuis l'API de liste si nécessaire
       final shopId = widget.shop?.id ?? widget.shopId;
 
       if (shopId != null) {

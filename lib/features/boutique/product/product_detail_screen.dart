@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../panier/cart_manager.dart';
 import '../../../services/models/shop_model.dart';
+import '../../../services/utils/api_endpoint.dart';
 import 'widgets/product_details_section.dart';
 
 /// Écran de détails d'un produit
@@ -60,7 +61,96 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return url;
     }
     final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return 'https://tika-ci.com/$cleanUrl';
+    return '${Endpoints.storageBaseUrl}/$cleanUrl';
+  }
+
+  void _showZoomableImage(String imageUrl) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Image zoomable
+            InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Center(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.broken_image_outlined,
+                      size: 100,
+                      color: Colors.white54,
+                    );
+                  },
+                ),
+              ),
+            ),
+            // Bouton fermer
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 16,
+              right: 16,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+            // Indication de zoom
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 24,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Pincez pour zoomer',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildProductImage() {
@@ -83,34 +173,58 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: Image.network(
-        fullImageUrl,
-        fit: BoxFit.contain,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
-                  : null,
+    return GestureDetector(
+      onTap: () => _showZoomableImage(fullImageUrl),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Image.network(
+              fullImageUrl,
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[300],
+                  child: Center(
+                    child: Icon(
+                      Icons.shopping_bag_outlined,
+                      size: 100,
+                      color: _primaryColor,
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[300],
-            child: Center(
-              child: Icon(
-                Icons.shopping_bag_outlined,
-                size: 100,
-                color: _primaryColor,
+          ),
+          // Icône de zoom
+          Positioned(
+            bottom: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black45,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.zoom_in,
+                color: Colors.white,
+                size: 20,
               ),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

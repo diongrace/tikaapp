@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/favorites_service.dart';
 import '../../../services/models/shop_model.dart';
+import '../../../services/utils/api_endpoint.dart';
 import '../home/home_online_screen.dart';
 import '../loading_screens/loading_screens.dart';
 
@@ -453,8 +454,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
     String logoUrl = shop.logoUrl;
     if (!logoUrl.startsWith('http')) {
       logoUrl = logoUrl.startsWith('/')
-          ? 'https://tika-ci.com$logoUrl'
-          : 'https://tika-ci.com/$logoUrl';
+          ? '${Endpoints.storageBaseUrl}$logoUrl'
+          : '${Endpoints.storageBaseUrl}/$logoUrl';
     }
 
     return GestureDetector(

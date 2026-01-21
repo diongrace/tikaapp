@@ -49,12 +49,19 @@ class Shop {
   });
 
   factory Shop.fromJson(Map<String, dynamic> json) {
-    final parsedBannerUrl = _parseUrl(json['banner_url']);
+    // Chercher le banner dans plusieurs champs possibles
+    final bannerUrlRaw = json['banner_url'] ?? json['cover_image'] ?? json['banner'] ?? json['image_banner'];
+    final parsedBannerUrl = _parseUrl(bannerUrlRaw);
 
     // Debug: Afficher le parsing du banner_url
+    print('');
     print('🔍 Parsing Shop "${json['name']}":');
     print('   - banner_url brut: ${json['banner_url']}');
+    print('   - cover_image brut: ${json['cover_image']}');
+    print('   - banner brut: ${json['banner']}');
+    print('   - Valeur utilisée: $bannerUrlRaw');
     print('   - banner_url après parsing: $parsedBannerUrl');
+    print('');
 
     return Shop(
       id: _parseInt(json['id']) ?? 0,

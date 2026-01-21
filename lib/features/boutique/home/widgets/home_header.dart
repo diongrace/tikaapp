@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../notifications/notifications_list_screen.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
+import '../../../../services/utils/api_endpoint.dart';
 
 /// Widget d'en-tête avec image de fond et boutons d'action
 /// Gère l'affichage conditionnel de la page de couverture:
@@ -29,11 +30,11 @@ class HomeHeader extends StatelessWidget {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-// 
+
     // Sinon, construire l'URL complète avec le domaine de base
     // Nettoyer l'URL (enlever le slash de début si présent)
     final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return 'https://tika-ci.com/$cleanUrl';
+    return '${Endpoints.storageBaseUrl}/$cleanUrl';
   }
 
   @override

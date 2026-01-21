@@ -52,6 +52,8 @@ class ShopService {
   }
 
   // 2. Récupérer une boutique par ID
+  // Note: L'API de détail (/client/shops/{id}) ne retourne pas toujours cover_image
+  // On récupère aussi les données de l'API de liste pour avoir le cover_image
   static Future<Shop> getShopById(int id) async {
     final response = await http.get(
       Uri.parse(Endpoints.shopDetails(id)),
@@ -63,33 +65,71 @@ class ShopService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final shopData = data['data']['shop'];
+      final shopData = Map<String, dynamic>.from(data['data']['shop']);
 
-      // Debug: Afficher les valeurs brutes de l'API
-      print('📡 API Response pour boutique $id:');
+      // Debug: Afficher TOUTES les clés de la réponse API
+      print('');
+      print('══════════════════════════════════════════════════════');
+      print('📡 API RESPONSE COMPLÈTE pour boutique $id:');
+      print('══════════════════════════════════════════════════════');
+      print('🔑 Toutes les clés disponibles: ${shopData.keys.toList()}');
+      print('');
+
+      // Afficher les valeurs brutes de l'API
       print('   - Nom: ${shopData['name']}');
       print('   - banner_url (brut): ${shopData['banner_url']}');
+      print('   - cover_image (brut): ${shopData['cover_image']}');
       print('   - banner_url est null: ${shopData['banner_url'] == null}');
-      print('   - banner_url est vide: ${shopData['banner_url']?.toString().isEmpty ?? true}');
-      print('   - banner_url type: ${shopData['banner_url'].runtimeType}');
       print('   - logo_url (brut): ${shopData['logo_url']}');
+      print('══════════════════════════════════════════════════════');
+
+      // Si cover_image et banner_url sont null, essayer de récupérer depuis l'API de liste
+      if (shopData['cover_image'] == null && shopData['banner_url'] == null) {
+        print('⚠️ cover_image non disponible dans l\'API de détail, récupération depuis l\'API de liste...');
+        try {
+          final coverImage = await _getCoverImageFromList(id);
+          if (coverImage != null) {
+            shopData['cover_image'] = coverImage;
+            print('✅ cover_image récupéré depuis l\'API de liste: $coverImage');
+          }
+        } catch (e) {
+          print('❌ Erreur lors de la récupération du cover_image: $e');
+        }
+      }
 
       // Debug: Afficher le thème de la boutique
       print('🎨 THEME DEBUG pour boutique $id:');
       print('   - theme (brut): ${shopData['theme']}');
-      print('   - theme type: ${shopData['theme'].runtimeType}');
       if (shopData['theme'] != null) {
         print('   - primary_color: ${shopData['theme']['primary_color']}');
-        print('   - secondary_color: ${shopData['theme']['secondary_color']}');
-        print('   - accent_color: ${shopData['theme']['accent_color']}');
       } else {
-        print('   ⚠️ ATTENTION: Le thème est NULL - L\'API ne retourne pas le thème!');
+        print('   ⚠️ ATTENTION: Le thème est NULL');
       }
 
       return Shop.fromJson(shopData);
     } else {
       throw Exception('Boutique introuvable');
     }
+  }
+
+  // Récupérer le cover_image depuis l'API de liste
+  static Future<String?> _getCoverImageFromList(int shopId) async {
+    final response = await http.get(
+      Uri.parse(Endpoints.shops),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final shops = data['data']['shops'] as List;
+
+      for (var shop in shops) {
+        if (shop['id'] == shopId) {
+          return shop['cover_image']?.toString();
+        }
+      }
+    }
+    return null;
   }
 
   // 3. Récupérer une boutique via un lien, ID ou slug

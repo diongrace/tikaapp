@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
+import '../../../../services/utils/api_endpoint.dart';
 
 /// Carte de produit affichant les informations du produit
 class ProductCard extends StatelessWidget {
@@ -29,7 +30,7 @@ class ProductCard extends StatelessWidget {
 
     // Sinon, construire l'URL complète avec le domaine de base
     final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return 'https://tika-ci.com/$cleanUrl';
+    return '${Endpoints.storageBaseUrl}/$cleanUrl';
   }
 
   // Obtenir le texte de stock approprié selon l'état du produit

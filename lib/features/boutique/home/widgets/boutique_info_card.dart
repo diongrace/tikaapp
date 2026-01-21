@@ -9,6 +9,7 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/loyalty_service.dart';
 import '../../../../services/models/shop_model.dart';
+import '../../../../services/utils/api_endpoint.dart';
 
 /// Carte d'informations de la boutique avec actions rapides
 class BoutiqueInfoCard extends StatelessWidget {
@@ -38,7 +39,7 @@ class BoutiqueInfoCard extends StatelessWidget {
 
     // Sinon, construire l'URL complète avec le domaine de base
     final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return 'https://tika-ci.com/$cleanUrl';
+    return '${Endpoints.storageBaseUrl}/$cleanUrl';
   }
 
   @override

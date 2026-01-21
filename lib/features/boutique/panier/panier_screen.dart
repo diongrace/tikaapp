@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'cart_manager.dart';
 import '../commande/commande_screen.dart';
 import '../../../services/models/shop_model.dart';
+import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 
 class PanierScreen extends StatefulWidget {
@@ -85,7 +86,7 @@ class _PanierScreenState extends State<PanierScreen> {
       return url;
     }
     final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return 'https://tika-ci.com/$cleanUrl';
+    return '${Endpoints.storageBaseUrl}/$cleanUrl';
   }
 
   int? _getDiscount(Map<String, dynamic> item) {

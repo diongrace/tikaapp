@@ -338,12 +338,23 @@ class _CommandeScreenState extends State<CommandeScreen> {
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Préparer les données pour la page de succès
+      final orderNumber = response['order_number'] as String;
+
+      // Utiliser les URLs de l'API si disponibles, sinon construire les URLs
+      final receiptUrl = response['receipt_url'] ??
+          'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt/download';
+      final receiptViewUrl = response['receipt_view_url'] ??
+          'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt';
+
+      print('📄 Receipt URL: $receiptUrl');
+      print('📄 Receipt View URL: $receiptViewUrl');
+
       final orderData = {
-        'orderNumber': response['order_number'],
+        'orderNumber': orderNumber,
         'customerPhone': _phoneController.text,
         'customerName': _nomController.text,
-        'receiptUrl': response['receipt_url'],
-        'receiptViewUrl': response['receipt_view_url'],
+        'receiptUrl': receiptUrl,
+        'receiptViewUrl': receiptViewUrl,
         'shopId': widget.shopId,
         'orderDate': DateTime.now(),
         'boutiqueName': widget.shop?.name ?? 'Tika Shop',

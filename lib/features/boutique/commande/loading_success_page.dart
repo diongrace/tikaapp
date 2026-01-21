@@ -1,6 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'order_tracking_api_page.dart';
 import '../loyalty/create_loyalty_card_page.dart';
 import '../../../core/services/boutique_theme_provider.dart';
@@ -283,54 +288,111 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     onPressed: () async {
                       if (widget.orderData != null && widget.orderData!['receiptUrl'] != null) {
                         final receiptUrl = widget.orderData!['receiptUrl'] as String;
-                        final uri = Uri.parse(receiptUrl);
+                        final orderNumber = widget.orderData!['orderNumber'] as String? ?? 'recu';
 
                         try {
-                          final canLaunch = await canLaunchUrl(uri);
-                          if (canLaunch) {
-                            // Afficher un message de chargement
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                        ),
+                          // Afficher un message de chargement
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Text('Téléchargement en cours...'),
-                                    ],
-                                  ),
-                                  duration: Duration(seconds: 2),
-                                  backgroundColor: const Color(0xFF10B981),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text('Téléchargement en cours...'),
+                                  ],
                                 ),
-                              );
-                            }
+                                duration: Duration(seconds: 30),
+                                backgroundColor: const Color(0xFF10B981),
+                              ),
+                            );
+                          }
 
-                            // Ouvrir dans le navigateur externe pour télécharger
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Impossible de télécharger le reçu'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
+                          // Demander la permission de stockage sur Android
+                          if (Platform.isAndroid) {
+                            final status = await Permission.storage.request();
+                            if (!status.isGranted) {
+                              // Essayer avec la permission photos/media pour Android 13+
+                              await Permission.photos.request();
                             }
+                          }
+
+                          // Obtenir le répertoire de téléchargement
+                          Directory? downloadDir;
+                          if (Platform.isAndroid) {
+                            downloadDir = Directory('/storage/emulated/0/Download');
+                            if (!await downloadDir.exists()) {
+                              downloadDir = await getExternalStorageDirectory();
+                            }
+                          } else {
+                            downloadDir = await getApplicationDocumentsDirectory();
+                          }
+
+                          if (downloadDir == null) {
+                            throw Exception('Impossible d\'accéder au dossier de téléchargement');
+                          }
+
+                          // Nom du fichier
+                          final fileName = 'recu_$orderNumber.pdf';
+                          final filePath = '${downloadDir.path}/$fileName';
+
+                          // Télécharger avec dio
+                          final dio = Dio();
+                          await dio.download(
+                            receiptUrl,
+                            filePath,
+                            options: Options(
+                              responseType: ResponseType.bytes,
+                              followRedirects: true,
+                            ),
+                          );
+
+                          // Fermer le snackbar de chargement
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          }
+
+                          // Afficher succès et proposer d'ouvrir
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text('Reçu téléchargé: $fileName'),
+                                    ),
+                                  ],
+                                ),
+                                duration: Duration(seconds: 5),
+                                backgroundColor: const Color(0xFF10B981),
+                                action: SnackBarAction(
+                                  label: 'Ouvrir',
+                                  textColor: Colors.white,
+                                  onPressed: () async {
+                                    await OpenFilex.open(filePath);
+                                  },
+                                ),
+                              ),
+                            );
                           }
                         } catch (e) {
                           print('Erreur lors du téléchargement du reçu: $e');
                           if (context.mounted) {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Erreur lors du téléchargement du reçu'),
+                                content: Text('Erreur lors du téléchargement: ${e.toString()}'),
                                 backgroundColor: Colors.red,
+                                duration: Duration(seconds: 4),
                               ),
                             );
                           }

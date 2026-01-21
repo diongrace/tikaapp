@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../../services/order_service.dart';
 import '../../../services/models/order_model.dart';
+import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../core/services/storage_service.dart';
 
@@ -663,7 +664,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage> {
     if (url == null || url.isEmpty) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
     final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return 'https://tika-ci.com/$cleanUrl';
+    return '${Endpoints.storageBaseUrl}/$cleanUrl';
   }
 
   Widget _buildInfoRow(String label, String value, {Color? valueColor}) {
