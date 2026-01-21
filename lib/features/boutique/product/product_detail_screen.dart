@@ -87,7 +87,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       borderRadius: BorderRadius.circular(24),
       child: Image.network(
         fullImageUrl,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return Center(
@@ -111,6 +111,119 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSimilarProductsSection() {
+    // Produits similaires basés sur la même catégorie
+    // Pour l'instant, on affiche un placeholder - à connecter avec l'API
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Produits similaires',
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2D2D2D),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                // TODO: Naviguer vers la liste complète
+              },
+              child: Text(
+                'Voir tout',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _primaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 180,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 4, // Placeholder - à remplacer par les vrais produits
+            itemBuilder: (context, index) {
+              return _buildSimilarProductCard(index);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSimilarProductCard(int index) {
+    return Container(
+      width: 130,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image placeholder
+          Container(
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Center(
+              child: Icon(
+                Icons.image_outlined,
+                size: 40,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Produit ${index + 1}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF2D2D2D),
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '0 FCFA',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: _primaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -144,9 +257,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               children: [
                 // Image
                 Container(
-                  height: 300,
+                  height: 380,
                   width: double.infinity,
-                  padding: const EdgeInsets.all(19),
+                  padding: const EdgeInsets.fromLTRB(30, 70, 30, 30),
                   child: ColorFiltered(
                     colorFilter: isOutOfStock
                         ? const ColorFilter.mode(
@@ -159,13 +272,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                     child: Container(
                       decoration: BoxDecoration(
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1.5,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                            spreadRadius: 0,
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                            spreadRadius: 2,
                           ),
                         ],
                       ),
@@ -513,134 +631,83 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
 
-                      // Quantité
+                      // Quantité - Design simplifié
                       if (!isOutOfStock) ...[
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               'Quantité',
                               style: GoogleFonts.poppins(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF2D2D2D),
                               ),
                             ),
-                            Text(
-                              'Max: $stock',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.grey.shade500,
+                            // Sélecteur compact
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Sélecteur de quantité
-                        Row(
-                          children: [
-                            // Bouton -
-                            Expanded(
-                              child: Container(
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: _quantity > 1
-                                      ? _primaryColor.withOpacity(0.1)
-                                      : Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: _quantity > 1
-                                        ? _primaryColor.withOpacity(0.3)
-                                        : Colors.grey.shade300,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Bouton -
+                                  InkWell(
                                     onTap: _decrementQuantity,
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.remove,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
                                         color: _quantity > 1
                                             ? _primaryColor
-                                            : Colors.grey.shade400,
-                                        size: 24,
+                                            : Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.remove,
+                                        color: Colors.white,
+                                        size: 20,
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-
-                            // Quantité actuelle
-                            Container(
-                              width: 90,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [_primaryColor, _primaryColor.withOpacity(0.9)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: _primaryColor.withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
+                                  // Quantité
+                                  Container(
+                                    width: 60,
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '$_quantity',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF2D2D2D),
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '$_quantity',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-
-                            // Bouton +
-                            Expanded(
-                              child: Container(
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: _quantity < stock
-                                      ? _primaryColor.withOpacity(0.1)
-                                      : Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: _quantity < stock
-                                        ? _primaryColor.withOpacity(0.3)
-                                        : Colors.grey.shade300,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
+                                  // Bouton +
+                                  InkWell(
                                     onTap: _incrementQuantity,
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.add,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
                                         color: _quantity < stock
                                             ? _primaryColor
-                                            : Colors.grey.shade400,
-                                        size: 24,
+                                            : Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                        size: 20,
                                       ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
                             ),
                           ],
@@ -686,8 +753,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ],
 
+                      // Section Produits similaires (à activer plus tard)
+                      // const SizedBox(height: 24),
+                      // _buildSimilarProductsSection(),
+
                       // Espace pour le bouton fixe en bas
-                      const SizedBox(height: 80),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),

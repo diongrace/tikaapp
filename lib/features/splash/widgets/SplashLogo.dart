@@ -28,7 +28,7 @@ class _SplashLogoState extends State<SplashLogo>
     super.dispose();
   }
 
-  final String assetPath = 'lib/core/assets/logo_tika.png';
+  final String assetPath = 'lib/core/assets/logoTIKACLIENT.png';
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +36,8 @@ class _SplashLogoState extends State<SplashLogo>
       animation: _controller,
       builder: (context, _) {
         return SizedBox(
-          width: 300,
-          height: 300,
+          width: 100,
+          height: 100,
           child: Stack(
             alignment: Alignment.center,
             children: [

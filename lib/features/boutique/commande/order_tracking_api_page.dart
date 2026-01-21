@@ -259,9 +259,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage> {
           const SizedBox(height: 20),
           _buildOrderStatusCard(_order!),
           const SizedBox(height: 20),
-          _buildCustomerInfoCard(_order!),
+          // _buildCustomerInfoCard(_order!),
           const SizedBox(height: 20),
-          _buildOrderedItemsCard(_order!),
+          // _buildOrderedItemsCard(_order!),
           const SizedBox(height: 20),
         ],
       ),
@@ -486,49 +486,49 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage> {
     );
   }
 
-  Widget _buildCustomerInfoCard(Order order) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 2),
-        )],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.person, color: Colors.green, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'Informations client',
-                style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildCustomerInfoItem('Nom complet', order.customerName.isNotEmpty ? order.customerName : 'N/A'),
-          if (order.customerPhone.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _buildCustomerInfoItem('Téléphone', order.customerPhone),
-          ],
-          if (order.deliveryAddress != null && order.deliveryAddress!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _buildCustomerInfoItem('Adresse de livraison', order.deliveryAddress!),
-          ],
-          if (order.serviceType.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _buildCustomerInfoItem('Mode de récupération', order.serviceType),
-          ],
-        ],
-      ),
-    );
-  }
+  // Widget _buildCustomerInfoCard(Order order) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(20),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(16),
+  //       boxShadow: [BoxShadow(
+  //         color: Colors.black.withOpacity(0.05),
+  //         blurRadius: 10,
+  //         offset: const Offset(0, 2),
+  //       )],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(Icons.person, color: Colors.green, size: 24),
+  //             const SizedBox(width: 8),
+  //             Text(
+  //               'Informations client',
+  //               style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.bold),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         _buildCustomerInfoItem('Nom complet', order.customerName.isNotEmpty ? order.customerName : 'N/A'),
+  //         if (order.customerPhone.isNotEmpty) ...[
+  //           const SizedBox(height: 12),
+  //           _buildCustomerInfoItem('Téléphone', order.customerPhone),
+  //         ],
+  //         if (order.deliveryAddress != null && order.deliveryAddress!.isNotEmpty) ...[
+  //           const SizedBox(height: 12),
+  //           _buildCustomerInfoItem('Adresse de livraison', order.deliveryAddress!),
+  //         ],
+  //         if (order.serviceType.isNotEmpty) ...[
+  //           const SizedBox(height: 12),
+  //           _buildCustomerInfoItem('Mode de récupération', order.serviceType),
+  //         ],
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildCustomerInfoItem(String label, String value) {
     return Column(
@@ -541,62 +541,62 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage> {
     );
   }
 
-  Widget _buildOrderedItemsCard(Order order) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 2),
-        )],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.shopping_bag, color: BoutiqueThemeProvider.of(context).primary, size: 24),
-              const SizedBox(width: 8),
-              Text('Articles commandés', style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (order.items.isNotEmpty)
-            ...order.items.map((item) => _buildOrderItem(item))
-          else
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.inventory_2_outlined, color: BoutiqueThemeProvider.of(context).primary, size: 40),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${order.itemsCount} article${order.itemsCount > 1 ? 's' : ''}',
-                          style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 4),
-                        Text('Détails disponibles après traitement', style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey.shade600)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildOrderedItemsCard(Order order) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(20),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(16),
+  //       boxShadow: [BoxShadow(
+  //         color: Colors.black.withOpacity(0.05),
+  //         blurRadius: 10,
+  //         offset: const Offset(0, 2),
+  //       )],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(Icons.shopping_bag, color: BoutiqueThemeProvider.of(context).primary, size: 24),
+  //             const SizedBox(width: 8),
+  //             Text('Articles commandés', style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.bold)),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         if (order.items.isNotEmpty)
+  //           ...order.items.map((item) => _buildOrderItem(item))
+  //         else
+  //           Container(
+  //             padding: const EdgeInsets.all(16),
+  //             decoration: BoxDecoration(
+  //               color: Colors.grey.shade50,
+  //               borderRadius: BorderRadius.circular(12),
+  //             ),
+  //             child: Row(
+  //               children: [
+  //                 Icon(Icons.inventory_2_outlined, color: BoutiqueThemeProvider.of(context).primary, size: 40),
+  //                 const SizedBox(width: 16),
+  //                 Expanded(
+  //                   child: Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       Text(
+  //                         '${order.itemsCount} article${order.itemsCount > 1 ? 's' : ''}',
+  //                         style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+  //                       ),
+  //                       const SizedBox(height: 4),
+  //                       Text('Détails disponibles après traitement', style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey.shade600)),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildOrderItem(OrderItem item) {
     final fullImageUrl = _getFullImageUrl(item.image);
