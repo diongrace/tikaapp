@@ -4,6 +4,7 @@ class Order {
   final String orderNumber;
   final int shopId;
   final String? shopName; // Nom de la boutique (optionnel)
+  final String? shopLogo; // Logo de la boutique (optionnel)
   final String customerName; // Peut être vide pour liste simplifiée
   final String customerPhone; // Peut être vide pour liste simplifiée
   final String? customerEmail;
@@ -34,6 +35,7 @@ class Order {
     required this.orderNumber,
     required this.shopId,
     this.shopName,
+    this.shopLogo,
     this.customerName = '',
     this.customerPhone = '',
     this.customerEmail,
@@ -79,6 +81,24 @@ class Order {
       shopName = json['shop']['name'].toString();
     }
 
+    // Parser le shop_logo (peut être dans plusieurs champs)
+    String? shopLogo;
+    if (json['shop_logo'] != null && json['shop_logo'].toString().isNotEmpty) {
+      shopLogo = json['shop_logo'].toString();
+    } else if (json['shop_logo_url'] != null && json['shop_logo_url'].toString().isNotEmpty) {
+      shopLogo = json['shop_logo_url'].toString();
+    } else if (json['shop'] != null) {
+      // Chercher dans l'objet shop imbriqué
+      final shop = json['shop'];
+      if (shop['logo_url'] != null && shop['logo_url'].toString().isNotEmpty) {
+        shopLogo = shop['logo_url'].toString();
+      } else if (shop['logo'] != null && shop['logo'].toString().isNotEmpty) {
+        shopLogo = shop['logo'].toString();
+      }
+    }
+
+    print('🔍 [Order] shop_logo: $shopLogo');
+
     // Parser le téléphone (essayer plusieurs variantes)
     final customerPhone = json['customer_phone']?.toString() ??
                          json['phone']?.toString() ??
@@ -103,6 +123,7 @@ class Order {
       orderNumber: json['order_number']?.toString() ?? '',
       shopId: finalShopId,
       shopName: shopName,
+      shopLogo: shopLogo,
       customerName: json['customer_name']?.toString() ?? json['name']?.toString() ?? '',
       customerPhone: customerPhone,
       customerEmail: json['customer_email']?.toString() ?? json['email']?.toString(),
@@ -137,6 +158,7 @@ class Order {
       'order_number': orderNumber,
       'shop_id': shopId,
       'shop_name': shopName,
+      'shop_logo': shopLogo,
       'customer_name': customerName,
       'customer_phone': customerPhone,
       'customer_email': customerEmail,
@@ -202,14 +224,44 @@ class OrderItem {
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
+    // Parser l'image (chercher dans plusieurs champs possibles)
+    String? image;
+    if (json['image'] != null && json['image'].toString().isNotEmpty) {
+      image = json['image'].toString();
+    } else if (json['image_url'] != null && json['image_url'].toString().isNotEmpty) {
+      image = json['image_url'].toString();
+    } else if (json['product_image'] != null && json['product_image'].toString().isNotEmpty) {
+      image = json['product_image'].toString();
+    } else if (json['product'] != null) {
+      // Chercher dans l'objet product imbriqué
+      final product = json['product'];
+      if (product['image'] != null && product['image'].toString().isNotEmpty) {
+        image = product['image'].toString();
+      } else if (product['image_url'] != null && product['image_url'].toString().isNotEmpty) {
+        image = product['image_url'].toString();
+      }
+    }
+
+    // Parser le nom du produit (chercher dans plusieurs champs possibles)
+    String? productName;
+    if (json['product_name'] != null && json['product_name'].toString().isNotEmpty) {
+      productName = json['product_name'].toString();
+    } else if (json['name'] != null && json['name'].toString().isNotEmpty) {
+      productName = json['name'].toString();
+    } else if (json['product'] != null && json['product']['name'] != null) {
+      productName = json['product']['name'].toString();
+    }
+
+    print('🔍 [OrderItem] Parsing: name=$productName, image=$image');
+
     return OrderItem(
       productId: _parseInt(json['product_id']),
       dailyMenuId: _parseInt(json['daily_menu_id']),
       supplementId: _parseInt(json['supplement_id']),
       quantity: _parseInt(json['quantity']) ?? 1,
       price: _parseDouble(json['price']) ?? 0.0,
-      productName: json['product_name']?.toString(),
-      image: json['image']?.toString(),
+      productName: productName,
+      image: image,
     );
   }
 

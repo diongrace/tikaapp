@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "903691746131",
+    "project_id": "tika-app-71d63",
+    "storage_bucket": "tika-app-71d63.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903691746131:android:609d3949694cbb92c13fa6",
+        "android_client_info": {
+          "package_name": "com.example.tika_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHQ2GegpyHpt8JMgIlRWfSQuSn0ubN17E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
