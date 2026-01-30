@@ -81,6 +81,16 @@ class ShopService {
       print('   - cover_image (brut): ${shopData['cover_image']}');
       print('   - banner_url est null: ${shopData['banner_url'] == null}');
       print('   - logo_url (brut): ${shopData['logo_url']}');
+      print('');
+      print('🌊 WAVE PAYMENT DEBUG:');
+      print('   - wave_payment_link: ${shopData['wave_payment_link']}');
+      print('   - wave_link: ${shopData['wave_link']}');
+      print('   - wave_url: ${shopData['wave_url']}');
+      print('   - wave_number: ${shopData['wave_number']}');
+      print('   - wave_enabled: ${shopData['wave_enabled']}');
+      print('   - settings: ${shopData['settings']}');
+      print('   - payment_settings: ${shopData['payment_settings']}');
+      print('   - payment: ${shopData['payment']}');
       print('══════════════════════════════════════════════════════');
 
       // Si cover_image et banner_url sont null, essayer de récupérer depuis l'API de liste
@@ -316,7 +326,58 @@ class ShopService {
           .map((e) => Shop.fromJson(e))
           .toList();
     } else {
-      throw Exception('Erreur lors du chargement des boutiques en vedette');
+      throw Exception('Erreur lors du chargement des boutiques en vedette (Status: ${response.statusCode})');
+    }
+  }
+
+  // 8. Récupérer le lien Wave depuis l'API payment-methods
+  static Future<String?> getWavePaymentLink(int shopId) async {
+    try {
+      final response = await http.get(
+        Uri.parse(Endpoints.shopPaymentMethods(shopId)),
+        headers: _headers,
+      );
+
+      print('🌊 [getWavePaymentLink] URL: ${Endpoints.shopPaymentMethods(shopId)}');
+      print('🌊 [getWavePaymentLink] Status: ${response.statusCode}');
+      print('🌊 [getWavePaymentLink] Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final paymentData = data['data'] ?? data;
+
+        // Chercher le lien Wave dans la réponse
+        // Cas 1: liste de méthodes de paiement
+        if (paymentData is Map && paymentData['payment_methods'] is List) {
+          for (var method in paymentData['payment_methods']) {
+            if (method['type'] == 'wave' || method['name']?.toString().toLowerCase() == 'wave') {
+              final link = method['wave_payment_link'] ?? method['payment_link'] ?? method['link'] ?? method['url'];
+              if (link != null) return link.toString();
+            }
+          }
+        }
+
+        // Cas 2: champ direct wave_payment_link
+        final directLink = paymentData['wave_payment_link']
+            ?? paymentData['wave_link']
+            ?? paymentData['wave_url'];
+        if (directLink != null) return directLink.toString();
+
+        // Cas 3: nested dans wave
+        if (paymentData['wave'] is Map) {
+          final waveData = paymentData['wave'];
+          final link = waveData['payment_link'] ?? waveData['link'] ?? waveData['url'];
+          if (link != null) return link.toString();
+        }
+
+        print('🌊 [getWavePaymentLink] Aucun lien Wave trouvé dans la réponse');
+        return null;
+      }
+
+      return null;
+    } catch (e) {
+      print('🌊 [getWavePaymentLink] Erreur: $e');
+      return null;
     }
   }
 }

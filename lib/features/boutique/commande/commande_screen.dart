@@ -13,6 +13,7 @@ import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/order_service.dart';
 import '../../../services/device_service.dart';
 import '../../../services/wave_payment_service.dart';
+import '../../../services/shop_service.dart';
 import '../../../services/models/shop_model.dart';
 
 /// Écran de finalisation de commande
@@ -263,6 +264,35 @@ class _CommandeScreenState extends State<CommandeScreen> {
     String? wavePaymentLink;
     if (widget.shop?.wavePaymentLink != null) {
       wavePaymentLink = widget.shop!.wavePaymentLink;
+    }
+
+    // Debug: vérifier le lien Wave
+    print('🌊 [Wave Navigation] shop: ${widget.shop?.name}');
+    print('🌊 [Wave Navigation] waveEnabled: ${widget.shop?.waveEnabled}');
+    print('🌊 [Wave Navigation] wavePaymentLink: $wavePaymentLink');
+    print('🌊 [Wave Navigation] shop object is null: ${widget.shop == null}');
+
+    // Fallback: si pas de lien Wave sur le shop, essayer l'API payment-methods
+    if (wavePaymentLink == null) {
+      print('🌊 [Wave Navigation] Lien Wave absent du shop, tentative via API payment-methods...');
+      try {
+        wavePaymentLink = await ShopService.getWavePaymentLink(widget.shopId);
+        print('🌊 [Wave Navigation] Résultat API payment-methods: $wavePaymentLink');
+      } catch (e) {
+        print('🌊 [Wave Navigation] Erreur API payment-methods: $e');
+      }
+    }
+
+    // Fallback 2: si toujours pas de lien, essayer de recharger le shop depuis l'API
+    if (wavePaymentLink == null) {
+      print('🌊 [Wave Navigation] Tentative de rechargement du shop depuis l\'API...');
+      try {
+        final freshShop = await ShopService.getShopById(widget.shopId);
+        wavePaymentLink = freshShop.wavePaymentLink;
+        print('🌊 [Wave Navigation] Résultat rechargement shop: $wavePaymentLink');
+      } catch (e) {
+        print('🌊 [Wave Navigation] Erreur rechargement shop: $e');
+      }
     }
 
     if (!mounted) return;

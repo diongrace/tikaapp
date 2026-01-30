@@ -73,6 +73,31 @@ class Shop {
     print('   - banner_url après parsing: $parsedBannerUrl');
     print('');
 
+    // Chercher le lien Wave dans plusieurs champs possibles
+    final wavePaymentLinkRaw = json['wave_payment_link']
+        ?? json['wave_link']
+        ?? json['wave_url']
+        ?? json['wave_number']
+        ?? (json['settings'] is Map ? json['settings']['wave_payment_link'] : null)
+        ?? (json['settings'] is Map ? json['settings']['wave_link'] : null)
+        ?? (json['payment_settings'] is Map ? json['payment_settings']['wave_payment_link'] : null)
+        ?? (json['payment_settings'] is Map ? json['payment_settings']['wave_link'] : null)
+        ?? (json['payment'] is Map ? json['payment']['wave_link'] : null)
+        ?? (json['payment'] is Map ? json['payment']['wave_payment_link'] : null);
+
+    // Debug Wave payment link
+    print('🌊 Wave Debug pour "${json['name']}":');
+    print('   - wave_payment_link: ${json['wave_payment_link']}');
+    print('   - wave_link: ${json['wave_link']}');
+    print('   - wave_url: ${json['wave_url']}');
+    print('   - wave_number: ${json['wave_number']}');
+    print('   - wave_enabled: ${json['wave_enabled']}');
+    print('   - settings: ${json['settings']}');
+    print('   - payment_settings: ${json['payment_settings']}');
+    print('   - payment: ${json['payment']}');
+    print('   - Valeur Wave finale: $wavePaymentLinkRaw');
+    print('');
+
     return Shop(
       id: _parseInt(json['id']) ?? 0,
       name: json['name']?.toString() ?? '',
@@ -100,7 +125,7 @@ class Shop {
       isFeatured: json['is_featured'] == true || json['is_featured'] == 1,
       distance: _parseDouble(json['distance']),
       waveEnabled: json['wave_enabled'] == true || json['wave_enabled'] == 1,
-      wavePaymentLink: json['wave_payment_link']?.toString(),
+      wavePaymentLink: wavePaymentLinkRaw?.toString(),
       wavePartialPaymentEnabled: json['wave_partial_payment_enabled'] == true || json['wave_partial_payment_enabled'] == 1,
       wavePartialPaymentPercentage: _parseInt(json['wave_partial_payment_percentage']) ?? 0,
     );
