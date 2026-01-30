@@ -6,9 +6,12 @@ import 'payment_methods_screen.dart';
 import 'notifications_screen.dart';
 import 'help_support_screen.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../services/auth_service.dart';
+import '../../../core/messages/message_modal.dart';
+import '../../auth/auth_choice_screen.dart';
 
 /// Écran de profil client - Conforme à l'API TIKA
-/// Les clients N'ONT PAS de compte, les infos sont stockées localement
+/// Affiche le profil connecté ou les infos locales
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -23,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _ordersCount = 0;
   int _favoritesCount = 0;
   int _loyaltyPoints = 0;
+  bool _isAuthenticated = false;
 
   @override
   void initState() {
@@ -31,19 +35,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadCustomerData() async {
-    final customerInfo = await StorageService.getCustomerInfo();
+    // Vérifier si le client est authentifié
+    _isAuthenticated = AuthService.isAuthenticated;
+
+    if (_isAuthenticated && AuthService.currentClient != null) {
+      // Utiliser les infos du client authentifié
+      final client = AuthService.currentClient!;
+      setState(() {
+        _customerName = client.name;
+        _customerPhone = client.phone;
+        _customerEmail = client.email ?? '';
+      });
+    } else {
+      // Utiliser les infos stockées localement
+      final customerInfo = await StorageService.getCustomerInfo();
+      setState(() {
+        _customerName = customerInfo['name'] ?? 'Client';
+        _customerPhone = customerInfo['phone'] ?? '';
+        _customerEmail = customerInfo['email'] ?? '';
+      });
+    }
+
+    // Charger les statistiques
     final orders = await StorageService.getOrders();
     final favorites = await StorageService.getFavoriteShopIds();
     final loyaltyCard = await StorageService.getLoyaltyCard();
 
     setState(() {
-      _customerName = customerInfo['name'] ?? 'Client';
-      _customerPhone = customerInfo['phone'] ?? '';
-      _customerEmail = customerInfo['email'] ?? '';
       _ordersCount = orders.length;
       _favoritesCount = favorites.length;
       _loyaltyPoints = loyaltyCard?['points'] ?? 0;
     });
+  }
+
+  Future<void> _logout() async {
+    // Afficher une confirmation
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Déconnexion',
+          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Êtes-vous sûr de vouloir vous déconnecter ?',
+          style: GoogleFonts.openSans(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.openSans(color: Colors.grey),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Déconnexion',
+              style: GoogleFonts.openSans(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await AuthService.logout();
+      if (mounted) {
+        showSuccessModal(context, 'Déconnexion réussie');
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      }
+    }
+  }
+
+  Future<void> _goToAuth() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AuthChoiceScreen(),
+      ),
+    );
+
+    if (result == true && mounted) {
+      _loadCustomerData();
+    }
   }
 
   String _getInitials(String name) {
@@ -422,6 +505,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 24),
+
+                  // Bouton Connexion / Déconnexion
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _isAuthenticated
+                        ? _buildLogoutButton()
+                        : _buildLoginButton(),
+                  ),
+
                   const SizedBox(height: 32),
 
                   // Version et copyright
@@ -555,6 +648,155 @@ class _ProfileScreenState extends State<ProfileScreen> {
               size: 24,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8936A8), Color(0xFFB932D6)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8936A8).withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _goToAuth,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.login,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Se connecter',
+                        style: GoogleFonts.openSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Synchronisez vos données',
+                        style: GoogleFonts.openSans(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.white.withOpacity(0.8),
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _logout,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.logout,
+                    color: Colors.red.shade700,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Déconnexion',
+                        style: GoogleFonts.openSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Se déconnecter de ce compte',
+                        style: GoogleFonts.openSans(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey.shade400,
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

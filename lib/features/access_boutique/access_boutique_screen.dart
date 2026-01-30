@@ -5,6 +5,9 @@ import '../qr_scanner/qr_scanner_screen.dart';
 import '../../services/shop_service.dart';
 import '../../services/models/shop_model.dart';
 import '../boutique/home/home_online_screen.dart';
+import '../../services/auth_service.dart';
+import '../auth/auth_choice_screen.dart';
+import '../boutique/profile/profile_screen.dart';
 
 class AccessBoutiqueScreen extends StatefulWidget {
   const AccessBoutiqueScreen({super.key});
@@ -200,6 +203,63 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
               right: 20,
               child: Row(
                 children: [
+                  // Compte / Profil
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AuthService.isAuthenticated
+                          ? const Color(0xFF4CAF50) // Vert si connecté
+                          : const Color(0xFF8936A8), // Violet sinon
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: (AuthService.isAuthenticated
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFF8936A8))
+                              .withOpacity(0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        AuthService.isAuthenticated ? Icons.person : Icons.person_outline,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      padding: EdgeInsets.zero,
+                      onPressed: () async {
+                        if (AuthService.isAuthenticated) {
+                          // Si connecté, aller au profil
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileScreen(),
+                            ),
+                          );
+                          // Rafraîchir l'état après retour du profil
+                          if (mounted) setState(() {});
+                        } else {
+                          // Si non connecté, afficher le choix d'authentification
+                          final result = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AuthChoiceScreen(),
+                            ),
+                          );
+                          // Rafraîchir l'état si l'utilisateur s'est connecté
+                          if (result == true && mounted) {
+                            setState(() {});
+                          }
+                        }
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 10),
+
                   // Favoris
                   Container(
                     width: 40,

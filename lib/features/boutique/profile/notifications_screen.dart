@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/services/storage_service.dart';
+import '../../../services/notification_service.dart';
 
-/// Écran de gestion des notifications - Stockage local
-/// Préférences de notifications stockées localement (pas d'API pour les clients)
+/// Écran de gestion des préférences de notifications
+/// Utilise l'API si authentifié, sinon stockage local
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -12,73 +12,124 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  // Préférences de notifications
-  bool _ordersNotifications = true;
-  bool _promotionsNotifications = true;
-  bool _newsNotifications = false;
-  bool _loyaltyNotifications = true;
-  bool _emailNotifications = false;
-  bool _smsNotifications = false;
-  bool _pushNotifications = true;
+  NotificationSettings _settings = NotificationSettings();
   bool _isLoading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
+    _loadSettings();
   }
 
-  Future<void> _loadPreferences() async {
+  Future<void> _loadSettings() async {
     setState(() => _isLoading = true);
 
     try {
-      final settings = await StorageService.getNotificationSettings();
-
+      final settings = await NotificationService.getSettings();
       setState(() {
-        _ordersNotifications = settings['orders'] ?? true;
-        _promotionsNotifications = settings['promotions'] ?? true;
-        _newsNotifications = settings['news'] ?? false;
-        _loyaltyNotifications = settings['loyalty'] ?? true;
-        _emailNotifications = settings['email'] ?? false;
-        _smsNotifications = settings['sms'] ?? false;
-        _pushNotifications = settings['push'] ?? true;
+        _settings = settings;
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du chargement: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _savePreferences() async {
-    // Sauvegarder les préférences dans le stockage local
-    final prefs = {
-      'orders': _ordersNotifications,
-      'promotions': _promotionsNotifications,
-      'news': _newsNotifications,
-      'loyalty': _loyaltyNotifications,
-      'email': _emailNotifications,
-      'sms': _smsNotifications,
-      'push': _pushNotifications,
-    };
+  Future<void> _saveSettings() async {
+    setState(() => _isSaving = true);
 
-    await StorageService.saveNotificationSettings(prefs);
+    try {
+      await NotificationService.updateSettings(_settings);
 
-    // Afficher un message de confirmation
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Préférences de notifications enregistrées',
-            style: GoogleFonts.openSans(),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Préférences enregistrées',
+              style: GoogleFonts.openSans(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: const Color(0xFF4CAF50),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-          backgroundColor: const Color(0xFF4CAF50),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: Colors.red,
           ),
-        ),
-      );
+        );
+      }
+    } finally {
+      setState(() => _isSaving = false);
     }
+  }
+
+  void _updateSetting(NotificationSettings Function(NotificationSettings) update) {
+    setState(() {
+      _settings = update(_settings);
+    });
+    _saveSettings();
+  }
+
+  void _disableAll() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Désactiver tout',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Voulez-vous désactiver toutes les notifications ?',
+          style: GoogleFonts.openSans(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.openSans(color: Colors.grey),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _settings = NotificationSettings(
+                  pushEnabled: false,
+                  emailEnabled: false,
+                  smsEnabled: false,
+                  orderUpdates: false,
+                  promotions: false,
+                  loyaltyUpdates: false,
+                );
+              });
+              _saveSettings();
+            },
+            child: Text(
+              'Désactiver',
+              style: GoogleFonts.openSans(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -101,13 +152,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Notifications',
-                      style: GoogleFonts.openSans(
+                      'Préférences',
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
+                  if (_isSaving)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF8936A8),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -125,200 +185,189 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                    // Description
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8936A8).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFF8936A8).withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: const Color(0xFF8936A8),
-                            size: 24,
+                          // Info card
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF8936A8).withValues(alpha: 0.1),
+                                  const Color(0xFF8936A8).withValues(alpha: 0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF8936A8).withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF8936A8).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.notifications_active,
+                                    color: Color(0xFF8936A8),
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Personnalisez vos alertes pour ne recevoir que ce qui vous intéresse',
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade800,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Personnalisez vos alertes pour ne recevoir que ce qui vous intéresse',
-                              style: GoogleFonts.openSans(
-                                fontSize: 13,
-                                color: Colors.grey.shade800,
+                          const SizedBox(height: 28),
+
+                          // Types de notifications
+                          Text(
+                            'Types de notifications',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Choisissez les notifications que vous souhaitez recevoir',
+                            style: GoogleFonts.openSans(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildNotificationTypeCard(
+                            title: 'Mes commandes',
+                            description: 'Suivi de vos commandes, livraisons et confirmations',
+                            icon: Icons.shopping_bag_outlined,
+                            iconColor: const Color(0xFF2196F3),
+                            value: _settings.orderUpdates,
+                            onChanged: (value) {
+                              _updateSetting((s) => s.copyWith(orderUpdates: value));
+                            },
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          _buildNotificationTypeCard(
+                            title: 'Promotions et offres',
+                            description: 'Réductions exclusives et codes promo',
+                            icon: Icons.local_offer_outlined,
+                            iconColor: const Color(0xFFFF9800),
+                            value: _settings.promotions,
+                            onChanged: (value) {
+                              _updateSetting((s) => s.copyWith(promotions: value));
+                            },
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          _buildNotificationTypeCard(
+                            title: 'Programme fidélité',
+                            description: 'Points cumulés, récompenses et avantages',
+                            icon: Icons.stars_outlined,
+                            iconColor: const Color(0xFF8936A8),
+                            value: _settings.loyaltyUpdates,
+                            onChanged: (value) {
+                              _updateSetting((s) => s.copyWith(loyaltyUpdates: value));
+                            },
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Canaux de notification
+                          Text(
+                            'Canaux de notification',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Comment souhaitez-vous être notifié ?',
+                            style: GoogleFonts.openSans(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildChannelCard(
+                            title: 'Notifications push',
+                            description: 'Alertes instantanées sur votre appareil',
+                            icon: Icons.notifications_active_outlined,
+                            value: _settings.pushEnabled,
+                            isPrimary: true,
+                            onChanged: (value) {
+                              _updateSetting((s) => s.copyWith(pushEnabled: value));
+                            },
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          _buildChannelCard(
+                            title: 'Email',
+                            description: 'Recevoir les notifications par email',
+                            icon: Icons.email_outlined,
+                            value: _settings.emailEnabled,
+                            onChanged: (value) {
+                              _updateSetting((s) => s.copyWith(emailEnabled: value));
+                            },
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          _buildChannelCard(
+                            title: 'SMS',
+                            description: 'Alertes par message texte',
+                            icon: Icons.sms_outlined,
+                            value: _settings.smsEnabled,
+                            onChanged: (value) {
+                              _updateSetting((s) => s.copyWith(smsEnabled: value));
+                            },
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Bouton tout désactiver
+                          Center(
+                            child: TextButton.icon(
+                              onPressed: _disableAll,
+                              icon: Icon(
+                                Icons.notifications_off_outlined,
+                                color: Colors.grey.shade600,
+                              ),
+                              label: Text(
+                                'Désactiver toutes les notifications',
+                                style: GoogleFonts.openSans(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade600,
+                                ),
                               ),
                             ),
                           ),
+
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Types de notifications
-                    Text(
-                      'Types de notifications',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    _buildNotificationCard(
-                      title: 'Mes commandes',
-                      description: 'Suivi de vos commandes, livraisons et confirmations',
-                      icon: Icons.shopping_bag_outlined,
-                      iconColor: const Color(0xFF2196F3),
-                      value: _ordersNotifications,
-                      onChanged: (value) {
-                        setState(() {
-                          _ordersNotifications = value;
-                        });
-                        _savePreferences();
-                      },
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _buildNotificationCard(
-                      title: 'Promotions et offres',
-                      description: 'Réductions exclusives et codes promo',
-                      icon: Icons.local_offer_outlined,
-                      iconColor: const Color(0xFFFF9800),
-                      value: _promotionsNotifications,
-                      onChanged: (value) {
-                        setState(() {
-                          _promotionsNotifications = value;
-                        });
-                        _savePreferences();
-                      },
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _buildNotificationCard(
-                      title: 'Nouveautés',
-                      description: 'Nouveaux produits et services',
-                      icon: Icons.stars_outlined,
-                      iconColor: const Color(0xFFE91E63),
-                      value: _newsNotifications,
-                      onChanged: (value) {
-                        setState(() {
-                          _newsNotifications = value;
-                        });
-                        _savePreferences();
-                      },
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _buildNotificationCard(
-                      title: 'Programme fidélité',
-                      description: 'Points cumulés, récompenses et avantages',
-                      icon: Icons.card_giftcard_outlined,
-                      iconColor: const Color(0xFF8936A8),
-                      value: _loyaltyNotifications,
-                      onChanged: (value) {
-                        setState(() {
-                          _loyaltyNotifications = value;
-                        });
-                        _savePreferences();
-                      },
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Canaux de notification
-                    Text(
-                      'Canaux de notification',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    _buildChannelCard(
-                      title: 'Notifications push',
-                      description: 'Alertes instantanées sur votre appareil',
-                      icon: Icons.notifications_active_outlined,
-                      value: _pushNotifications,
-                      onChanged: (value) {
-                        setState(() {
-                          _pushNotifications = value;
-                        });
-                        _savePreferences();
-                      },
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _buildChannelCard(
-                      title: 'Email',
-                      description: 'Recevoir les notifications par email',
-                      icon: Icons.email_outlined,
-                      value: _emailNotifications,
-                      onChanged: (value) {
-                        setState(() {
-                          _emailNotifications = value;
-                        });
-                        _savePreferences();
-                      },
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _buildChannelCard(
-                      title: 'SMS',
-                      description: 'Alertes par message texte',
-                      icon: Icons.sms_outlined,
-                      value: _smsNotifications,
-                      onChanged: (value) {
-                        setState(() {
-                          _smsNotifications = value;
-                        });
-                        _savePreferences();
-                      },
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Bouton tout désactiver
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _ordersNotifications = false;
-                            _promotionsNotifications = false;
-                            _newsNotifications = false;
-                            _loyaltyNotifications = false;
-                            _emailNotifications = false;
-                            _smsNotifications = false;
-                            _pushNotifications = false;
-                          });
-                          _savePreferences();
-                        },
-                        icon: Icon(
-                          Icons.notifications_off_outlined,
-                          color: Colors.grey.shade600,
-                        ),
-                        label: Text(
-                          'Désactiver toutes les notifications',
-                          style: GoogleFonts.openSans(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ),
-                        ),
-                      ],
-                    ),
-                  ),
             ),
           ],
         ),
@@ -326,8 +375,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // Carte de notification
-  Widget _buildNotificationCard({
+  Widget _buildNotificationTypeCard({
     required String title,
     required String description,
     required IconData icon,
@@ -341,7 +389,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -354,7 +402,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: iconColor, size: 24),
@@ -366,17 +414,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.openSans(
+                    style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     description,
                     style: GoogleFonts.openSans(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -394,50 +442,92 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // Carte de canal
   Widget _buildChannelCard({
     required String title,
     required String description,
     required IconData icon,
     required bool value,
     required ValueChanged<bool> onChanged,
+    bool isPrimary = false,
   }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: value ? const Color(0xFF8936A8).withOpacity(0.3) : Colors.grey.shade200,
-          width: 2,
+          color: value
+              ? const Color(0xFF8936A8).withValues(alpha: 0.3)
+              : Colors.grey.shade200,
+          width: value ? 2 : 1,
         ),
+        boxShadow: value
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF8936A8).withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: value ? const Color(0xFF8936A8) : Colors.grey.shade400,
-              size: 24,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: value
+                    ? const Color(0xFF8936A8).withValues(alpha: 0.1)
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: value ? const Color(0xFF8936A8) : Colors.grey.shade400,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.openSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      if (isPrimary) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8936A8),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Recommandé',
+                            style: GoogleFonts.openSans(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     description,
                     style: GoogleFonts.openSans(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Colors.grey.shade600,
                     ),
                   ),

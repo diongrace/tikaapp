@@ -612,30 +612,33 @@ class Step3PaymentAndSummary extends StatelessWidget {
         return {
           'name': 'Wave',
           'image': 'lib/core/assets/WAVE.png',
-          'color': const Color(0xFF00BFFF),
+          'color': const Color(0xFF1BA5E0),
           'icon': Icons.account_balance_wallet,
         };
-      case 'orange':
-        return {
-          'name': 'Orange Money',
-          'image': 'lib/core/assets/orange.png',
-          'color': const Color(0xFFFF7900),
-          'icon': Icons.phone_android,
-        };
-      case 'moov':
-        return {
-          'name': 'Moov Money',
-          'image': 'lib/core/assets/moov.png',
-          'color': const Color(0xFFFF6600),
-          'icon': Icons.smartphone,
-        };
-      case 'card':
-        return {
-          'name': 'Carte bancaire',
-          'image': 'lib/core/assets/card.png',
-          'color': const Color(0xFF424242),
-          'icon': Icons.credit_card,
-        };
+      // ============================================================
+      // MODES DE PAIEMENT NON DISPONIBLES DANS L'API ACTUELLE
+      // ============================================================
+      // case 'orange':
+      //   return {
+      //     'name': 'Orange Money',
+      //     'image': 'lib/core/assets/orange.png',
+      //     'color': const Color(0xFFFF7900),
+      //     'icon': Icons.phone_android,
+      //   };
+      // case 'moov':
+      //   return {
+      //     'name': 'Moov Money',
+      //     'image': 'lib/core/assets/moov.png',
+      //     'color': const Color(0xFFFF6600),
+      //     'icon': Icons.smartphone,
+      //   };
+      // case 'card':
+      //   return {
+      //     'name': 'Carte bancaire',
+      //     'image': 'lib/core/assets/card.png',
+      //     'color': const Color(0xFF424242),
+      //     'icon': Icons.credit_card,
+      //   };
       default:
         return {
           'name': 'Non sélectionné',
@@ -866,10 +869,14 @@ class PaymentDropdown extends StatelessWidget {
   List<Map<String, dynamic>> _getPaymentOptions() {
     return [
       {'id': 'especes', 'name': 'Espèces (à la livraison)', 'imagePath': 'lib/core/assets/cash.png', 'color': const Color(0xFF4CAF50), 'icon': Icons.money},
-      {'id': 'wave', 'name': 'Wave', 'imagePath': 'lib/core/assets/WAVE.png', 'color': const Color(0xFF00BFFF), 'icon': Icons.account_balance_wallet},
-      {'id': 'orange', 'name': 'Orange Money', 'imagePath': 'lib/core/assets/orange.png', 'color': const Color(0xFFFF7900), 'icon': Icons.phone_android},
-      {'id': 'moov', 'name': 'Moov Money', 'imagePath': 'lib/core/assets/moov.png', 'color': const Color(0xFFFF6600), 'icon': Icons.smartphone},
-      {'id': 'card', 'name': 'Carte bancaire', 'imagePath': 'lib/core/assets/card.png', 'color': const Color(0xFF424242), 'icon': Icons.credit_card},
+      {'id': 'wave', 'name': 'Wave', 'imagePath': 'lib/core/assets/WAVE.png', 'color': const Color(0xFF1BA5E0), 'icon': Icons.account_balance_wallet},
+      // ============================================================
+      // MODES DE PAIEMENT NON DISPONIBLES DANS L'API ACTUELLE
+      // Décommenter quand l'API les supportera
+      // ============================================================
+      // {'id': 'orange', 'name': 'Orange Money', 'imagePath': 'lib/core/assets/orange.png', 'color': const Color(0xFFFF7900), 'icon': Icons.phone_android},
+      // {'id': 'moov', 'name': 'Moov Money', 'imagePath': 'lib/core/assets/moov.png', 'color': const Color(0xFFFF6600), 'icon': Icons.smartphone},
+      // {'id': 'card', 'name': 'Carte bancaire', 'imagePath': 'lib/core/assets/card.png', 'color': const Color(0xFF424242), 'icon': Icons.credit_card},
     ];
   }
 

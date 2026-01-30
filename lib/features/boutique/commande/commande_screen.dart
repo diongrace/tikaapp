@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uuid/uuid.dart';
 import '../panier/cart_manager.dart';
 import 'form_widgets.dart';
 import 'loading_success_page.dart';
 import 'order_summary_page.dart';
+import 'wave_payment_screen.dart';
 import '../../../core/messages/message_modal.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/order_service.dart';
 import '../../../services/device_service.dart';
+import '../../../services/wave_payment_service.dart';
 import '../../../services/models/shop_model.dart';
 
 /// Écran de finalisation de commande
@@ -214,7 +217,13 @@ class _CommandeScreenState extends State<CommandeScreen> {
             onConfirm: () {
               // Fermer la page de résumé et créer la commande
               Navigator.of(context).pop();
-              _createOrder();
+
+              // Si Wave sélectionné, naviguer vers l'écran Wave
+              if (_selectedPaymentMethod == 'wave') {
+                _navigateToWavePayment();
+              } else {
+                _createOrder();
+              }
             },
             onBack: () {
               Navigator.of(context).pop();
@@ -223,6 +232,67 @@ class _CommandeScreenState extends State<CommandeScreen> {
         ),
       ),
     );
+  }
+
+  /// Naviguer vers l'écran de paiement Wave
+  Future<void> _navigateToWavePayment() async {
+    if (!mounted) return;
+
+    // Générer un ID unique pour la commande en attente
+    final pendingOrderId = const Uuid().v4();
+    final total = _cartManager.totalPrice.toDouble();
+
+    // Sauvegarder les données de commande en cache pour Wave
+    final pendingOrderData = {
+      'pending_order_id': pendingOrderId,
+      'shop_id': widget.shopId,
+      'customer_name': _nomController.text,
+      'customer_phone': _phoneController.text,
+      'customer_email': _emailController.text.isNotEmpty ? _emailController.text : null,
+      'service_type': _mapDeliveryModeToApi(_selectedDeliveryMode),
+      'delivery_address': _addressController.text.isNotEmpty ? _addressController.text : null,
+      'items': _cartManager.getItemsForOrder(),
+      'total': total,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+
+    // Sauvegarder en cache local
+    await StorageService.savePendingWaveOrder(pendingOrderData);
+
+    // Récupérer le lien Wave du vendeur (si disponible)
+    String? wavePaymentLink;
+    if (widget.shop?.wavePaymentLink != null) {
+      wavePaymentLink = widget.shop!.wavePaymentLink;
+    }
+
+    if (!mounted) return;
+
+    // Naviguer vers l'écran Wave
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => BoutiqueThemeProvider(
+          shop: widget.shop,
+          child: WavePaymentScreen(
+            pendingOrderId: pendingOrderId,
+            amount: total,
+            wavePaymentLink: wavePaymentLink,
+            onPaymentSuccess: (response) {
+              print('✅ Wave payment success: ${response.orderNumber}');
+            },
+            onCancel: () {
+              print('❌ Wave payment cancelled');
+            },
+          ),
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      // Paiement réussi - nettoyer et retourner
+      _cartManager.clear();
+      await StorageService.deletePendingWaveOrder(pendingOrderId);
+      Navigator.of(context).pop(true);
+    }
   }
 
   /// Créer la commande via l'API
@@ -912,23 +982,149 @@ class _CommandeScreenState extends State<CommandeScreen> {
         ),
         const SizedBox(height: 12),
 
-        // Option Mobile Money (Wave)
-        _buildPaymentOption(
-          id: 'mobile_money',
-          icon: Icons.phone_android,
-          title: 'Mobile Money',
-          description: 'Wave / Orange Money / Moov Money',
+        // Option Wave (avec capture d'écran)
+        _buildPaymentOptionWithImage(
+          id: 'wave',
+          imagePath: 'lib/core/assets/WAVE.png',
+          title: 'Wave',
+          description: 'Paiement par capture d\'écran',
+          color: const Color(0xFF1BA5E0),
+          badge: 'Recommandé',
         ),
-        const SizedBox(height: 12),
 
-        // Option Carte bancaire
-        _buildPaymentOption(
-          id: 'carte',
-          icon: Icons.credit_card,
-          title: 'Carte bancaire',
-          description: 'Visa / Mastercard via CinetPay',
-        ),
+        // ============================================================
+        // MODES DE PAIEMENT NON DISPONIBLES DANS L'API ACTUELLE
+        // Décommenter quand l'API les supportera
+        // ============================================================
+
+        // const SizedBox(height: 12),
+        // // Option Orange Money
+        // _buildPaymentOptionWithImage(
+        //   id: 'orange_money',
+        //   imagePath: 'lib/core/assets/orange.png',
+        //   title: 'Orange Money',
+        //   description: 'Paiement mobile Orange',
+        //   color: const Color(0xFFFF7900),
+        // ),
+
+        // const SizedBox(height: 12),
+        // // Option Moov Money
+        // _buildPaymentOptionWithImage(
+        //   id: 'moov_money',
+        //   imagePath: 'lib/core/assets/moov.png',
+        //   title: 'Moov Money',
+        //   description: 'Paiement mobile Moov',
+        //   color: const Color(0xFFFF6600),
+        // ),
+
+        // const SizedBox(height: 12),
+        // // Option Carte bancaire
+        // _buildPaymentOption(
+        //   id: 'carte',
+        //   icon: Icons.credit_card,
+        //   title: 'Carte bancaire',
+        //   description: 'Visa / Mastercard via CinetPay',
+        // ),
       ],
+    );
+  }
+
+  Widget _buildPaymentOptionWithImage({
+    required String id,
+    required String imagePath,
+    required String title,
+    required String description,
+    required Color color,
+    String? badge,
+  }) {
+    final isSelected = _selectedPaymentMethod == id;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPaymentMethod = id;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.1) : Colors.grey.shade50,
+          border: Border.all(
+            color: isSelected ? color : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.payment, color: color, size: 28);
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? color : Colors.black87,
+                        ),
+                      ),
+                      if (badge != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            badge,
+                            style: GoogleFonts.openSans(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.openSans(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle, color: color, size: 24),
+          ],
+        ),
+      ),
     );
   }
 

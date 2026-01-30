@@ -11,39 +11,52 @@ class PaymentMethodsScreen extends StatefulWidget {
 
 class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   // Liste des moyens de paiement enregistrés
+  // Seuls Wave et Espèces sont disponibles dans l'API actuelle
   final List<Map<String, dynamic>> _paymentMethods = [
     {
       'id': '1',
-      'type': 'card',
-      'name': 'Carte bancaire',
-      'details': '**** **** **** 4532',
-      'imagePath': 'lib/core/assets/card.png',
+      'type': 'especes',
+      'name': 'Espèces',
+      'details': 'Paiement à la livraison',
+      'imagePath': 'lib/core/assets/cash.png',
       'isDefault': true,
     },
     {
       'id': '2',
-      'type': 'orange',
-      'name': 'Orange Money',
-      'details': '+221 77 123 45 67',
-      'imagePath': 'lib/core/assets/orange.png',
-      'isDefault': false,
-    },
-    {
-      'id': '3',
       'type': 'wave',
       'name': 'Wave',
-      'details': '+221 77 654 32 10',
+      'details': 'Paiement par capture d\'écran',
       'imagePath': 'lib/core/assets/WAVE.png',
       'isDefault': false,
     },
-    {
-      'id': '4',
-      'type': 'moov',
-      'name': 'Moov Money',
-      'details': '+221 76 555 44 33',
-      'imagePath': 'lib/core/assets/moov.png',
-      'isDefault': false,
-    },
+    // ============================================================
+    // MODES DE PAIEMENT NON DISPONIBLES DANS L'API ACTUELLE
+    // Décommenter quand l'API les supportera
+    // ============================================================
+    // {
+    //   'id': '3',
+    //   'type': 'card',
+    //   'name': 'Carte bancaire',
+    //   'details': '**** **** **** 4532',
+    //   'imagePath': 'lib/core/assets/card.png',
+    //   'isDefault': false,
+    // },
+    // {
+    //   'id': '4',
+    //   'type': 'orange',
+    //   'name': 'Orange Money',
+    //   'details': '+225 07 XX XX XX XX',
+    //   'imagePath': 'lib/core/assets/orange.png',
+    //   'isDefault': false,
+    // },
+    // {
+    //   'id': '5',
+    //   'type': 'moov',
+    //   'name': 'Moov Money',
+    //   'details': '+225 01 XX XX XX XX',
+    //   'imagePath': 'lib/core/assets/moov.png',
+    //   'isDefault': false,
+    // },
   ];
 
   void _setDefaultPayment(String id) {

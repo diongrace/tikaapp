@@ -24,6 +24,12 @@ class Shop {
   final bool isFeatured;
   final double? distance;
 
+  // Wave Payment
+  final bool waveEnabled;
+  final String? wavePaymentLink;
+  final bool wavePartialPaymentEnabled;
+  final int wavePartialPaymentPercentage;
+
   Shop({
     required this.id,
     required this.name,
@@ -46,6 +52,10 @@ class Shop {
     this.theme,
     this.isFeatured = false,
     this.distance,
+    this.waveEnabled = false,
+    this.wavePaymentLink,
+    this.wavePartialPaymentEnabled = false,
+    this.wavePartialPaymentPercentage = 0,
   });
 
   factory Shop.fromJson(Map<String, dynamic> json) {
@@ -89,6 +99,10 @@ class Shop {
       theme: json['theme'] != null ? ShopTheme.fromJson(json['theme']) : null,
       isFeatured: json['is_featured'] == true || json['is_featured'] == 1,
       distance: _parseDouble(json['distance']),
+      waveEnabled: json['wave_enabled'] == true || json['wave_enabled'] == 1,
+      wavePaymentLink: json['wave_payment_link']?.toString(),
+      wavePartialPaymentEnabled: json['wave_partial_payment_enabled'] == true || json['wave_partial_payment_enabled'] == 1,
+      wavePartialPaymentPercentage: _parseInt(json['wave_partial_payment_percentage']) ?? 0,
     );
   }
 
@@ -151,6 +165,10 @@ class Shop {
       'theme': theme?.toJson(),
       'is_featured': isFeatured,
       'distance': distance,
+      'wave_enabled': waveEnabled,
+      'wave_payment_link': wavePaymentLink,
+      'wave_partial_payment_enabled': wavePartialPaymentEnabled,
+      'wave_partial_payment_percentage': wavePartialPaymentPercentage,
     };
   }
 }

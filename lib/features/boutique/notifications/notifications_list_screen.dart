@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/services/storage_service.dart';
+import '../../../services/notification_service.dart';
 
-/// Écran de la liste des notifications - Stockage local
-/// Notifications générées localement (pas d'API pour les clients)
+/// Écran de la liste des notifications
+/// Utilise l'API si authentifié, sinon stockage local
 class NotificationsListScreen extends StatefulWidget {
   const NotificationsListScreen({super.key});
 
@@ -11,14 +11,44 @@ class NotificationsListScreen extends StatefulWidget {
   State<NotificationsListScreen> createState() => _NotificationsListScreenState();
 }
 
-class _NotificationsListScreenState extends State<NotificationsListScreen> {
-  List<Map<String, dynamic>> _notifications = [];
+class _NotificationsListScreenState extends State<NotificationsListScreen>
+    with SingleTickerProviderStateMixin {
+  List<NotificationItem> _notifications = [];
   bool _isLoading = true;
   String? _errorMessage;
+  int _unreadCount = 0;
+  String _selectedFilter = 'all'; // all, order, payment, loyalty, promo
+
+  late TabController _tabController;
+
+  final List<Map<String, dynamic>> _filters = [
+    {'id': 'all', 'label': 'Tout', 'icon': Icons.all_inbox},
+    {'id': 'order', 'label': 'Commandes', 'icon': Icons.shopping_bag},
+    {'id': 'payment', 'label': 'Paiements', 'icon': Icons.payment},
+    {'id': 'loyalty', 'label': 'Fidélité', 'icon': Icons.stars},
+    {'id': 'promo', 'label': 'Promos', 'icon': Icons.local_offer},
+  ];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _filters.length, vsync: this);
+    _tabController.addListener(_onTabChanged);
+    _loadNotifications();
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    setState(() {
+      _selectedFilter = _filters[_tabController.index]['id'];
+    });
     _loadNotifications();
   }
 
@@ -29,10 +59,16 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     });
 
     try {
-      final notifications = await StorageService.getNotifications();
+      final response = await NotificationService.getNotifications(
+        type: _selectedFilter == 'all' ? null : _selectedFilter,
+        status: 'all',
+      );
+
+      final unreadCount = await NotificationService.getUnreadCount();
 
       setState(() {
-        _notifications = notifications;
+        _notifications = response.notifications;
+        _unreadCount = unreadCount;
         _isLoading = false;
       });
     } catch (e) {
@@ -43,75 +79,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     }
   }
 
-  // Liste des notifications par défaut (maintenant supprimée)
-  final List<Map<String, dynamic>> _oldNotifications = [
-    {
-      'id': '1',
-      'type': 'order',
-      'title': 'Commande livrée',
-      'message': 'Votre commande #12345 a été livrée avec succès',
-      'time': 'Il y a 2 heures',
-      'isRead': false,
-      'icon': Icons.shopping_bag,
-      'color': Color(0xFF4CAF50),
-    },
-    {
-      'id': '2',
-      'type': 'promotion',
-      'title': 'Offre spéciale -30%',
-      'message': 'Profitez de 30% de réduction sur tous les vêtements ce weekend',
-      'time': 'Il y a 5 heures',
-      'isRead': false,
-      'icon': Icons.local_offer,
-      'color': Color(0xFFFF9800),
-    },
-    {
-      'id': '3',
-      'type': 'order',
-      'title': 'Commande en cours de livraison',
-      'message': 'Votre commande #12344 est en cours de livraison',
-      'time': 'Hier',
-      'isRead': true,
-      'icon': Icons.local_shipping,
-      'color': Color(0xFF2196F3),
-    },
-    {
-      'id': '4',
-      'type': 'loyalty',
-      'title': 'Points de fidélité gagnés',
-      'message': 'Vous avez gagné 50 points avec votre dernière commande',
-      'time': 'Il y a 2 jours',
-      'isRead': true,
-      'icon': Icons.stars,
-      'color': Color(0xFF8936A8),
-    },
-    {
-      'id': '5',
-      'type': 'news',
-      'title': 'Nouveaux produits disponibles',
-      'message': 'Découvrez notre nouvelle collection printemps-été',
-      'time': 'Il y a 3 jours',
-      'isRead': true,
-      'icon': Icons.new_releases,
-      'color': Color(0xFFE91E63),
-    },
-    {
-      'id': '6',
-      'type': 'order',
-      'title': 'Commande confirmée',
-      'message': 'Votre commande #12343 a été confirmée et est en cours de préparation',
-      'time': 'Il y a 4 jours',
-      'isRead': true,
-      'icon': Icons.check_circle,
-      'color': Color(0xFF4CAF50),
-    },
-  ];
-
-  int get _unreadCount => _notifications.where((n) => n['isRead'] == false).length;
-
-  Future<void> _markAsRead(String id) async {
+  Future<void> _markAsRead(int id) async {
     try {
-      await StorageService.markNotificationAsRead(id);
+      await NotificationService.markAsRead(id);
       await _loadNotifications();
     } catch (e) {
       if (mounted) {
@@ -127,7 +97,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
 
   Future<void> _markAllAsRead() async {
     try {
-      await StorageService.markAllNotificationsAsRead();
+      await NotificationService.markAllAsRead();
       await _loadNotifications();
 
       if (mounted) {
@@ -157,9 +127,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     }
   }
 
-  Future<void> _deleteNotification(String id) async {
+  Future<void> _deleteNotification(int id) async {
     try {
-      await StorageService.deleteNotification(id);
+      await NotificationService.deleteNotification(id);
       await _loadNotifications();
 
       if (mounted) {
@@ -189,16 +159,17 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     }
   }
 
-  void _clearAll() {
+  void _clearReadNotifications() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Tout effacer',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+          'Supprimer les lues',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Voulez-vous vraiment supprimer toutes les notifications ?',
+          'Voulez-vous supprimer toutes les notifications lues ?',
           style: GoogleFonts.openSans(),
         ),
         actions: [
@@ -211,16 +182,16 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
           ),
           TextButton(
             onPressed: () async {
+              Navigator.pop(context);
               try {
-                await StorageService.clearAllNotifications();
+                final count = await NotificationService.clearReadNotifications();
                 await _loadNotifications();
 
                 if (mounted) {
-                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Toutes les notifications ont été supprimées',
+                        '$count notification(s) supprimée(s)',
                         style: GoogleFonts.openSans(),
                       ),
                       backgroundColor: Colors.grey.shade700,
@@ -233,7 +204,6 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                 }
               } catch (e) {
                 if (mounted) {
-                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Erreur: ${e.toString()}'),
@@ -244,7 +214,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
               }
             },
             child: Text(
-              'Effacer',
+              'Supprimer',
               style: GoogleFonts.openSans(color: Colors.red),
             ),
           ),
@@ -263,102 +233,131 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             // Header
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.arrow_back, size: 24),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'Notifications',
-                          style: GoogleFonts.openSans(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(Icons.arrow_back, size: 24),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            'Notifications',
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      if (_notifications.isNotEmpty)
-                        PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'mark_all') {
-                              _markAllAsRead();
-                            } else if (value == 'clear_all') {
-                              _clearAll();
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            if (_unreadCount > 0)
+                        if (_notifications.isNotEmpty)
+                          PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'mark_all') {
+                                _markAllAsRead();
+                              } else if (value == 'clear_read') {
+                                _clearReadNotifications();
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              if (_unreadCount > 0)
+                                PopupMenuItem(
+                                  value: 'mark_all',
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.done_all, size: 20, color: Color(0xFF8936A8)),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Tout marquer comme lu',
+                                        style: GoogleFonts.openSans(fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               PopupMenuItem(
-                                value: 'mark_all',
+                                value: 'clear_read',
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.done_all, size: 20),
+                                    const Icon(Icons.delete_sweep, size: 20, color: Colors.red),
                                     const SizedBox(width: 12),
                                     Text(
-                                      'Tout marquer comme lu',
-                                      style: GoogleFonts.openSans(fontSize: 14),
+                                      'Supprimer les lues',
+                                      style: GoogleFonts.openSans(fontSize: 14, color: Colors.red),
                                     ),
                                   ],
                                 ),
                               ),
-                            PopupMenuItem(
-                              value: 'clear_all',
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.delete_outline,
-                                      size: 20, color: Colors.red),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Tout effacer',
-                                    style: GoogleFonts.openSans(
-                                        fontSize: 14, color: Colors.red),
-                                  ),
-                                ],
+                            ],
+                            icon: const Icon(Icons.more_vert),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // Badge non lues
+                  if (_unreadCount > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8936A8).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF8936A8),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '$_unreadCount nouvelle${_unreadCount > 1 ? 's' : ''} notification${_unreadCount > 1 ? 's' : ''}',
+                              style: GoogleFonts.openSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF8936A8),
                               ),
                             ),
                           ],
-                          icon: const Icon(Icons.more_vert),
                         ),
-                    ],
-                  ),
-                  if (_unreadCount > 0) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8936A8).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF8936A8),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '$_unreadCount nouvelle${_unreadCount > 1 ? 's' : ''} notification${_unreadCount > 1 ? 's' : ''}',
-                            style: GoogleFonts.openSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF8936A8),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  ],
+
+                  // Tabs de filtres
+                  TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    labelColor: const Color(0xFF8936A8),
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: const Color(0xFF8936A8),
+                    indicatorWeight: 3,
+                    labelStyle: GoogleFonts.openSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    tabs: _filters.map((filter) {
+                      return Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(filter['icon'], size: 18),
+                            const SizedBox(width: 6),
+                            Text(filter['label']),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ],
               ),
             ),
@@ -375,13 +374,17 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                       ? _buildErrorState(_errorMessage!)
                       : _notifications.isEmpty
                           ? _buildEmptyState()
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(20),
-                              itemCount: _notifications.length,
-                              itemBuilder: (context, index) {
-                                final notification = _notifications[index];
-                                return _buildNotificationCard(notification);
-                              },
+                          : RefreshIndicator(
+                              onRefresh: _loadNotifications,
+                              color: const Color(0xFF8936A8),
+                              child: ListView.builder(
+                                padding: const EdgeInsets.all(16),
+                                itemCount: _notifications.length,
+                                itemBuilder: (context, index) {
+                                  final notification = _notifications[index];
+                                  return _buildNotificationCard(notification);
+                                },
+                              ),
                             ),
             ),
           ],
@@ -398,22 +401,22 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 120,
-              height: 120,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
                 color: Colors.red.shade50,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline,
-                size: 60,
+                size: 50,
                 color: Colors.red.shade400,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'Erreur',
-              style: GoogleFonts.openSans(
+              style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -454,22 +457,22 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 120,
-            height: 120,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.notifications_outlined,
-              size: 60,
+              Icons.notifications_off_outlined,
+              size: 50,
               color: Colors.grey.shade400,
             ),
           ),
           const SizedBox(height: 24),
           Text(
             'Aucune notification',
-            style: GoogleFonts.openSans(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -477,7 +480,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Vous êtes à jour !',
+            _selectedFilter == 'all'
+                ? 'Vous êtes à jour !'
+                : 'Aucune notification de ce type',
             style: GoogleFonts.openSans(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -488,64 +493,16 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     );
   }
 
-  // Helper pour convertir string en IconData
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'shopping_bag':
-        return Icons.shopping_bag;
-      case 'local_offer':
-        return Icons.local_offer;
-      case 'local_shipping':
-        return Icons.local_shipping;
-      case 'stars':
-        return Icons.stars;
-      case 'new_releases':
-        return Icons.new_releases;
-      case 'check_circle':
-        return Icons.check_circle;
-      default:
-        return Icons.notifications;
-    }
-  }
-
-  // Helper pour convertir string en Color
-  Color _getColor(String colorHex) {
-    try {
-      return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
-    } catch (e) {
-      return const Color(0xFF8936A8);
-    }
-  }
-
-  // Helper pour formater le temps
-  String _getTimeAgo(DateTime dateTime) {
-    final diff = DateTime.now().difference(dateTime);
-
-    if (diff.inMinutes < 60) {
-      return 'Il y a ${diff.inMinutes} min';
-    } else if (diff.inHours < 24) {
-      return 'Il y a ${diff.inHours}h';
-    } else if (diff.inDays == 1) {
-      return 'Hier';
-    } else if (diff.inDays < 7) {
-      return 'Il y a ${diff.inDays} jours';
-    } else {
-      return 'Il y a ${(diff.inDays / 7).floor()} semaines';
-    }
-  }
-
-  Widget _buildNotificationCard(Map<String, dynamic> notification) {
-    final String notificationId = notification['id'].toString();
-    final isRead = notification['isRead'] == true;
-    final icon = notification['icon'] as IconData? ?? Icons.notifications;
-    final color = notification['color'] as Color? ?? const Color(0xFF8936A8);
-    final timeAgo = notification['time'] as String? ?? 'Maintenant';
+  Widget _buildNotificationCard(NotificationItem notification) {
+    final isRead = notification.isRead;
+    final iconData = _getIconForType(notification.type);
+    final color = _getColorForType(notification.type);
 
     return Dismissible(
-      key: Key(notificationId.toString()),
+      key: Key(notification.id.toString()),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        _deleteNotification(notificationId);
+        _deleteNotification(notification.id);
       },
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -564,24 +521,24 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
       child: GestureDetector(
         onTap: () {
           if (!isRead) {
-            _markAsRead(notificationId);
+            _markAsRead(notification.id);
           }
-          // Navigation vers l'écran approprié selon le type
+          // TODO: Navigation vers l'écran approprié selon le type
         },
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: isRead ? Colors.white : const Color(0xFF8936A8).withOpacity(0.05),
+            color: isRead ? Colors.white : const Color(0xFF8936A8).withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
             border: isRead
                 ? null
                 : Border.all(
-                    color: const Color(0xFF8936A8).withOpacity(0.2),
+                    color: const Color(0xFF8936A8).withValues(alpha: 0.2),
                     width: 1,
                   ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -597,11 +554,11 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    icon,
+                    iconData,
                     color: color,
                     size: 24,
                   ),
@@ -615,18 +572,23 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                     children: [
                       Row(
                         children: [
-                          Expanded(
+                          // Type badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                             child: Text(
-                              notification['title'],
+                              notification.typeLabel,
                               style: GoogleFonts.openSans(
-                                fontSize: 15,
-                                fontWeight: isRead
-                                    ? FontWeight.w600
-                                    : FontWeight.bold,
-                                color: Colors.black87,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: color,
                               ),
                             ),
                           ),
+                          const Spacer(),
                           if (!isRead)
                             Container(
                               width: 8,
@@ -638,14 +600,25 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Text(
-                        notification['message'],
+                        notification.title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        notification.message,
                         style: GoogleFonts.openSans(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: Colors.grey.shade700,
                           height: 1.4,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -657,7 +630,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            timeAgo,
+                            notification.createdAtHuman ?? notification.createdAt,
                             style: GoogleFonts.openSans(
                               fontSize: 12,
                               color: Colors.grey.shade500,
@@ -674,5 +647,47 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
         ),
       ),
     );
+  }
+
+  IconData _getIconForType(String type) {
+    switch (type) {
+      case 'order':
+        return Icons.shopping_bag;
+      case 'payment':
+      case 'wave_payment':
+        return Icons.payment;
+      case 'loyalty':
+        return Icons.stars;
+      case 'promo':
+      case 'promotion':
+        return Icons.local_offer;
+      case 'delivery':
+        return Icons.local_shipping;
+      case 'system':
+        return Icons.info;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  Color _getColorForType(String type) {
+    switch (type) {
+      case 'order':
+        return const Color(0xFF2196F3);
+      case 'payment':
+      case 'wave_payment':
+        return const Color(0xFF1BA5E0);
+      case 'loyalty':
+        return const Color(0xFF8936A8);
+      case 'promo':
+      case 'promotion':
+        return const Color(0xFFFF9800);
+      case 'delivery':
+        return const Color(0xFF4CAF50);
+      case 'system':
+        return const Color(0xFF607D8B);
+      default:
+        return const Color(0xFF8936A8);
+    }
   }
 }

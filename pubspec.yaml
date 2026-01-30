@@ -36,6 +36,11 @@ dependencies:
   # 🎉 Animations
   confetti: ^0.7.0
 
+  # 🌊 Wave Payment
+  uuid: ^4.5.1
+  image_picker: ^1.1.2
+  http_parser: ^4.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

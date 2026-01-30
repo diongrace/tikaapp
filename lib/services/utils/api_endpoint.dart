@@ -58,4 +58,31 @@ class Endpoints {
   // Payment methods
   static String shopPaymentMethods(int shopId) => '$baseUrl/client/shops/$shopId/payment-methods';
 
+  // Wave Payment (Mode Screenshot)
+  static const String waveCreateWithProof = '$baseUrl/mobile/orders/create-with-wave-proof';
+  static String waveSubmitProof(int orderId) => '$baseUrl/mobile/orders/$orderId/wave-proof';
+  static String wavePaymentStatus(int orderId) => '$baseUrl/mobile/orders/$orderId/payment-status';
+
+  // Authentification Client
+  static const String clientRegister = '$baseUrl/client/register';
+  static const String clientLogin = '$baseUrl/client/login';
+  static const String clientSendOtp = '$baseUrl/client/send-otp';
+  static const String clientVerifyOtp = '$baseUrl/client/verify-otp';
+  static const String clientProfile = '$baseUrl/client/profile';
+  static const String clientLogout = '$baseUrl/client/logout';
+  static const String clientForgotPassword = '$baseUrl/client/forgot-password';
+  static const String clientResetPassword = '$baseUrl/client/reset-password';
+
+  // Notifications Client (nécessite authentification Bearer Token)
+  static const String notifications = '$baseUrl/client/notifications';
+  static String notificationDetails(int id) => '$baseUrl/client/notifications/$id';
+  static const String notificationsUnreadCount = '$baseUrl/client/notifications/unread-count';
+  static const String notificationsRecent = '$baseUrl/client/notifications/recent';
+  static String notificationMarkRead(int id) => '$baseUrl/client/notifications/$id/read';
+  static const String notificationsMarkMultipleRead = '$baseUrl/client/notifications/read';
+  static const String notificationsMarkAllRead = '$baseUrl/client/notifications/read-all';
+  static const String notificationsClearRead = '$baseUrl/client/notifications/clear-read';
+  static const String notificationsSettings = '$baseUrl/client/notifications/settings';
+  static const String notificationsRegisterDevice = '$baseUrl/client/notifications/register-device';
+
 }

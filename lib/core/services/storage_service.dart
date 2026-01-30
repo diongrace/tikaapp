@@ -19,6 +19,11 @@ class StorageService {
   static const String _customerAddressesKey = 'customer_addresses';
   static const String _notificationsKey = 'notifications';
   static const String _notificationSettingsKey = 'notification_settings';
+  static const String _pendingWaveOrdersKey = 'pending_wave_orders';
+
+  // Clés pour l'authentification client
+  static const String _authTokenKey = 'auth_token';
+  static const String _authClientKey = 'auth_client';
 
   // Stockage en mémoire comme fallback
   static Map<String, dynamic>? _memoryLoyaltyCard;
@@ -31,6 +36,8 @@ class StorageService {
   static List<Map<String, dynamic>> _memoryCustomerAddresses = [];
   static List<Map<String, dynamic>> _memoryNotifications = [];
   static Map<String, dynamic>? _memoryNotificationSettings;
+  static String? _memoryAuthToken;
+  static Map<String, dynamic>? _memoryAuthClient;
 
   // Sauvegarder la carte de fidélité
   static Future<void> saveLoyaltyCard(Map<String, dynamic> cardData) async {
@@ -706,5 +713,213 @@ class StorageService {
       'icon': 'new_releases',
       'color': '#E91E63',
     });
+  }
+
+  // === COMMANDES WAVE EN ATTENTE ===
+
+  /// Sauvegarder une commande Wave en attente (avant capture d'écran)
+  static Future<void> savePendingWaveOrder(Map<String, dynamic> orderData) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pendingOrders = await getPendingWaveOrders();
+
+      pendingOrders[orderData['pending_order_id']] = orderData;
+      await prefs.setString(_pendingWaveOrdersKey, jsonEncode(pendingOrders));
+
+      print('💾 [Storage] Commande Wave en attente sauvegardée: ${orderData['pending_order_id']}');
+    } catch (e) {
+      print('❌ [Storage] Erreur savePendingWaveOrder: $e');
+    }
+  }
+
+  /// Récupérer toutes les commandes Wave en attente
+  static Future<Map<String, dynamic>> getPendingWaveOrders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? ordersJson = prefs.getString(_pendingWaveOrdersKey);
+
+      if (ordersJson == null) return {};
+
+      return Map<String, dynamic>.from(jsonDecode(ordersJson));
+    } catch (e) {
+      print('❌ [Storage] Erreur getPendingWaveOrders: $e');
+      return {};
+    }
+  }
+
+  /// Récupérer une commande Wave en attente par ID
+  static Future<Map<String, dynamic>?> getPendingWaveOrder(String pendingOrderId) async {
+    final pendingOrders = await getPendingWaveOrders();
+    return pendingOrders[pendingOrderId] as Map<String, dynamic>?;
+  }
+
+  /// Supprimer une commande Wave en attente
+  static Future<void> deletePendingWaveOrder(String pendingOrderId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pendingOrders = await getPendingWaveOrders();
+
+      pendingOrders.remove(pendingOrderId);
+      await prefs.setString(_pendingWaveOrdersKey, jsonEncode(pendingOrders));
+
+      print('🗑️ [Storage] Commande Wave en attente supprimée: $pendingOrderId');
+    } catch (e) {
+      print('❌ [Storage] Erreur deletePendingWaveOrder: $e');
+    }
+  }
+
+  /// Nettoyer les commandes Wave expirées (plus de 24h)
+  static Future<void> cleanExpiredPendingWaveOrders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pendingOrders = await getPendingWaveOrders();
+      final now = DateTime.now();
+
+      pendingOrders.removeWhere((key, value) {
+        final createdAt = DateTime.tryParse(value['created_at'] ?? '');
+        if (createdAt == null) return true;
+        return now.difference(createdAt).inHours > 24;
+      });
+
+      await prefs.setString(_pendingWaveOrdersKey, jsonEncode(pendingOrders));
+    } catch (e) {
+      print('❌ [Storage] Erreur cleanExpiredPendingWaveOrders: $e');
+    }
+  }
+
+  /// Créer une notification pour un paiement Wave en attente
+  static Future<void> notifyWavePaymentPending(String orderNumber) async {
+    if (!await isNotificationTypeEnabled('orders')) return;
+
+    await addNotification({
+      'type': 'wave_payment',
+      'title': 'Paiement Wave en attente',
+      'message': 'Votre preuve de paiement pour la commande $orderNumber est en cours de vérification',
+      'icon': 'hourglass_empty',
+      'color': '#1BA5E0',
+      'data': {'orderNumber': orderNumber},
+    });
+  }
+
+  /// Créer une notification pour un paiement Wave approuvé
+  static Future<void> notifyWavePaymentApproved(String orderNumber) async {
+    if (!await isNotificationTypeEnabled('orders')) return;
+
+    await addNotification({
+      'type': 'wave_payment',
+      'title': 'Paiement Wave approuvé',
+      'message': 'Votre paiement Wave pour la commande $orderNumber a été validé',
+      'icon': 'check_circle',
+      'color': '#4CAF50',
+      'data': {'orderNumber': orderNumber},
+    });
+  }
+
+  /// Créer une notification pour un paiement Wave rejeté
+  static Future<void> notifyWavePaymentRejected(String orderNumber, String? reason) async {
+    if (!await isNotificationTypeEnabled('orders')) return;
+
+    await addNotification({
+      'type': 'wave_payment',
+      'title': 'Paiement Wave rejeté',
+      'message': reason ?? 'Votre paiement Wave pour la commande $orderNumber a été rejeté',
+      'icon': 'cancel',
+      'color': '#F44336',
+      'data': {'orderNumber': orderNumber},
+    });
+  }
+
+  // === AUTHENTIFICATION CLIENT ===
+
+  /// Sauvegarder le token d'authentification
+  static Future<void> saveAuthToken(String token) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_authTokenKey, token);
+      _memoryAuthToken = token;
+      print('🔐 [Storage] Token d\'authentification sauvegardé');
+    } catch (e) {
+      _memoryAuthToken = token;
+      print('❌ [Storage] Erreur saveAuthToken: $e');
+    }
+  }
+
+  /// Récupérer le token d'authentification
+  static Future<String?> getAuthToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(_authTokenKey);
+      return token ?? _memoryAuthToken;
+    } catch (e) {
+      print('❌ [Storage] Erreur getAuthToken: $e');
+      return _memoryAuthToken;
+    }
+  }
+
+  /// Supprimer le token d'authentification
+  static Future<void> deleteAuthToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_authTokenKey);
+      _memoryAuthToken = null;
+      print('🔐 [Storage] Token d\'authentification supprimé');
+    } catch (e) {
+      _memoryAuthToken = null;
+      print('❌ [Storage] Erreur deleteAuthToken: $e');
+    }
+  }
+
+  /// Sauvegarder les informations du client authentifié
+  static Future<void> saveAuthClient(Map<String, dynamic> clientData) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_authClientKey, jsonEncode(clientData));
+      _memoryAuthClient = clientData;
+      print('👤 [Storage] Client authentifié sauvegardé: ${clientData['name']}');
+    } catch (e) {
+      _memoryAuthClient = clientData;
+      print('❌ [Storage] Erreur saveAuthClient: $e');
+    }
+  }
+
+  /// Récupérer les informations du client authentifié
+  static Future<Map<String, dynamic>?> getAuthClient() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final clientJson = prefs.getString(_authClientKey);
+
+      if (clientJson == null) return _memoryAuthClient;
+
+      return jsonDecode(clientJson) as Map<String, dynamic>;
+    } catch (e) {
+      print('❌ [Storage] Erreur getAuthClient: $e');
+      return _memoryAuthClient;
+    }
+  }
+
+  /// Supprimer les informations du client authentifié
+  static Future<void> deleteAuthClient() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_authClientKey);
+      _memoryAuthClient = null;
+      print('👤 [Storage] Client authentifié supprimé');
+    } catch (e) {
+      _memoryAuthClient = null;
+      print('❌ [Storage] Erreur deleteAuthClient: $e');
+    }
+  }
+
+  /// Vérifier si un client est authentifié
+  static Future<bool> isAuthenticated() async {
+    final token = await getAuthToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  /// Effacer toutes les données d'authentification (déconnexion)
+  static Future<void> clearAuthData() async {
+    await deleteAuthToken();
+    await deleteAuthClient();
+    print('🚪 [Storage] Données d\'authentification effacées');
   }
 }

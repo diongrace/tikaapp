@@ -20,6 +20,11 @@ import '../features/boutique/profile/notifications_screen.dart';
 import '../features/boutique/profile/security_screen.dart';
 import '../features/boutique/profile/help_support_screen.dart';
 import '../features/boutique/home/home_online_screen.dart';
+// Auth screens
+import '../features/auth/auth_choice_screen.dart';
+import '../features/auth/login_screen.dart';
+import '../features/auth/register_screen.dart';
+import '../features/auth/forgot_password_screen.dart';
 
 /// Noms des routes de l'application
 class RouteNames {
@@ -43,6 +48,11 @@ class RouteNames {
   static const String profileNotifications = '/profile-notifications';
   static const String security = '/security';
   static const String helpSupport = '/help-support';
+  // Routes d'authentification
+  static const String authChoice = '/auth';
+  static const String login = '/auth/login';
+  static const String register = '/auth/register';
+  static const String forgotPassword = '/auth/forgot-password';
 }
 
 /// Configuration des routes de l'application
@@ -89,6 +99,11 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/profile-notifications': (context) => const NotificationsScreen(),
   '/security': (context) => const SecurityScreen(),
   '/help-support': (context) => const HelpSupportScreen(),
+  // Routes d'authentification
+  '/auth': (context) => const AuthChoiceScreen(),
+  '/auth/login': (context) => const LoginScreen(),
+  '/auth/register': (context) => const RegisterScreen(),
+  '/auth/forgot-password': (context) => const ForgotPasswordScreen(),
 };
 
 /// Fonction de génération de routes
