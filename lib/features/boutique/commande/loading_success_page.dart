@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'order_tracking_api_page.dart';
 import '../loyalty/create_loyalty_card_page.dart';
 import '../../../core/services/boutique_theme_provider.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/loyalty_service.dart';
 
 /// Page de succès simple apres commande
@@ -316,7 +317,14 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
       _showSnack('Recu non disponible', Colors.orange);
       return;
     }
-    final uri = Uri.parse(widget.orderData!['receiptViewUrl'] as String);
+    await AuthService.ensureToken();
+    final token = AuthService.authToken;
+    var url = widget.orderData!['receiptViewUrl'] as String;
+    if (token != null) {
+      final separator = url.contains('?') ? '&' : '?';
+      url = '$url${separator}token=$token';
+    }
+    final uri = Uri.parse(url);
     try {
       await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
     } catch (e) {
@@ -356,10 +364,18 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
       if (downloadDir == null) throw Exception('Dossier non accessible');
 
       final filePath = '${downloadDir.path}/recu_$orderNum.pdf';
+      await AuthService.ensureToken();
+      final token = AuthService.authToken;
       await Dio().download(
         receiptUrl,
         filePath,
-        options: Options(responseType: ResponseType.bytes, followRedirects: true),
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: true,
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
+        ),
       );
 
       if (!mounted) return;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/dashboard_service.dart';
@@ -5,11 +6,13 @@ import '../../services/favorites_service.dart';
 import '../../services/loyalty_service.dart';
 import '../../services/order_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/push_notification_service.dart';
 import '../../services/models/client_model.dart';
 import '../../services/models/order_model.dart';
 import '../../services/models/dashboard_model.dart';
 import '../../services/models/loyalty_card_model.dart';
 // Ecrans existants du projet (boutique)
+import '../access_boutique/access_boutique_screen.dart';
 import '../boutique/history/global_history_screen.dart';
 import '../boutique/favorites/favorites_boutiques_screen.dart';
 import '../boutique/loyalty/loyalty_card_page.dart';
@@ -27,7 +30,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with SingleTickerProviderStateMixin {
   static const Color primaryColor = Color(0xFF670C88);
   static const Color accentColor = Color(0xFF8936A8);
 
@@ -43,10 +47,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<DashboardFavorite> _favorites = [];
   List<LoyaltyCard> _loyaltyCards = [];
 
+  // Animation cloche notification
+  late AnimationController _bellController;
+  late Animation<double> _shakeAnimation;
+  Timer? _shakeTimer;
+
   @override
   void initState() {
     super.initState();
+    _bellController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0, end: 0.15), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.15, end: -0.15), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -0.15, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -0.1, end: 0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _bellController, curve: Curves.easeInOut));
+
+    PushNotificationService.unreadCount.addListener(_onUnreadChanged);
+    if (PushNotificationService.unreadCount.value > 0) {
+      _startPeriodicShake();
+    }
+
     _loadDashboard();
+  }
+
+  void _onUnreadChanged() {
+    if (PushNotificationService.unreadCount.value > 0) {
+      _bellController.forward(from: 0);
+      _startPeriodicShake();
+    } else {
+      _shakeTimer?.cancel();
+      _shakeTimer = null;
+    }
+  }
+
+  void _startPeriodicShake() {
+    _shakeTimer?.cancel();
+    _bellController.forward(from: 0);
+    _shakeTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (mounted && PushNotificationService.unreadCount.value > 0) {
+        _bellController.forward(from: 0);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _shakeTimer?.cancel();
+    PushNotificationService.unreadCount.removeListener(_onUnreadChanged);
+    _bellController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadDashboard() async {
@@ -256,7 +310,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               size: 18,
             ),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AccessBoutiqueScreen()),
+          ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,21 +337,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         actions: [
-          // Notifications
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.notifications_outlined,
-                color: primaryColor,
-                size: 20,
-              ),
-            ),
-            onPressed: () => _navigateTo(const NotificationsListScreen()),
+          // Notifications avec animation
+          ValueListenableBuilder<int>(
+            valueListenable: PushNotificationService.unreadCount,
+            builder: (context, count, _) {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedBuilder(
+                    animation: _shakeAnimation,
+                    builder: (context, child) {
+                      return Transform.rotate(
+                        angle: count > 0 ? _shakeAnimation.value : 0,
+                        child: child,
+                      );
+                    },
+                    child: IconButton(
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.notifications_outlined,
+                          color: primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                      onPressed: () => _navigateTo(const NotificationsListScreen()),
+                    ),
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 6,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withOpacity(0.4),
+                              blurRadius: 6,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          count > 99 ? '99+' : count.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           // Deconnexion
           Container(

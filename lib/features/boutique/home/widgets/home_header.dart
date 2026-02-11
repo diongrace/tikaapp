@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../notifications/notifications_list_screen.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
@@ -9,7 +10,7 @@ import '../../../../services/push_notification_service.dart';
 /// - Si la boutique a une bannière (bannerUrl), elle est affichée
 /// - Si le banner de l'API échoue ou n'existe pas, affiche le banner par défaut (Black Friday)
 /// - Si le banner par défaut n'existe pas, affiche un fond de couleur avec le thème de la boutique
-class HomeHeader extends StatelessWidget {
+class HomeHeader extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback onFavoriteToggle;
   final VoidCallback onBackPressed;
@@ -24,6 +25,73 @@ class HomeHeader extends StatelessWidget {
     this.onHomeTap,
     this.bannerUrl,
   });
+
+  @override
+  State<HomeHeader> createState() => _HomeHeaderState();
+}
+
+class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateMixin {
+  late AnimationController _bellController;
+  late Animation<double> _shakeAnimation;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _bellController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0, end: 0.15), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.15, end: -0.15), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -0.15, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -0.1, end: 0.05), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.05, end: 0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _bellController, curve: Curves.easeInOut));
+    _pulseAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.3, end: 1.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _bellController, curve: Curves.easeInOut));
+
+    // Ecouter les changements de compteur pour declencher l'animation
+    PushNotificationService.unreadCount.addListener(_onUnreadChanged);
+    // Lancer l'animation periodique si deja des non-lues
+    if (PushNotificationService.unreadCount.value > 0) {
+      _startPeriodicShake();
+    }
+  }
+
+  Timer? _shakeTimer;
+
+  void _onUnreadChanged() {
+    if (PushNotificationService.unreadCount.value > 0) {
+      _bellController.forward(from: 0);
+      _startPeriodicShake();
+    } else {
+      _shakeTimer?.cancel();
+      _shakeTimer = null;
+    }
+  }
+
+  void _startPeriodicShake() {
+    _shakeTimer?.cancel();
+    _bellController.forward(from: 0);
+    _shakeTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (mounted && PushNotificationService.unreadCount.value > 0) {
+        _bellController.forward(from: 0);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _shakeTimer?.cancel();
+    PushNotificationService.unreadCount.removeListener(_onUnreadChanged);
+    _bellController.dispose();
+    super.dispose();
+  }
 
   // Construire l'URL complète de l'image
   String? _getFullImageUrl(String? url) {
@@ -44,7 +112,7 @@ class HomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     // Obtenir le thème de la boutique pour les couleurs dynamiques
     final shopTheme = BoutiqueThemeProvider.of(context);
-    final fullImageUrl = _getFullImageUrl(bannerUrl);
+    final fullImageUrl = _getFullImageUrl(widget.bannerUrl);
     final hasCoverPage = fullImageUrl != null && fullImageUrl.isNotEmpty;
 
     // Debug détaillé
@@ -52,8 +120,8 @@ class HomeHeader extends StatelessWidget {
     print('════════════════════════════════════');
     print('🖼️  HOME HEADER - PAGE DE COUVERTURE');
     print('════════════════════════════════════');
-    print('📥 banner_url reçu: $bannerUrl');
-    print('📊 Type: ${bannerUrl.runtimeType}');
+    print('📥 banner_url reçu: ${widget.bannerUrl}');
+    print('📊 Type: ${widget.bannerUrl.runtimeType}');
     print('🔗 URL complète: $fullImageUrl');
     if (hasCoverPage) {
       print('✅ COUVERTURE PERSONNALISÉE trouvée');
@@ -181,13 +249,13 @@ class HomeHeader extends StatelessWidget {
                   children: [
                     _buildCircleButton(
                       icon: Icons.arrow_back,
-                      onPressed: onBackPressed,
+                      onPressed: widget.onBackPressed,
                     ),
-                    if (onHomeTap != null) ...[
+                    if (widget.onHomeTap != null) ...[
                       const SizedBox(width: 10),
                       _buildCircleButton(
                         icon: Icons.storefront_outlined,
-                        onPressed: onHomeTap!,
+                        onPressed: widget.onHomeTap!,
                       ),
                     ],
                   ],
@@ -196,9 +264,9 @@ class HomeHeader extends StatelessWidget {
                 Row(
                   children: [
                     _buildCircleButton(
-                      icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.black87,
-                      onPressed: onFavoriteToggle,
+                      icon: widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: widget.isFavorite ? Colors.red : Colors.black87,
+                      onPressed: widget.onFavoriteToggle,
                     ),
                     const SizedBox(width: 12),
                     _buildNotificationButton(context),
@@ -219,42 +287,68 @@ class HomeHeader extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            _buildCircleButton(
-              icon: Icons.notifications_outlined,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationsListScreen(),
-                  ),
-                ).then((_) {
-                  // Rafraichir le badge apres retour de l'ecran notifications
-                  PushNotificationService.refreshUnreadCount();
-                });
+            // Icone cloche avec animation de secousse
+            AnimatedBuilder(
+              animation: _shakeAnimation,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: count > 0 ? _shakeAnimation.value : 0,
+                  child: child,
+                );
               },
+              child: _buildCircleButton(
+                icon: Icons.notifications_outlined,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsListScreen(),
+                    ),
+                  ).then((_) {
+                    PushNotificationService.refreshUnreadCount();
+                  });
+                },
+              ),
             ),
+            // Badge avec animation de pulsation
             if (count > 0)
               Positioned(
                 right: -2,
                 top: -2,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 18,
-                    minHeight: 18,
-                  ),
-                  child: Text(
-                    count > 99 ? '99+' : count.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                child: AnimatedBuilder(
+                  animation: _pulseAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _pulseAnimation.value,
+                      child: child,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withOpacity(0.4),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                    textAlign: TextAlign.center,
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      count > 99 ? '99+' : count.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ),

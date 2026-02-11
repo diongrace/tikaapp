@@ -46,7 +46,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
   }
 
   void _onTabChanged() {
-    if (_tabController.indexIsChanging) return;
+    if (_tabController.indexIsChanging || !mounted) return;
     setState(() {
       _selectedFilter = _filters[_tabController.index]['id'];
       _notifications = _filterNotifications(_allNotifications, _selectedFilter);
@@ -54,6 +54,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
   }
 
   Future<void> _loadNotifications() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -67,13 +68,31 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
 
       final unreadCount = await NotificationService.getUnreadCount();
 
+      if (!mounted) return;
+
+      // Debug: voir les types retournes par l'API
+      for (final n in response.notifications) {
+        print('[Notif] id=${n.id} type="${n.type}" titre="${n.title}" -> detecte: ${_detectNotificationType(n)}');
+      }
+
+      // Dedupliquer les notifications (meme titre + message + timestamp)
+      final seen = <String>{};
+      final deduplicated = <NotificationItem>[];
+      for (final n in response.notifications) {
+        final key = '${n.title}|${n.message}|${n.createdAt}';
+        if (seen.add(key)) {
+          deduplicated.add(n);
+        }
+      }
+
       setState(() {
-        _allNotifications = response.notifications;
+        _allNotifications = deduplicated;
         _notifications = _filterNotifications(_allNotifications, _selectedFilter);
         _unreadCount = unreadCount;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Erreur lors du chargement des notifications';
         _isLoading = false;
@@ -96,59 +115,70 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
   String _detectNotificationType(NotificationItem notification) {
     final type = notification.type.toLowerCase();
 
-    // Si le backend a déjà un type précis, l'utiliser
-    if (['order', 'payment', 'wave_payment', 'loyalty', 'promo', 'promotion', 'delivery'].contains(type)) {
-      if (type == 'wave_payment') return 'payment';
-      if (type == 'promotion') return 'promo';
-      return type;
-    }
+    // Si le backend a un type specifique (pas generique), l'utiliser
+    if (type == 'wave_payment') return 'payment';
+    if (type == 'payment') return 'payment';
+    if (type == 'loyalty') return 'loyalty';
+    if (type == 'promo' || type == 'promotion') return 'promo';
+    if (type == 'delivery') return 'order';
 
-    // Sinon, détecter à partir du titre et du message
+    // Pour les types generiques (order, system, etc.), analyser le contenu
     final title = notification.title.toLowerCase();
     final message = notification.message.toLowerCase();
     final content = '$title $message';
 
-    // Détection commande
-    if (content.contains('commande') ||
-        content.contains('order') ||
-        content.contains('#tk') ||
-        content.contains('prête') ||
-        content.contains('livrée') ||
-        content.contains('annulée') ||
-        content.contains('confirmée') ||
-        content.contains('en préparation') ||
-        content.contains('en cours de livraison')) {
-      return 'order';
-    }
-
-    // Détection paiement
+    // Detecter paiement AVANT commande (car "paiement de commande" doit aller en paiement)
     if (content.contains('paiement') ||
         content.contains('payment') ||
         content.contains('wave') ||
         content.contains('payé') ||
+        content.contains('payee') ||
         content.contains('remboursement') ||
         content.contains('facture') ||
-        content.contains('reçu')) {
+        content.contains('reçu') ||
+        content.contains('recu')) {
       return 'payment';
     }
 
-    // Détection fidélité
+    // Detecter fidelite
     if (content.contains('fidélité') ||
+        content.contains('fidelite') ||
         content.contains('loyalty') ||
         content.contains('points') ||
         content.contains('récompense') ||
-        content.contains('carte de fidélité')) {
+        content.contains('recompense') ||
+        content.contains('carte de fidélité') ||
+        content.contains('carte de fidelite')) {
       return 'loyalty';
     }
 
-    // Détection promo
+    // Detecter promo
     if (content.contains('promo') ||
         content.contains('réduction') ||
+        content.contains('reduction') ||
         content.contains('offre') ||
         content.contains('coupon') ||
         content.contains('solde') ||
-        content.contains('%')) {
+        content.contains('remise')) {
       return 'promo';
+    }
+
+    // Detecter commande (en dernier car c'est le type le plus generique)
+    if (content.contains('commande') ||
+        content.contains('order') ||
+        content.contains('#tk') ||
+        content.contains('prête') ||
+        content.contains('prete') ||
+        content.contains('livrée') ||
+        content.contains('livree') ||
+        content.contains('annulée') ||
+        content.contains('annulee') ||
+        content.contains('confirmée') ||
+        content.contains('confirmee') ||
+        content.contains('en préparation') ||
+        content.contains('en preparation') ||
+        content.contains('en cours de livraison')) {
+      return 'order';
     }
 
     return 'other';

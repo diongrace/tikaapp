@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../core/messages/message_modal.dart';
+import '../access_boutique/access_boutique_screen.dart';
 import 'widgets/phone_field.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
@@ -89,7 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AccessBoutiqueScreen()),
+          ),
         ),
       ),
       body: SafeArea(

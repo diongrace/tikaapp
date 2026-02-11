@@ -251,19 +251,33 @@ class PushNotificationService {
   /// Gerer un message recu au premier plan
   static void _handleForegroundMessage(RemoteMessage message) {
     print('[Push] Message au premier plan: ${message.notification?.title}');
+    print('[Push] Data: ${message.data}');
 
     // Rafraichir le badge quand un push arrive
     refreshUnreadCount();
 
+    // Extraire titre et body depuis notification OU data
     final notification = message.notification;
-    if (notification == null) return;
+    final String title = notification?.title
+        ?? message.data['title']
+        ?? 'Tika';
+    final String body = notification?.body
+        ?? message.data['body']
+        ?? message.data['message']
+        ?? '';
+
+    if (title == 'Tika' && body.isEmpty) return;
 
     // Afficher la notification locale si le plugin est disponible
     if (_localNotificationsInitialized && _localNotifications != null) {
+      // Utiliser messageId pour eviter les doublons
+      final notifId = message.messageId?.hashCode
+          ?? DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
       _localNotifications!.show(
-        notification.hashCode,
-        notification.title ?? 'Tika',
-        notification.body ?? '',
+        notifId,
+        title,
+        body,
         NotificationDetails(
           android: AndroidNotificationDetails(
             _channel.id,
