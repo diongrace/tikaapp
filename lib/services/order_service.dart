@@ -145,6 +145,21 @@ class OrderService {
         print('⚠️ RAPPEL: Le backend doit décrémenter le stock automatiquement');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
+        // Chercher wave_redirect et wave_url à tous les niveaux possibles
+        final waveRedirect = data['wave_redirect']
+            ?? data['data']?['wave_redirect']
+            ?? orderData['wave_redirect']
+            ?? false;
+        final waveUrl = data['wave_url']
+            ?? data['data']?['wave_url']
+            ?? orderData['wave_url']
+            ?? orderData['payment_url'];
+
+        if (waveRedirect == true || waveUrl != null) {
+          print('🌊 Wave redirect: $waveRedirect');
+          print('🌊 Wave URL: $waveUrl');
+        }
+
         // Retourner les données essentielles
         return {
           'success': true,
@@ -156,10 +171,10 @@ class OrderService {
           'payment_status': orderData['payment_status'],
           'receipt_url': orderData['receipt_url'],
           'receipt_view_url': orderData['receipt_view_url'],
-          // ✅ GESTION WAVE REDIRECT
-          'wave_redirect': data['wave_redirect'] ?? false,
-          'wave_url': data['wave_url'],
-          // ✅ Retourner les items pour rafraîchir le stock localement
+          // GESTION WAVE REDIRECT
+          'wave_redirect': waveRedirect,
+          'wave_url': waveUrl,
+          // Retourner les items pour rafraîchir le stock localement
           'items': items,
         };
       } else {

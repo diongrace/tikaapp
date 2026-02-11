@@ -52,8 +52,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (!mounted) return;
 
-        // Retourner à l'écran précédent avec succès
-        Navigator.pop(context, true);
+        // Fermer le modal de succès puis rediriger vers le dashboard
+        Navigator.of(context).pop();
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/dashboard',
+          (route) => false,
+        );
       } else {
         showErrorModal(context, response.errorMessage);
       }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../notifications/notifications_list_screen.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/utils/api_endpoint.dart';
+import '../../../../services/push_notification_service.dart';
 
 /// Widget d'en-tête avec image de fond et boutons d'action
 /// Gère l'affichage conditionnel de la page de couverture:
@@ -12,6 +13,7 @@ class HomeHeader extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onFavoriteToggle;
   final VoidCallback onBackPressed;
+  final VoidCallback? onHomeTap;
   final String? bannerUrl; // URL de l'image de couverture depuis l'API
 
   const HomeHeader({
@@ -19,6 +21,7 @@ class HomeHeader extends StatelessWidget {
     required this.isFavorite,
     required this.onFavoriteToggle,
     required this.onBackPressed,
+    this.onHomeTap,
     this.bannerUrl,
   });
 
@@ -173,10 +176,21 @@ class HomeHeader extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Bouton retour
-                _buildCircleButton(
-                  icon: Icons.arrow_back,
-                  onPressed: onBackPressed,
+                // Bouton retour + bouton accueil TIKA
+                Row(
+                  children: [
+                    _buildCircleButton(
+                      icon: Icons.arrow_back,
+                      onPressed: onBackPressed,
+                    ),
+                    if (onHomeTap != null) ...[
+                      const SizedBox(width: 10),
+                      _buildCircleButton(
+                        icon: Icons.storefront_outlined,
+                        onPressed: onHomeTap!,
+                      ),
+                    ],
+                  ],
                 ),
                 // Boutons favoris et notifications
                 Row(
@@ -187,17 +201,7 @@ class HomeHeader extends StatelessWidget {
                       onPressed: onFavoriteToggle,
                     ),
                     const SizedBox(width: 12),
-                    _buildCircleButton(
-                      icon: Icons.notifications_outlined,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NotificationsListScreen(),
-                          ),
-                        );
-                      },
-                    ),
+                    _buildNotificationButton(context),
                   ],
                 ),
               ],
@@ -205,6 +209,58 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNotificationButton(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: PushNotificationService.unreadCount,
+      builder: (context, count, _) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _buildCircleButton(
+              icon: Icons.notifications_outlined,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationsListScreen(),
+                  ),
+                ).then((_) {
+                  // Rafraichir le badge apres retour de l'ecran notifications
+                  PushNotificationService.refreshUnreadCount();
+                });
+              },
+            ),
+            if (count > 0)
+              Positioned(
+                right: -2,
+                top: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : count.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 

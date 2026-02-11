@@ -17,7 +17,7 @@ class Shop {
   final String status;
   final double? latitude;
   final double? longitude;
-  final Map<String, String>? openingHours;
+  final Map<String, dynamic>? openingHours;
   final List<DeliveryZone>? deliveryZones;
   final ShopStats? stats;
   final ShopTheme? theme;
@@ -58,20 +58,35 @@ class Shop {
     this.wavePartialPaymentPercentage = 0,
   });
 
-  factory Shop.fromJson(Map<String, dynamic> json) {
-    // Chercher le banner dans plusieurs champs possibles
-    final bannerUrlRaw = json['banner_url'] ?? json['cover_image'] ?? json['banner'] ?? json['image_banner'];
-    final parsedBannerUrl = _parseUrl(bannerUrlRaw);
+  // URL de base pour les fichiers de stockage
+  static const String _storageBaseUrl = 'https://prepro.tika-ci.com/storage';
 
-    // Debug: Afficher le parsing du banner_url
-    print('');
-    print('🔍 Parsing Shop "${json['name']}":');
-    print('   - banner_url brut: ${json['banner_url']}');
-    print('   - cover_image brut: ${json['cover_image']}');
-    print('   - banner brut: ${json['banner']}');
-    print('   - Valeur utilisée: $bannerUrlRaw');
-    print('   - banner_url après parsing: $parsedBannerUrl');
-    print('');
+  /// Construit une URL complète à partir d'un chemin relatif ou absolu
+  static String _buildFullUrl(String path) {
+    if (path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    return '$_storageBaseUrl/$path';
+  }
+
+  factory Shop.fromJson(Map<String, dynamic> json) {
+    // Logo: l'API liste retourne "logo" (chemin relatif), l'API detail retourne "logo_url" (URL complète)
+    final logoRaw = json['logo_url']?.toString() ?? json['logo']?.toString() ?? '';
+    final parsedLogoUrl = _buildFullUrl(logoRaw);
+
+    // Banner: l'API peut retourner sous differents noms selon l'endpoint
+    final bannerUrlRaw = json['banner_url']
+        ?? json['cover_image']
+        ?? json['banner']
+        ?? json['image_banner']
+        ?? json['cover']
+        ?? json['couverture']
+        ?? json['header_image']
+        ?? json['background_image']
+        ?? json['photo_couverture'];
+    final parsedBannerUrl = bannerUrlRaw != null && bannerUrlRaw.toString().trim().isNotEmpty
+        ? _parseUrl(_buildFullUrl(bannerUrlRaw.toString()))
+        : null;
+    print('🖼️ [Shop.fromJson] id=${json['id']} banner_url=$bannerUrlRaw => parsed=$parsedBannerUrl');
 
     // Chercher le lien Wave dans plusieurs champs possibles
     final wavePaymentLinkRaw = json['wave_payment_link']
@@ -85,19 +100,6 @@ class Shop {
         ?? (json['payment'] is Map ? json['payment']['wave_link'] : null)
         ?? (json['payment'] is Map ? json['payment']['wave_payment_link'] : null);
 
-    // Debug Wave payment link
-    print('🌊 Wave Debug pour "${json['name']}":');
-    print('   - wave_payment_link: ${json['wave_payment_link']}');
-    print('   - wave_link: ${json['wave_link']}');
-    print('   - wave_url: ${json['wave_url']}');
-    print('   - wave_number: ${json['wave_number']}');
-    print('   - wave_enabled: ${json['wave_enabled']}');
-    print('   - settings: ${json['settings']}');
-    print('   - payment_settings: ${json['payment_settings']}');
-    print('   - payment: ${json['payment']}');
-    print('   - Valeur Wave finale: $wavePaymentLinkRaw');
-    print('');
-
     return Shop(
       id: _parseInt(json['id']) ?? 0,
       name: json['name']?.toString() ?? '',
@@ -107,7 +109,7 @@ class Shop {
       city: json['city']?.toString() ?? '',
       address: json['address']?.toString() ?? '',
       location: json['location']?.toString(),
-      logoUrl: json['logo_url']?.toString() ?? '',
+      logoUrl: parsedLogoUrl,
       bannerUrl: parsedBannerUrl,
       phone: json['phone']?.toString(),
       email: json['email']?.toString(),
@@ -115,7 +117,7 @@ class Shop {
       latitude: _parseDouble(json['latitude']),
       longitude: _parseDouble(json['longitude']),
       openingHours: json['opening_hours'] != null
-          ? Map<String, String>.from(json['opening_hours'])
+          ? Map<String, dynamic>.from(json['opening_hours'])
           : null,
       deliveryZones: json['delivery_zones'] != null
           ? (json['delivery_zones'] as List).map((e) => DeliveryZone.fromJson(e)).toList()
@@ -149,6 +151,37 @@ class Shop {
     if (value is int) return value.toDouble();
     if (value is String) return double.tryParse(value);
     return null;
+  }
+
+  /// Retourne une copie du shop avec un nouveau bannerUrl
+  Shop copyWithBanner(String newBannerUrl) {
+    return Shop(
+      id: id,
+      name: name,
+      slug: slug,
+      description: description,
+      category: category,
+      city: city,
+      address: address,
+      location: location,
+      logoUrl: logoUrl,
+      bannerUrl: newBannerUrl,
+      phone: phone,
+      email: email,
+      status: status,
+      latitude: latitude,
+      longitude: longitude,
+      openingHours: openingHours,
+      deliveryZones: deliveryZones,
+      stats: stats,
+      theme: theme,
+      isFeatured: isFeatured,
+      distance: distance,
+      waveEnabled: waveEnabled,
+      wavePaymentLink: wavePaymentLink,
+      wavePartialPaymentEnabled: wavePartialPaymentEnabled,
+      wavePartialPaymentPercentage: wavePartialPaymentPercentage,
+    );
   }
 
   // Parser une URL en gérant les cas invalides
@@ -204,12 +237,16 @@ class DeliveryZone {
   final String name;
   final int deliveryFee;
   final int minOrderAmount;
+  final String? estimatedTime;
+  final bool isActive;
 
   DeliveryZone({
     required this.id,
     required this.name,
     required this.deliveryFee,
     required this.minOrderAmount,
+    this.estimatedTime,
+    this.isActive = true,
   });
 
   factory DeliveryZone.fromJson(Map<String, dynamic> json) {
@@ -218,6 +255,8 @@ class DeliveryZone {
       name: json['name']?.toString() ?? '',
       deliveryFee: _parseInt(json['delivery_fee']) ?? 0,
       minOrderAmount: _parseInt(json['min_order_amount']) ?? 0,
+      estimatedTime: json['estimated_time']?.toString(),
+      isActive: json['is_active'] == true || json['is_active'] == 1,
     );
   }
 
@@ -226,7 +265,6 @@ class DeliveryZone {
     if (value is int) return value;
     if (value is double) return value.toInt();
     if (value is String) {
-      // Gérer les strings avec décimales comme "1500.00"
       final doubleValue = double.tryParse(value);
       return doubleValue?.toInt();
     }
@@ -239,6 +277,8 @@ class DeliveryZone {
       'name': name,
       'delivery_fee': deliveryFee,
       'min_order_amount': minOrderAmount,
+      'estimated_time': estimatedTime,
+      'is_active': isActive,
     };
   }
 }
@@ -343,6 +383,165 @@ class ShopTheme {
       'primary_color': primaryColor,
       'secondary_color': secondaryColor,
       'accent_color': accentColor,
+    };
+  }
+}
+
+// Classe pour les options de livraison (objet de configuration)
+class DeliveryOptions {
+  final bool deliveryEnabled;
+  final bool pickupEnabled;
+  final List<DeliveryZone>? deliveryZones;
+  final int defaultDeliveryFee;
+  final int freeDeliveryThreshold;
+
+  DeliveryOptions({
+    this.deliveryEnabled = false,
+    this.pickupEnabled = false,
+    this.deliveryZones,
+    this.defaultDeliveryFee = 0,
+    this.freeDeliveryThreshold = 0,
+  });
+
+  factory DeliveryOptions.fromJson(Map<String, dynamic> json) {
+    return DeliveryOptions(
+      deliveryEnabled: json['delivery_enabled'] == true || json['delivery_enabled'] == 1,
+      pickupEnabled: json['pickup_enabled'] == true || json['pickup_enabled'] == 1,
+      deliveryZones: json['delivery_zones'] != null
+          ? (json['delivery_zones'] as List).map((e) => DeliveryZone.fromJson(e)).toList()
+          : null,
+      defaultDeliveryFee: _parseInt(json['default_delivery_fee']) ?? 0,
+      freeDeliveryThreshold: _parseInt(json['free_delivery_threshold']) ?? 0,
+    );
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) {
+      final doubleValue = double.tryParse(value);
+      return doubleValue?.toInt();
+    }
+    return null;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'delivery_enabled': deliveryEnabled,
+      'pickup_enabled': pickupEnabled,
+      'delivery_zones': deliveryZones?.map((e) => e.toJson()).toList(),
+      'default_delivery_fee': defaultDeliveryFee,
+      'free_delivery_threshold': freeDeliveryThreshold,
+    };
+  }
+}
+
+// Classe pour les méthodes de paiement
+class PaymentMethod {
+  final String id;
+  final String name;
+  final String? description;
+  final String? icon;
+  final bool isEnabled;
+
+  PaymentMethod({
+    required this.id,
+    required this.name,
+    this.description,
+    this.icon,
+    this.isEnabled = true,
+  });
+
+  factory PaymentMethod.fromJson(Map<String, dynamic> json) {
+    return PaymentMethod(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString(),
+      icon: json['icon']?.toString(),
+      isEnabled: json['is_enabled'] == true || json['is_enabled'] == 1,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'icon': icon,
+      'is_enabled': isEnabled,
+    };
+  }
+}
+
+// Classe pour les coupons
+class Coupon {
+  final int id;
+  final String code;
+  final String? description;
+  final String discountType;
+  final double discountValue;
+  final double? minOrderAmount;
+  final double? maxDiscount;
+  final String? validUntil;
+  final bool isActive;
+
+  Coupon({
+    required this.id,
+    required this.code,
+    this.description,
+    required this.discountType,
+    required this.discountValue,
+    this.minOrderAmount,
+    this.maxDiscount,
+    this.validUntil,
+    this.isActive = true,
+  });
+
+  factory Coupon.fromJson(Map<String, dynamic> json) {
+    return Coupon(
+      id: _parseInt(json['id']) ?? 0,
+      code: json['code']?.toString() ?? '',
+      description: json['description']?.toString(),
+      discountType: json['discount_type']?.toString() ?? 'fixed',
+      discountValue: _parseDouble(json['discount_value']) ?? 0,
+      minOrderAmount: _parseDouble(json['min_order_amount']),
+      maxDiscount: _parseDouble(json['max_discount']),
+      validUntil: json['valid_until']?.toString(),
+      isActive: json['is_active'] == true || json['is_active'] == 1,
+    );
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) {
+      final doubleValue = double.tryParse(value);
+      return doubleValue?.toInt();
+    }
+    return null;
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'code': code,
+      'description': description,
+      'discount_type': discountType,
+      'discount_value': discountValue,
+      'min_order_amount': minOrderAmount,
+      'max_discount': maxDiscount,
+      'valid_until': validUntil,
+      'is_active': isActive,
     };
   }
 }

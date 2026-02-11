@@ -6,11 +6,11 @@ import 'widgets/phone_field.dart';
 import 'otp_verification_screen.dart';
 import 'login_screen.dart';
 
-/// Écran d'inscription client
+/// Ecran d'inscription client
 ///
-/// Permet de créer un nouveau compte avec:
-/// - Nom complet
-/// - Numéro de téléphone (obligatoire)
+/// Permet de creer un nouveau compte avec:
+/// - Prenom et Nom
+/// - Numero de telephone (obligatoire)
 /// - Email (optionnel)
 /// - Mot de passe
 class RegisterScreen extends StatefulWidget {
@@ -22,7 +22,8 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -35,7 +36,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -54,9 +56,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Étape 1: Inscription
       final response = await AuthService.register(
-        name: _nameController.text.trim(),
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
         phone: _phoneController.phoneNumber,
         password: _passwordController.text,
         email: _emailController.text.trim().isNotEmpty
@@ -67,9 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       if (response.success) {
-        // Si l'API nécessite une vérification OTP
         if (response.token == null) {
-          // Envoyer l'OTP
           final otpResponse = await AuthService.sendOtp(
             phone: _phoneController.phoneNumber,
             type: 'register',
@@ -78,7 +78,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (!mounted) return;
 
           if (otpResponse.success) {
-            // Naviguer vers l'écran OTP
             final verified = await Navigator.push<bool>(
               context,
               MaterialPageRoute(
@@ -90,21 +89,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
             );
 
             if (verified == true && mounted) {
-              showSuccessModal(context, 'Compte créé avec succès');
+              showSuccessModal(context, 'Compte cree avec succes');
               await Future.delayed(const Duration(milliseconds: 800));
               if (mounted) {
-                Navigator.pop(context, true);
+                Navigator.of(context).pop();
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/dashboard',
+                  (route) => false,
+                );
               }
             }
           } else {
             showErrorModal(context, otpResponse.message ?? 'Erreur lors de l\'envoi du code');
           }
         } else {
-          // Inscription réussie avec connexion automatique
-          showSuccessModal(context, 'Compte créé avec succès');
+          showSuccessModal(context, 'Compte cree avec succes');
           await Future.delayed(const Duration(milliseconds: 800));
           if (mounted) {
-            Navigator.pop(context, true);
+            Navigator.of(context).pop();
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/dashboard',
+              (route) => false,
+            );
           }
         }
       } else {
@@ -164,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Titre
                 Center(
                   child: Text(
-                    'Créer un compte',
+                    'Creer un compte',
                     style: GoogleFonts.openSans(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -178,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Sous-titre
                 Center(
                   child: Text(
-                    'Inscrivez-vous pour profiter de toutes les fonctionnalités',
+                    'Inscrivez-vous pour profiter de toutes les fonctionnalites',
                     style: GoogleFonts.openSans(
                       fontSize: 13,
                       color: Colors.grey.shade600,
@@ -189,18 +197,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 32),
 
-                // Champ nom
+                // Champ prenom
                 _buildTextField(
-                  controller: _nameController,
-                  label: 'Nom complet',
-                  hint: 'Ex: Kouamé Jean',
+                  controller: _firstNameController,
+                  label: 'Prenom',
+                  hint: 'Ex: Jean',
                   icon: Icons.person_outline,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer votre nom';
+                      return 'Veuillez entrer votre prenom';
                     }
                     if (value.length < 2) {
-                      return 'Le nom doit contenir au moins 2 caractères';
+                      return 'Le prenom doit contenir au moins 2 caracteres';
                     }
                     return null;
                   },
@@ -208,7 +216,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
-                // Champ téléphone
+                // Champ nom
+                _buildTextField(
+                  controller: _lastNameController,
+                  label: 'Nom',
+                  hint: 'Ex: Kouame',
+                  icon: Icons.person_outline,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez entrer votre nom';
+                    }
+                    if (value.length < 2) {
+                      return 'Le nom doit contenir au moins 2 caracteres';
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Champ telephone
                 PhoneField(
                   controller: _phoneController,
                   enabled: !_isLoading,
@@ -241,7 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 _buildPasswordField(
                   controller: _passwordController,
                   label: 'Mot de passe',
-                  hint: 'Minimum 6 caractères',
+                  hint: 'Minimum 6 caracteres',
                   obscure: _obscurePassword,
                   onToggleObscure: () {
                     setState(() => _obscurePassword = !_obscurePassword);
@@ -251,7 +278,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return 'Veuillez entrer un mot de passe';
                     }
                     if (value.length < 6) {
-                      return 'Le mot de passe doit contenir au moins 6 caractères';
+                      return 'Le mot de passe doit contenir au moins 6 caracteres';
                     }
                     return null;
                   },
@@ -281,7 +308,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 20),
 
-                // Case à cocher CGU
+                // Case a cocher CGU
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -327,7 +354,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const TextSpan(text: ' et la '),
                               TextSpan(
-                                text: 'politique de confidentialité',
+                                text: 'politique de confidentialite',
                                 style: GoogleFonts.openSans(
                                   fontSize: 13,
                                   color: const Color(0xFF8936A8),
@@ -368,7 +395,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           )
                         : Text(
-                            'Créer mon compte',
+                            'Creer mon compte',
                             style: GoogleFonts.openSans(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -384,7 +411,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Déjà un compte ?',
+                      'Deja un compte ?',
                       style: GoogleFonts.openSans(
                         fontSize: 14,
                         color: Colors.grey.shade600,

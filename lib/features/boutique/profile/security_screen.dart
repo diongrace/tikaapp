@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../services/auth_service.dart';
+import '../../../services/profile_service.dart';
 
-/// Écran de sécurité et confidentialité
+/// Ecran de securite et confidentialite
 class SecurityScreen extends StatefulWidget {
   const SecurityScreen({super.key});
 
@@ -35,7 +37,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Sécurité et confidentialité',
+                      'Securite et confidentialite',
                       style: GoogleFonts.openSans(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -53,9 +55,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Section Sécurité du compte
+                    // Section Securite du compte
                     Text(
-                      'Sécurité du compte',
+                      'Securite du compte',
                       style: GoogleFonts.openSans(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -75,7 +77,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                     _buildSecurityOption(
                       icon: Icons.fingerprint,
-                      title: 'Authentification biométrique',
+                      title: 'Authentification biometrique',
                       subtitle: 'Empreinte digitale ou Face ID',
                       trailing: Switch(
                         value: _biometricEnabled,
@@ -85,8 +87,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           });
                           _showConfirmationSnackBar(
                             value
-                              ? 'Authentification biométrique activée'
-                              : 'Authentification biométrique désactivée'
+                              ? 'Authentification biometrique activee'
+                              : 'Authentification biometrique desactivee'
                           );
                         },
                         activeColor: const Color(0xFF8936A8),
@@ -97,8 +99,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                     _buildSecurityOption(
                       icon: Icons.verified_user_outlined,
-                      title: 'Authentification à deux facteurs',
-                      subtitle: 'Protection supplémentaire par SMS',
+                      title: 'Authentification a deux facteurs',
+                      subtitle: 'Protection supplementaire par SMS',
                       trailing: Switch(
                         value: _twoFactorEnabled,
                         onChanged: (value) {
@@ -107,8 +109,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           });
                           _showConfirmationSnackBar(
                             value
-                              ? 'Authentification 2FA activée'
-                              : 'Authentification 2FA désactivée'
+                              ? 'Authentification 2FA activee'
+                              : 'Authentification 2FA desactivee'
                           );
                         },
                         activeColor: const Color(0xFF8936A8),
@@ -119,16 +121,16 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                     _buildSecurityOption(
                       icon: Icons.devices_outlined,
-                      title: 'Appareils connectés',
-                      subtitle: 'Gérer les sessions actives',
+                      title: 'Appareils connectes',
+                      subtitle: 'Gerer les sessions actives',
                       onTap: () => _showDevicesDialog(),
                     ),
 
                     const SizedBox(height: 32),
 
-                    // Section Confidentialité
+                    // Section Confidentialite
                     Text(
-                      'Confidentialité des données',
+                      'Confidentialite des donnees',
                       style: GoogleFonts.openSans(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -139,8 +141,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                     _buildSecurityOption(
                       icon: Icons.analytics_outlined,
-                      title: 'Collecte de données',
-                      subtitle: 'Amélioration de l\'expérience utilisateur',
+                      title: 'Collecte de donnees',
+                      subtitle: 'Amelioration de l\'experience utilisateur',
                       trailing: Switch(
                         value: _dataCollectionEnabled,
                         onChanged: (value) {
@@ -149,8 +151,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           });
                           _showConfirmationSnackBar(
                             value
-                              ? 'Collecte de données activée'
-                              : 'Collecte de données désactivée'
+                              ? 'Collecte de donnees activee'
+                              : 'Collecte de donnees desactivee'
                           );
                         },
                         activeColor: const Color(0xFF8936A8),
@@ -171,8 +173,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           });
                           _showConfirmationSnackBar(
                             value
-                              ? 'Utilisation marketing activée'
-                              : 'Utilisation marketing désactivée'
+                              ? 'Utilisation marketing activee'
+                              : 'Utilisation marketing desactivee'
                           );
                         },
                         activeColor: const Color(0xFF8936A8),
@@ -183,7 +185,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                     _buildSecurityOption(
                       icon: Icons.description_outlined,
-                      title: 'Politique de confidentialité',
+                      title: 'Politique de confidentialite',
                       subtitle: 'Consultez notre politique',
                       onTap: () => _showPrivacyPolicy(),
                     ),
@@ -199,9 +201,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                     const SizedBox(height: 32),
 
-                    // Section Actions sur les données
+                    // Section Actions sur les donnees
                     Text(
-                      'Gestion des données',
+                      'Gestion des donnees',
                       style: GoogleFonts.openSans(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -212,8 +214,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
                     _buildSecurityOption(
                       icon: Icons.download_outlined,
-                      title: 'Télécharger mes données',
-                      subtitle: 'Exportez toutes vos données personnelles',
+                      title: 'Telecharger mes donnees',
+                      subtitle: 'Exportez toutes vos donnees personnelles',
                       iconColor: const Color(0xFF2196F3),
                       onTap: () => _showDownloadDataDialog(),
                     ),
@@ -223,7 +225,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     _buildSecurityOption(
                       icon: Icons.delete_outline,
                       title: 'Supprimer mon compte',
-                      subtitle: 'Action irréversible',
+                      subtitle: 'Action irreversible',
                       iconColor: Colors.red,
                       onTap: () => _showDeleteAccountDialog(),
                     ),
@@ -325,6 +327,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     bool obscureCurrent = true;
     bool obscureNew = true;
     bool obscureConfirm = true;
+    bool isSubmitting = false;
 
     showDialog(
       context: context,
@@ -408,34 +411,84 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: isSubmitting ? null : () => Navigator.pop(context),
               child: Text(
                 'Annuler',
                 style: GoogleFonts.openSans(color: Colors.grey),
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                if (newPasswordController.text == confirmPasswordController.text) {
-                  Navigator.pop(context);
-                  _showConfirmationSnackBar('Mot de passe modifié avec succès');
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Les mots de passe ne correspondent pas',
-                        style: GoogleFonts.openSans(),
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      if (newPasswordController.text != confirmPasswordController.text) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Les mots de passe ne correspondent pas',
+                              style: GoogleFonts.openSans(),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (newPasswordController.text.length < 6) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Le mot de passe doit contenir au moins 6 caracteres',
+                              style: GoogleFonts.openSans(),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (AuthService.isAuthenticated) {
+                        setDialogState(() => isSubmitting = true);
+
+                        final result = await ProfileService.changePassword(
+                          currentPassword: currentPasswordController.text,
+                          newPassword: newPasswordController.text,
+                          newPasswordConfirmation: confirmPasswordController.text,
+                        );
+
+                        if (!context.mounted) return;
+                        setDialogState(() => isSubmitting = false);
+
+                        if (result['success'] == true) {
+                          Navigator.pop(context);
+                          _showConfirmationSnackBar(result['message'] ?? 'Mot de passe modifie');
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result['message'] ?? 'Erreur',
+                                style: GoogleFonts.openSans(),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } else {
+                        Navigator.pop(context);
+                        _showConfirmationSnackBar('Mot de passe modifie avec succes');
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF8936A8),
                 foregroundColor: Colors.white,
               ),
-              child: Text('Confirmer', style: GoogleFonts.openSans()),
+              child: isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text('Confirmer', style: GoogleFonts.openSans()),
             ),
           ],
         ),
@@ -448,15 +501,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Appareils connectés',
+          'Appareils connectes',
           style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildDeviceItem('Samsung Galaxy S21', 'Dakar, Sénégal', 'Actif maintenant', true),
-            const SizedBox(height: 12),
-            _buildDeviceItem('iPhone 13', 'Paris, France', 'Il y a 2 jours', false),
+            _buildDeviceItem('Cet appareil', '', 'Actif maintenant', true),
           ],
         ),
         actions: [
@@ -495,13 +546,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     fontSize: 14,
                   ),
                 ),
-                Text(
-                  location,
-                  style: GoogleFonts.openSans(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
+                if (location.isNotEmpty)
+                  Text(
+                    location,
+                    style: GoogleFonts.openSans(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
-                ),
                 Text(
                   lastActive,
                   style: GoogleFonts.openSans(
@@ -517,7 +569,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               icon: const Icon(Icons.logout, color: Colors.red, size: 20),
               onPressed: () {
                 Navigator.pop(context);
-                _showConfirmationSnackBar('Session déconnectée');
+                _showConfirmationSnackBar('Session deconnectee');
               },
             ),
         ],
@@ -530,15 +582,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Politique de confidentialité',
+          'Politique de confidentialite',
           style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
           child: Text(
-            'Notre politique de confidentialité décrit comment nous collectons, utilisons et protégeons vos données personnelles.\n\n'
-            '1. Collecte des données\n'
-            '2. Utilisation des données\n'
-            '3. Protection des données\n'
+            'Notre politique de confidentialite decrit comment nous collectons, utilisons et protegeons vos donnees personnelles.\n\n'
+            '1. Collecte des donnees\n'
+            '2. Utilisation des donnees\n'
+            '3. Protection des donnees\n'
             '4. Vos droits\n'
             '5. Modifications de la politique',
             style: GoogleFonts.openSans(fontSize: 14),
@@ -568,8 +620,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
             '1. Utilisation du service\n'
             '2. Compte utilisateur\n'
             '3. Paiements et remboursements\n'
-            '4. Propriété intellectuelle\n'
-            '5. Limitation de responsabilité',
+            '4. Propriete intellectuelle\n'
+            '5. Limitation de responsabilite',
             style: GoogleFonts.openSans(fontSize: 14),
           ),
         ),
@@ -588,11 +640,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Télécharger mes données',
+          'Telecharger mes donnees',
           style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Nous allons préparer une archive de toutes vos données personnelles. Vous recevrez un email avec un lien de téléchargement dans les 48 heures.',
+          'Nous allons preparer une archive de toutes vos donnees personnelles. Vous recevrez un email avec un lien de telechargement dans les 48 heures.',
           style: GoogleFonts.openSans(),
         ),
         actions: [
@@ -606,7 +658,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _showConfirmationSnackBar('Demande envoyée. Vous recevrez un email sous 48h');
+              _showConfirmationSnackBar('Demande envoyee. Vous recevrez un email sous 48h');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2196F3),
@@ -620,58 +672,157 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   void _showDeleteAccountDialog() {
+    final passwordController = TextEditingController();
+    final reasonController = TextEditingController();
+    bool obscurePassword = true;
+    bool isDeleting = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Supprimer mon compte',
-          style: GoogleFonts.openSans(
-            fontWeight: FontWeight.bold,
-            color: Colors.red,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              'Cette action est irréversible. Toutes vos données seront définitivement supprimées :',
-              style: GoogleFonts.openSans(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            'Supprimer mon compte',
+            style: GoogleFonts.openSans(
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
             ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'Cette action est irreversible. Toutes vos donnees seront definitivement supprimees :',
+                  style: GoogleFonts.openSans(),
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '- Informations personnelles\n'
+                    '- Historique des commandes\n'
+                    '- Cartes de fidelite\n'
+                    '- Adresses et moyens de paiement',
+                    style: GoogleFonts.openSans(fontSize: 13),
+                  ),
+                ),
+                if (AuthService.isAuthenticated) ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Mot de passe',
+                      labelStyle: GoogleFonts.openSans(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            obscurePassword = !obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: reasonController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'Raison (optionnel)',
+                      labelStyle: GoogleFonts.openSans(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.pop(context),
               child: Text(
-                '• Informations personnelles\n'
-                '• Historique des commandes\n'
-                '• Cartes de fidélité\n'
-                '• Adresses et moyens de paiement',
-                style: GoogleFonts.openSans(fontSize: 13),
+                'Annuler',
+                style: GoogleFonts.openSans(color: Colors.grey),
               ),
+            ),
+            ElevatedButton(
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      if (AuthService.isAuthenticated) {
+                        if (passwordController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Veuillez entrer votre mot de passe',
+                                style: GoogleFonts.openSans(),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        setDialogState(() => isDeleting = true);
+
+                        final result = await ProfileService.deleteAccount(
+                          password: passwordController.text,
+                          reason: reasonController.text.isNotEmpty ? reasonController.text : null,
+                        );
+
+                        if (!context.mounted) return;
+                        setDialogState(() => isDeleting = false);
+
+                        if (result['success'] == true) {
+                          await AuthService.logout();
+                          if (!context.mounted) return;
+                          Navigator.pop(context);
+                          _showConfirmationSnackBar('Compte supprime');
+                          // Retour a l'ecran principal
+                          if (mounted) {
+                            Navigator.of(this.context).popUntil((route) => route.isFirst);
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result['message'] ?? 'Erreur',
+                                style: GoogleFonts.openSans(),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } else {
+                        Navigator.pop(context);
+                        _showConfirmationSnackBar('Votre demande de suppression a ete enregistree');
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: isDeleting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text('Supprimer', style: GoogleFonts.openSans()),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Annuler',
-              style: GoogleFonts.openSans(color: Colors.grey),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showConfirmationSnackBar('Votre demande de suppression a été enregistrée');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: Text('Supprimer', style: GoogleFonts.openSans()),
-          ),
-        ],
       ),
     );
   }

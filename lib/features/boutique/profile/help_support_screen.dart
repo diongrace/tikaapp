@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../support/support_tickets_screen.dart';
+import '../support/create_support_ticket_screen.dart';
 
 /// Écran d'aide et support
 class HelpSupportScreen extends StatefulWidget {
@@ -138,6 +140,135 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           ),
                         ],
                       ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Boutons Support Tickets
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SupportTicketsScreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF8936A8).withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.confirmation_number_outlined,
+                                      color: Color(0xFF8936A8),
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Mes tickets',
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Suivre mes demandes',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CreateSupportTicketScreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF9800).withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.add_comment_outlined,
+                                      color: Color(0xFFFF9800),
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Nouveau ticket',
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Creer une demande',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
 
                     const SizedBox(height: 24),
@@ -317,9 +448,16 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
 
                     _buildResourceOption(
                       icon: Icons.announcement_outlined,
-                      title: 'Signaler un problème',
-                      subtitle: 'Bugs, suggestions, réclamations',
-                      onTap: () => _showReportDialog(),
+                      title: 'Signaler un probleme',
+                      subtitle: 'Bugs, suggestions, reclamations',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CreateSupportTicketScreen(),
+                          ),
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 32),
@@ -694,102 +832,6 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             child: Text('Fermer', style: GoogleFonts.openSans()),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showReportDialog() {
-    final subjectController = TextEditingController();
-    final messageController = TextEditingController();
-    String selectedCategory = 'Bug technique';
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(
-            'Signaler un problème',
-            style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  value: selectedCategory,
-                  decoration: InputDecoration(
-                    labelText: 'Catégorie',
-                    labelStyle: GoogleFonts.openSans(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  items: [
-                    'Bug technique',
-                    'Problème de commande',
-                    'Problème de paiement',
-                    'Suggestion',
-                    'Réclamation',
-                    'Autre',
-                  ].map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category, style: GoogleFonts.openSans()),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setDialogState(() {
-                      selectedCategory = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: subjectController,
-                  decoration: InputDecoration(
-                    labelText: 'Sujet',
-                    labelStyle: GoogleFonts.openSans(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: messageController,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    labelText: 'Description du problème',
-                    labelStyle: GoogleFonts.openSans(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Annuler',
-                style: GoogleFonts.openSans(color: Colors.grey),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _showConfirmationSnackBar('Votre signalement a été envoyé. Nous vous répondrons sous 24h.');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8936A8),
-                foregroundColor: Colors.white,
-              ),
-              child: Text('Envoyer', style: GoogleFonts.openSans()),
-            ),
-          ],
-        ),
       ),
     );
   }

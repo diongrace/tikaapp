@@ -5,9 +5,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../commande/orders_list_api_page.dart';
 import '../../loyalty/create_loyalty_card_page.dart';
 import '../../loyalty/loyalty_card_page.dart';
-import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/loyalty_service.dart';
+import '../../../../services/auth_service.dart';
 import '../../../../services/models/shop_model.dart';
 import '../../../../services/utils/api_endpoint.dart';
 
@@ -237,46 +237,19 @@ class BoutiqueInfoCard extends StatelessWidget {
               () async {
                 Navigator.pop(context);
 
-                // Récupérer le téléphone depuis le stockage local
-                final cardData = await StorageService.getLoyaltyCard();
-                final phone = cardData?['phone'];
+                try {
+                  await AuthService.ensureToken();
+                  final loyaltyCard = await LoyaltyService.getCardForShop(shopId);
 
-                if (!context.mounted) return;
+                  if (!context.mounted) return;
 
-                if (phone != null && phone.isNotEmpty) {
-                  // Vérifier si une carte existe sur l'API
-                  try {
-                    final loyaltyCard = await LoyaltyService.getCard(
-                      shopId: shopId,
-                      phone: phone,
+                  if (loyaltyCard != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => LoyaltyCardPage(loyaltyCard: loyaltyCard),
+                      ),
                     );
-
-                    if (!context.mounted) return;
-
-                    if (loyaltyCard != null) {
-                      // Carte trouvée, afficher
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => LoyaltyCardPage(
-                            loyaltyCard: loyaltyCard,
-                          ),
-                        ),
-                      );
-                    } else {
-                      // Pas de carte, créer
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => CreateLoyaltyCardPage(
-                            shopId: shopId,
-                            boutiqueName: boutiqueName,
-                            shop: BoutiqueThemeProvider.shopOf(context),
-                          ),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    // En cas d'erreur, aller vers création
+                  } else {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => CreateLoyaltyCardPage(
@@ -287,8 +260,7 @@ class BoutiqueInfoCard extends StatelessWidget {
                       ),
                     );
                   }
-                } else {
-                  // Pas de téléphone enregistré, créer carte
+                } catch (e) {
                   if (!context.mounted) return;
                   Navigator.of(context).push(
                     MaterialPageRoute(

@@ -138,6 +138,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
         if (!mounted) return;
 
+        // Fermer le modal de succès d'abord
+        Navigator.of(context).pop();
+
+        if (!mounted) return;
+
         if (widget.nextRoute != null) {
           Navigator.pushReplacementNamed(context, widget.nextRoute!);
         } else {

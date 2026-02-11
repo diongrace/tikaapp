@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import '../panier/cart_manager.dart';
 import 'form_widgets.dart';
@@ -12,7 +13,6 @@ import '../../../core/services/storage_service.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/order_service.dart';
 import '../../../services/device_service.dart';
-import '../../../services/wave_payment_service.dart';
 import '../../../services/shop_service.dart';
 import '../../../services/models/shop_model.dart';
 
@@ -216,10 +216,10 @@ class _CommandeScreenState extends State<CommandeScreen> {
             deliveryAddress: _addressController.text.isNotEmpty ? _addressController.text : null,
             paymentMethod: _selectedPaymentMethod,
             onConfirm: () {
-              // Fermer la page de résumé et créer la commande
+              // Fermer la page de résumé
               Navigator.of(context).pop();
 
-              // Si Wave sélectionné, naviguer vers l'écran Wave
+              // Wave → page de paiement Wave, sinon création de commande
               if (_selectedPaymentMethod == 'wave') {
                 _navigateToWavePayment();
               } else {
@@ -235,7 +235,13 @@ class _CommandeScreenState extends State<CommandeScreen> {
     );
   }
 
-  /// Naviguer vers l'écran de paiement Wave
+  /// Naviguer vers l'écran de paiement Wave (Mode Screenshot)
+  ///
+  /// Flux:
+  /// 1. Sauvegarder commande en attente localement
+  /// 2. Afficher le lien Wave du vendeur → client paie
+  /// 3. Client prend screenshot de la confirmation
+  /// 4. POST /mobile/orders/create-with-wave-proof (commande + preuve)
   Future<void> _navigateToWavePayment() async {
     if (!mounted) return;
 
@@ -260,40 +266,24 @@ class _CommandeScreenState extends State<CommandeScreen> {
     // Sauvegarder en cache local
     await StorageService.savePendingWaveOrder(pendingOrderData);
 
-    // Récupérer le lien Wave du vendeur (si disponible)
-    String? wavePaymentLink;
-    if (widget.shop?.wavePaymentLink != null) {
-      wavePaymentLink = widget.shop!.wavePaymentLink;
-    }
+    // Récupérer le lien Wave du vendeur
+    String? wavePaymentLink = widget.shop?.wavePaymentLink;
 
-    // Debug: vérifier le lien Wave
-    print('🌊 [Wave Navigation] shop: ${widget.shop?.name}');
-    print('🌊 [Wave Navigation] waveEnabled: ${widget.shop?.waveEnabled}');
-    print('🌊 [Wave Navigation] wavePaymentLink: $wavePaymentLink');
-    print('🌊 [Wave Navigation] shop object is null: ${widget.shop == null}');
+    print('🌊 ━━━ WAVE NAVIGATION ━━━');
+    print('🌊 Shop: ${widget.shop?.name} (ID: ${widget.shopId})');
+    print('🌊 wavePaymentLink en memoire: $wavePaymentLink');
 
-    // Fallback: si pas de lien Wave sur le shop, essayer l'API payment-methods
+    // Si pas de lien en mémoire, rechercher via les API
     if (wavePaymentLink == null) {
-      print('🌊 [Wave Navigation] Lien Wave absent du shop, tentative via API payment-methods...');
       try {
         wavePaymentLink = await ShopService.getWavePaymentLink(widget.shopId);
-        print('🌊 [Wave Navigation] Résultat API payment-methods: $wavePaymentLink');
       } catch (e) {
-        print('🌊 [Wave Navigation] Erreur API payment-methods: $e');
+        print('🌊 Erreur recherche wave link: $e');
       }
     }
 
-    // Fallback 2: si toujours pas de lien, essayer de recharger le shop depuis l'API
-    if (wavePaymentLink == null) {
-      print('🌊 [Wave Navigation] Tentative de rechargement du shop depuis l\'API...');
-      try {
-        final freshShop = await ShopService.getShopById(widget.shopId);
-        wavePaymentLink = freshShop.wavePaymentLink;
-        print('🌊 [Wave Navigation] Résultat rechargement shop: $wavePaymentLink');
-      } catch (e) {
-        print('🌊 [Wave Navigation] Erreur rechargement shop: $e');
-      }
-    }
+    print('🌊 wavePaymentLink final: $wavePaymentLink');
+    print('🌊 ━━━━━━━━━━━━━━━━━━━━━━');
 
     if (!mounted) return;
 
@@ -374,65 +364,29 @@ class _CommandeScreenState extends State<CommandeScreen> {
       print('   - Status: ${response['status']}');
       print('   - Payment Status: ${response['payment_status']}');
 
-      // ✅ GESTION REDIRECTION WAVE
-      if (response['wave_redirect'] == true && response['wave_url'] != null) {
+      // GESTION REDIRECTION WAVE — Ouvrir Wave directement (comme le web)
+      // Accepter wave_redirect OU wave_url seul (certains backends ne renvoient que l'URL)
+      final waveUrl = response['wave_url']?.toString();
+      if (response['wave_redirect'] == true || (waveUrl != null && waveUrl.isNotEmpty)) {
         print('🌊 REDIRECTION WAVE DÉTECTÉE');
-        print('   - Wave URL: ${response['wave_url']}');
+        print('   - Wave URL: $waveUrl');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-        // TODO: Implémenter la redirection Wave avec WebView ou url_launcher
-        // Pour l'instant, on affiche juste un message
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text('Paiement Wave', style: GoogleFonts.poppins()),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.payment, size: 48, color: _primaryColor),
-                  SizedBox(height: 16),
-                  Text(
-                    'Vous allez être redirigé vers Wave pour finaliser votre paiement.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.openSans(),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Numéro de commande: ${response['order_number']}',
-                    style: GoogleFonts.openSans(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                    if (mounted) {
-                      Navigator.of(context).pop(true);
-                    }
-                  },
-                  child: Text('Annuler'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    // TODO: Ouvrir wave_url avec url_launcher ou WebView
-                    Navigator.of(context).pop();
-                    if (mounted) {
-                      Navigator.of(context).pop(true);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: _primaryColor),
-                  child: Text('Continuer vers Wave'),
-                ),
-              ],
-            ),
-          );
+        if (waveUrl != null && waveUrl.isNotEmpty) {
+          // Ouvrir l'URL Wave → Wave app s'ouvre avec montant + marchand
+          try {
+            await launchUrl(
+              Uri.parse(waveUrl),
+              mode: LaunchMode.externalApplication,
+            );
+            print('🌊 Wave ouvert avec succes');
+          } catch (e) {
+            print('🌊 Erreur ouverture Wave: $e');
+          }
         }
-        return;
+
+        // Continuer vers la page de succes (la commande est deja creee)
+        // Le backend confirmera le paiement via webhook Wave
       }
 
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

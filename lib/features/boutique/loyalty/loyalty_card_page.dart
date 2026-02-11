@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../../../core/services/storage_service.dart';
 import '../../../services/loyalty_service.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/models/loyalty_card_model.dart';
 import '../home/home_online_screen.dart';
 
-/// Page d'affichage de la carte de fidélité
+/// Page d'affichage de la carte de fidelite
 class LoyaltyCardPage extends StatefulWidget {
   final LoyaltyCard loyaltyCard;
 
@@ -21,59 +21,72 @@ class LoyaltyCardPage extends StatefulWidget {
 
 class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
   late LoyaltyCard _card;
-  bool _isRefreshing = false;
+  List<LoyaltyReward> _rewards = [];
+  List<LoyaltyTransaction> _recentTransactions = [];
+  String? _qrData;
+  bool _isLoadingDetail = true;
+
+  static const Color _primaryColor = Color(0xFF8936A8);
 
   @override
   void initState() {
     super.initState();
     _card = widget.loyaltyCard;
-    // Sauvegarder la carte lors de l'affichage
-    _saveCard();
+    _loadCardDetail();
   }
 
-  Future<void> _saveCard() async {
-    final nameParts = _card.customerName.split(' ');
-    await StorageService.saveLoyaltyCard({
-      'id': _card.id,
-      'cardId': _card.cardNumber,
-      'firstName': nameParts.isNotEmpty ? nameParts.first : '',
-      'lastName': nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '',
-      'birthDate': '', // Not available in API
-      'phone': _card.phone,
-      'boutiqueName': _card.shopName,
-      'points': _card.points,
-      'rewards': _card.totalPointsEarned,
-    });
-  }
-
-  /// Rafraîchir les données de la carte depuis l'API
-  Future<void> _refreshCard() async {
-    setState(() => _isRefreshing = true);
-
+  /// Charger le detail complet (carte + recompenses + transactions)
+  Future<void> _loadCardDetail() async {
     try {
-      final updatedCard = await LoyaltyService.getCard(
-        shopId: _card.shopId,
-        phone: _card.phone,
-      );
+      final detail = await LoyaltyService.getCardDetail(_card.id);
+      // Charger le QR data en parallele
+      Map<String, String> qrInfo = {};
+      try {
+        qrInfo = await LoyaltyService.getCardQrCode(_card.id);
+      } catch (_) {}
 
-      if (updatedCard != null) {
-        setState(() => _card = updatedCard);
-        // Mettre à jour le stockage local
-        await _saveCard();
+      if (mounted) {
+        setState(() {
+          _card = detail.card;
+          _rewards = detail.rewards;
+          _recentTransactions = detail.recentTransactions;
+          _qrData = qrInfo['qr_data']?.isNotEmpty == true
+              ? qrInfo['qr_data']
+              : _card.qrCode ?? _card.cardNumber;
+          _isLoadingDetail = false;
+        });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur de rafraîchissement: $e'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        setState(() {
+          _isLoadingDetail = false;
+          _qrData = _card.qrCode ?? _card.cardNumber;
+        });
       }
-    } finally {
-      if (mounted) {
-        setState(() => _isRefreshing = false);
-      }
+    }
+  }
+
+  /// Rafraichir les donnees
+  Future<void> _refreshCard() async {
+    setState(() => _isLoadingDetail = true);
+    await _loadCardDetail();
+  }
+
+  Color get _tierColor {
+    switch (_card.tier) {
+      case 'silver': return const Color(0xFF9E9E9E);
+      case 'gold': return const Color(0xFFFFD700);
+      case 'platinum': return const Color(0xFF9C27B0);
+      default: return const Color(0xFFCD7F32); // bronze
+    }
+  }
+
+  List<Color> get _cardGradient {
+    switch (_card.tier) {
+      case 'silver': return [const Color(0xFF757575), const Color(0xFFBDBDBD)];
+      case 'gold': return [const Color(0xFFFF8F00), const Color(0xFFFFD54F)];
+      case 'platinum': return [const Color(0xFF6A1B9A), const Color(0xFFCE93D8)];
+      default: return [const Color(0xFF8936A8), const Color(0xFFD48EFC)]; // bronze
     }
   }
 
@@ -87,13 +100,67 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             // Header
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Text(
-                'Ma carte de fidélité',
-                style: GoogleFonts.openSans(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _primaryColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_rounded, color: _primaryColor, size: 18),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Ma carte de fidelite',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E1E2E),
+                          ),
+                        ),
+                        Text(
+                          _card.shopName,
+                          style: GoogleFonts.openSans(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Badge tier
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _tierColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.workspace_premium, color: _tierColor, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          _card.tierLabel,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _tierColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -101,79 +168,70 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshCard,
+                color: _primaryColor,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    // Carte de fidélité principale
-                    _buildLoyaltyCard(context),
-                    const SizedBox(height: 20),
+                      // Carte visuelle
+                      _buildCardVisual(),
+                      const SizedBox(height: 20),
 
-                    // QR Code
-                    _buildQRCodeSection(),
-                    const SizedBox(height: 20),
+                      // Stats rapides
+                      _buildStatsRow(),
+                      const SizedBox(height: 20),
 
-                    // Points et récompenses
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            icon: Icons.star_outline,
-                            value: _card.points.toString(),
-                            label: 'Points\ncumulés',
-                            color: const Color(0xFF8936A8),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildStatCard(
-                            icon: Icons.card_giftcard,
-                            value: _card.totalPointsEarned.toString(),
-                            label: 'Points gagnés',
-                            color: const Color(0xFFFF9800),
-                          ),
-                        ),
+                      // QR Code
+                      _buildQRCodeSection(),
+                      const SizedBox(height: 20),
+
+                      // Recompenses
+                      if (_rewards.isNotEmpty || _isLoadingDetail) ...[
+                        _buildRewardsSection(),
+                        const SizedBox(height: 20),
                       ],
-                    ),
-                    const SizedBox(height: 20),
 
-                    // Informations du titulaire
-                    _buildHolderInfo(),
-                    const SizedBox(height: 20),
+                      // Transactions recentes
+                      if (_recentTransactions.isNotEmpty || _isLoadingDetail) ...[
+                        _buildTransactionsSection(),
+                        const SizedBox(height: 20),
+                      ],
 
-                    // Bouton retour
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // Remplacer la page actuelle par HomeScreen
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => HomeScreen(
-                                shopId: _card.shopId,
+                      // Infos de la carte
+                      _buildCardInfo(),
+                      const SizedBox(height: 20),
+
+                      // Bouton retour boutique
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => HomeScreen(shopId: _card.shopId),
                               ),
+                            );
+                          },
+                          icon: const Icon(Icons.storefront_rounded, size: 18),
+                          label: Text(
+                            'Retour a la boutique',
+                            style: GoogleFonts.openSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                             ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: Colors.grey.shade300),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        child: Text(
-                          'Retour à la boutique',
-                          style: GoogleFonts.openSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -185,21 +243,24 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
     );
   }
 
-  // Carte de fidélité principale
-  Widget _buildLoyaltyCard(BuildContext context) {
+  // ============================================================
+  // CARTE VISUELLE
+  // ============================================================
+
+  Widget _buildCardVisual() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8936A8), Color(0xFFD48EFC)],
+        gradient: LinearGradient(
+          colors: _cardGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8936A8).withOpacity(0.3),
+            color: _cardGradient.first.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -208,7 +269,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // En-tête avec logo et icône
+          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -217,76 +278,67 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 children: [
                   Text(
                     'Tika',
-                    style: GoogleFonts.openSans(
-                      fontSize: 24,
+                    style: GoogleFonts.poppins(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   Text(
-                    'Carte de fidélité',
+                    'Carte de fidelite',
                     style: GoogleFonts.openSans(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.85),
                     ),
                   ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(
-                  Icons.star,
-                  color: Colors.white,
-                  size: 24,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.workspace_premium, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      _card.tierLabel,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
 
-          // Titulaire
-          Text(
-            'Titulaire',
-            style: GoogleFonts.openSans(
-              fontSize: 12,
-              color: Colors.white.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _card.customerName,
-            style: GoogleFonts.openSans(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
-
           // Boutique
           Text(
             'Boutique',
             style: GoogleFonts.openSans(
-              fontSize: 12,
-              color: Colors.white.withOpacity(0.8),
+              fontSize: 11,
+              color: Colors.white.withOpacity(0.7),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             _card.shopName,
-            style: GoogleFonts.openSans(
+            style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Numéro de carte et points
+          // Numero et Points
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -294,20 +346,20 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Numéro de carte',
+                    'Numero de carte',
                     style: GoogleFonts.openSans(
-                      fontSize: 11,
-                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 10,
+                      color: Colors.white.withOpacity(0.7),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     _card.cardNumber,
-                    style: GoogleFonts.openSans(
+                    style: GoogleFonts.robotoMono(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
-                      letterSpacing: 0.5,
+                      letterSpacing: 1,
                     ),
                   ),
                 ],
@@ -318,14 +370,14 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                   Text(
                     'Points',
                     style: GoogleFonts.openSans(
-                      fontSize: 11,
-                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 10,
+                      color: Colors.white.withOpacity(0.7),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
-                    _card.points.toString(),
-                    style: GoogleFonts.openSans(
+                    '${_card.points}',
+                    style: GoogleFonts.poppins(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -335,57 +387,62 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               ),
             ],
           ),
+
+          if (_card.pointsValue > 0) ...[
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '= ${_card.pointsValue} FCFA',
+                style: GoogleFonts.openSans(
+                  fontSize: 11,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  // Section QR Code
-  Widget _buildQRCodeSection() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+  // ============================================================
+  // STATS RAPIDES
+  // ============================================================
+
+  Widget _buildStatsRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.star_rounded,
+            value: '${_card.points}',
+            label: 'Points',
+            color: _primaryColor,
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // QR Code
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: QrImageView(
-              data: _card.cardNumber,
-              version: QrVersions.auto,
-              size: 200.0,
-              backgroundColor: Colors.white,
-            ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.monetization_on_rounded,
+            value: '${_card.pointsValue} F',
+            label: 'Valeur',
+            color: const Color(0xFF4CAF50),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Scannez ce code en boutique pour utiliser votre carte',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.openSans(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.storefront_rounded,
+            value: '${_card.visitsCount}',
+            label: 'Visites',
+            color: const Color(0xFF2196F3),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  // Carte de statistique
   Widget _buildStatCard({
     required IconData icon,
     required String value,
@@ -393,45 +450,37 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: color.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(height: 12),
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 8),
           Text(
             value,
-            style: GoogleFonts.openSans(
-              fontSize: 28,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: const Color(0xFF1E1E2E),
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
           Text(
             label,
-            textAlign: TextAlign.center,
             style: GoogleFonts.openSans(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-              height: 1.3,
+              fontSize: 11,
+              color: Colors.grey[500],
             ),
           ),
         ],
@@ -439,8 +488,13 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
     );
   }
 
-  // Informations du titulaire
-  Widget _buildHolderInfo() {
+  // ============================================================
+  // QR CODE
+  // ============================================================
+
+  Widget _buildQRCodeSection() {
+    final qrContent = _qrData ?? _card.qrCode ?? _card.cardNumber;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -448,7 +502,95 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.qr_code_rounded, color: _primaryColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Mon QR Code',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E1E2E),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: QrImageView(
+              data: qrContent,
+              version: QrVersions.auto,
+              size: 180.0,
+              backgroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Scannez ce code en boutique pour cumuler vos points',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.openSans(
+              fontSize: 12,
+              color: Colors.grey.shade500,
+            ),
+          ),
+          if (_card.pinCodeHint != null) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.lock_outline, size: 14, color: Color(0xFFFF9800)),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      _card.pinCodeHint!,
+                      style: GoogleFonts.openSans(
+                        fontSize: 11,
+                        color: const Color(0xFFE65100),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // RECOMPENSES
+  // ============================================================
+
+  Widget _buildRewardsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -457,25 +599,335 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Informations du titulaire',
-            style: GoogleFonts.openSans(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          Row(
+            children: [
+              const Icon(Icons.card_giftcard_rounded, color: Color(0xFFFF9800), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Recompenses',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E1E2E),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          if (_isLoadingDetail)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else if (_rewards.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Aucune recompense disponible pour le moment',
+                  style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey[400]),
+                ),
+              ),
+            )
+          else
+            ..._rewards.map(_buildRewardItem),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRewardItem(LoyaltyReward reward) {
+    final color = reward.canClaim ? const Color(0xFF4CAF50) : const Color(0xFFFF9800);
+    final icon = _getRewardIcon(reward.rewardType);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.15)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reward.name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E1E2E),
+                  ),
+                ),
+                if (reward.description != null)
+                  Text(
+                    reward.description!,
+                    style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey[500]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                const SizedBox(height: 4),
+                // Barre de progression
+                if (!reward.canClaim && reward.progressPercent > 0) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: reward.progressPercent / 100,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      minHeight: 4,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                ],
+                Text(
+                  reward.canClaim
+                      ? 'Disponible !'
+                      : 'Encore ${reward.pointsNeeded} points',
+                  style: GoogleFonts.openSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+              ],
             ),
           ),
+          Text(
+            '${reward.pointsRequired} pts',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getRewardIcon(String type) {
+    switch (type) {
+      case 'free_delivery': return Icons.local_shipping_outlined;
+      case 'gift_product': return Icons.card_giftcard;
+      case 'percent_discount': return Icons.percent;
+      case 'fixed_discount': return Icons.money_off;
+      default: return Icons.star_outline;
+    }
+  }
+
+  // ============================================================
+  // TRANSACTIONS RECENTES
+  // ============================================================
+
+  Widget _buildTransactionsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.history_rounded, color: Color(0xFF2196F3), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Historique recent',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E1E2E),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          if (_isLoadingDetail)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else if (_recentTransactions.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Aucune transaction pour le moment',
+                  style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey[400]),
+                ),
+              ),
+            )
+          else
+            ..._recentTransactions.take(5).map(_buildTransactionItem),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(LoyaltyTransaction tx) {
+    final isPositive = tx.isEarned;
+    final color = isPositive ? const Color(0xFF4CAF50) : const Color(0xFFE91E63);
+    final icon = isPositive ? Icons.add_circle_outline : Icons.remove_circle_outline;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tx.typeLabel.isNotEmpty ? tx.typeLabel : tx.type,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E1E2E),
+                  ),
+                ),
+                if (tx.description != null)
+                  Text(
+                    tx.description!,
+                    style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey[500]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                tx.pointsDisplay.isNotEmpty ? tx.pointsDisplay : '${isPositive ? "+" : ""}${tx.points}',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(
+                tx.createdAtHuman.isNotEmpty ? tx.createdAtHuman : tx.createdAt,
+                style: GoogleFonts.openSans(fontSize: 10, color: Colors.grey[400]),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // INFOS DE LA CARTE
+  // ============================================================
+
+  Widget _buildCardInfo() {
+    final clientName = AuthService.currentClient?.name ?? '';
+    final clientPhone = AuthService.currentClient?.phone ?? '';
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.info_outline_rounded, color: _primaryColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Informations',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E1E2E),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
-          _buildInfoRow('Nom complet', _card.customerName),
-          const SizedBox(height: 12),
-          _buildInfoRow('Téléphone', _card.phone),
-          if (_card.email != null) ...[
-            const SizedBox(height: 12),
-            _buildInfoRow('Email', _card.email!),
+          if (clientName.isNotEmpty)
+            _buildInfoRow('Titulaire', clientName),
+          if (clientPhone.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            _buildInfoRow('Telephone', clientPhone),
           ],
-          const SizedBox(height: 12),
-          _buildInfoRow('ID Carte', _card.cardNumber),
-          const SizedBox(height: 12),
-          _buildInfoRow('Statut', _card.status == 'active' ? 'Actif' : _card.status),
+          const SizedBox(height: 10),
+          _buildInfoRow('N carte', _card.cardNumber),
+          const SizedBox(height: 10),
+          _buildInfoRow('Boutique', _card.shopName),
+          const SizedBox(height: 10),
+          _buildInfoRow('Niveau', _card.tierLabel),
+          const SizedBox(height: 10),
+          _buildInfoRow('Statut', _card.isActive ? 'Actif' : 'Inactif'),
+          if (_card.activatedAt != null) ...[
+            const SizedBox(height: 10),
+            _buildInfoRow('Active le', _card.activatedAt!),
+          ],
+          if (_card.lastUsedAt != null) ...[
+            const SizedBox(height: 10),
+            _buildInfoRow('Derniere utilisation', _card.lastUsedAt!),
+          ],
+          if (_card.lifetimeSpent > 0) ...[
+            const SizedBox(height: 10),
+            _buildInfoRow('Total depense', '${_card.lifetimeSpent} FCFA'),
+          ],
+          const SizedBox(height: 10),
+          _buildInfoRow('Valeur du point', '1 pt = ${_card.pointValue} FCFA'),
         ],
       ),
     );
@@ -488,8 +940,8 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         Text(
           label,
           style: GoogleFonts.openSans(
-            fontSize: 14,
-            color: Colors.grey.shade600,
+            fontSize: 13,
+            color: Colors.grey.shade500,
           ),
         ),
         Flexible(
@@ -497,9 +949,9 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             value,
             textAlign: TextAlign.right,
             style: GoogleFonts.openSans(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: const Color(0xFF1E1E2E),
             ),
           ),
         ),

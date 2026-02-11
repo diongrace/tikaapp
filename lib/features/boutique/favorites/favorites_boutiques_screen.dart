@@ -30,7 +30,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
   }
 
   /// Charger les favoris depuis l'API
-  /// GET /client/favorites?device_fingerprint=xxx
+  /// GET /client/favorites (Bearer Token)
   Future<void> _loadFavorites() async {
     if (!mounted) return;
 
@@ -82,7 +82,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
   }
 
   /// Retirer une boutique des favoris
-  /// DELETE /client/favorites/{shopId}?device_fingerprint=xxx
+  /// DELETE /client/favorites/{shopId} (Bearer Token)
   Future<void> _removeFavorite(Shop shop) async {
     if (!mounted) return;
 

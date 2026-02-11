@@ -67,6 +67,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       if (response.success) {
         showSuccessModal(context, response.message ?? 'Code envoyé');
+        await Future.delayed(const Duration(milliseconds: 800));
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Fermer le modal de succès
 
         // Naviguer vers l'écran OTP
         final verified = await Navigator.push<bool>(
@@ -126,7 +129,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         await Future.delayed(const Duration(milliseconds: 800));
 
         if (mounted) {
-          // Retourner à l'écran de connexion
+          // Fermer le modal de succès puis retourner à l'écran de connexion
+          Navigator.of(context).pop();
           Navigator.pop(context, true);
         }
       } else {

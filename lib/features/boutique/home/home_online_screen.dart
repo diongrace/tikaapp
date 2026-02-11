@@ -13,6 +13,7 @@ import 'components/home_components.dart';
 import '../../../services/shop_service.dart';
 import '../../../services/favorites_service.dart';
 import '../../../services/loyalty_service.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/models/product_model.dart';
 import '../../../core/services/boutique_theme_provider.dart';
@@ -134,6 +135,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
       if (shopId != null) {
         _currentShop = await ShopService.getShopById(shopId);
+        // Si le detail API ne retourne pas de banner mais que le shop original en a un
+        // (venant de la liste qui contient cover_image), le preserver
+        if ((_currentShop?.bannerUrl == null || _currentShop!.bannerUrl!.isEmpty) &&
+            widget.shop?.bannerUrl != null && widget.shop!.bannerUrl!.isNotEmpty) {
+          print('🖼️ [HomeScreen] Banner preserve depuis shop original: ${widget.shop!.bannerUrl}');
+          _currentShop = _currentShop!.copyWithBanner(widget.shop!.bannerUrl!);
+        }
       } else {
         // Mode démo : utiliser une boutique par défaut ou afficher un message
         if (mounted) {
@@ -150,6 +158,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       final productsResult = await ShopService.getShopProducts(_currentShop!.id);
       final categories = await ShopService.getShopCategories(_currentShop!.id);
       final isFavorite = await FavoritesService.isFavorite(_currentShop!.id);
+
+      // Synchroniser le cache persistant des favoris
+      if (isFavorite) {
+        FavoritesService.addToLocalCache(_currentShop!);
+      }
 
       // Sauvegarder le shopId pour usage futur
       await StorageService.saveLastShopId(_currentShop!.id);
@@ -191,41 +204,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     }
   }
 
-  // Toggle favori avec appel API
+  // Toggle favori via POST /client/favorites/toggle (endpoint recommandé)
   Future<void> _toggleFavorite() async {
     if (_currentShop == null) return;
 
     try {
-      final result = await FavoritesService.toggleFavorite(
-        _currentShop!.id,
-        _isFavorite,
-      );
+      // Appel API toggle — retourne { data: { is_favorite, action, ... } }
+      final result = await FavoritesService.toggleFavorite(_currentShop!.id);
 
-      if (mounted) {
-        setState(() {
-          _isFavorite = !_isFavorite;
-        });
+      if (!mounted) return;
+
+      // Lire l'état depuis la réponse API
+      final isFav = result['data']?['is_favorite'] == true;
+
+      setState(() {
+        _isFavorite = isFav;
+      });
+
+      // Synchroniser le cache persistant
+      if (isFav) {
+        FavoritesService.addToLocalCache(_currentShop!);
+      } else {
+        FavoritesService.removeFromLocalCache(_currentShop!.id);
       }
 
-      if (mounted) {
-        final shopTheme = _currentShop?.theme ?? ShopTheme.defaultTheme();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              result['message'] ?? (_isFavorite
-                  ? 'Boutique ajoutée aux favoris'
-                  : 'Boutique retirée des favoris'),
-              style: GoogleFonts.openSans(),
-            ),
-            backgroundColor: _isFavorite ? shopTheme.primary : Colors.grey.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            duration: const Duration(seconds: 2),
+      final shopTheme = _currentShop?.theme ?? ShopTheme.defaultTheme();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['message'] ?? (isFav
+                ? 'Boutique ajoutée aux favoris'
+                : 'Boutique retirée des favoris'),
+            style: GoogleFonts.openSans(),
           ),
-        );
-      }
+          backgroundColor: isFav ? shopTheme.primary : Colors.grey.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -488,6 +507,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
               bannerUrl: _currentShop?.bannerUrl,
               onFavoriteToggle: _toggleFavorite,
               onBackPressed: () => Navigator.pop(context),
+              onHomeTap: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/access-boutique',
+                  (route) => false,
+                );
+              },
             ),
           ),
 
@@ -551,46 +577,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   Future<void> _navigateToLoyaltyCard() async {
     if (_currentShop == null) return;
 
-    // Récupérer le téléphone depuis le stockage local
-    final cardData = await StorageService.getLoyaltyCard();
-    final phone = cardData?['phone'];
+    try {
+      await AuthService.ensureToken();
+      final loyaltyCard = await LoyaltyService.getCardForShop(_currentShop!.id);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (phone != null && phone.isNotEmpty) {
-      // Vérifier si une carte existe sur l'API
-      try {
-        final loyaltyCard = await LoyaltyService.getCard(
-          shopId: _currentShop!.id,
-          phone: phone,
+      if (loyaltyCard != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => LoyaltyCardPage(loyaltyCard: loyaltyCard),
+          ),
         );
-
-        if (!mounted) return;
-
-        if (loyaltyCard != null) {
-          // Carte trouvée, afficher
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => LoyaltyCardPage(
-                loyaltyCard: loyaltyCard,
-              ),
-            ),
-          );
-        } else {
-          // Pas de carte, créer
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CreateLoyaltyCardPage(
-                shopId: _currentShop!.id,
-                boutiqueName: _currentShop!.name,
-                shop: _currentShop,
-              ),
-            ),
-          );
-        }
-      } catch (e) {
-        if (!mounted) return;
-        // En cas d'erreur, aller vers création
+      } else {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => CreateLoyaltyCardPage(
@@ -601,19 +600,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
           ),
         );
       }
-    } else {
-      // Pas de téléphone enregistré, créer carte
+    } catch (e) {
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => CreateLoyaltyCardPage(
             shopId: _currentShop!.id,
             boutiqueName: _currentShop!.name,
-            shop: _currentShop,
+              shop: _currentShop,
+            ),
           ),
-        ),
-      );
-    }
+        );
+      }
   }
 
   // Widget pour créer une icône flottante

@@ -19,12 +19,16 @@ import '../features/boutique/profile/payment_methods_screen.dart';
 import '../features/boutique/profile/notifications_screen.dart';
 import '../features/boutique/profile/security_screen.dart';
 import '../features/boutique/profile/help_support_screen.dart';
+import '../features/boutique/support/support_tickets_screen.dart';
 import '../features/boutique/home/home_online_screen.dart';
 // Auth screens
 import '../features/auth/auth_choice_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/auth/forgot_password_screen.dart';
+// Dashboard screens
+import '../features/dashboard/dashboard_screen.dart';
+import '../features/dashboard/dashboard_stats_screen.dart';
 
 /// Noms des routes de l'application
 class RouteNames {
@@ -48,11 +52,15 @@ class RouteNames {
   static const String profileNotifications = '/profile-notifications';
   static const String security = '/security';
   static const String helpSupport = '/help-support';
+  static const String supportTickets = '/support-tickets';
   // Routes d'authentification
   static const String authChoice = '/auth';
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String forgotPassword = '/auth/forgot-password';
+  // Routes du dashboard
+  static const String dashboard = '/dashboard';
+  static const String dashboardStats = '/dashboard/stats';
 }
 
 /// Configuration des routes de l'application
@@ -99,11 +107,15 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/profile-notifications': (context) => const NotificationsScreen(),
   '/security': (context) => const SecurityScreen(),
   '/help-support': (context) => const HelpSupportScreen(),
+  '/support-tickets': (context) => const SupportTicketsScreen(),
   // Routes d'authentification
   '/auth': (context) => const AuthChoiceScreen(),
   '/auth/login': (context) => const LoginScreen(),
   '/auth/register': (context) => const RegisterScreen(),
   '/auth/forgot-password': (context) => const ForgotPasswordScreen(),
+  // Routes du dashboard
+  '/dashboard': (context) => const DashboardScreen(),
+  '/dashboard/stats': (context) => const DashboardStatsScreen(),
 };
 
 /// Fonction de génération de routes

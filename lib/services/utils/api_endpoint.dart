@@ -4,12 +4,13 @@ class Endpoints {
   // URL de base pour les fichiers de stockage (images, banners, etc.)
   static const String storageBaseUrl = 'https://prepro.tika-ci.com/storage';
 
-  // Shops
+  // Shops (sous /api/client/shops/)
   static const String shops = '$baseUrl/client/shops';
   static String shopDetails(int id) => '$baseUrl/client/shops/$id';
   static String shopProducts(int id) => '$baseUrl/client/shops/$id/products';
   static String shopCategories(int id) => '$baseUrl/client/shops/$id/categories';
   static const String shopsFeatured = '$baseUrl/client/shops/featured';
+  static String shopBySlug(String slug) => '$baseUrl/client/shops/slug/$slug';
 
   // Products
   static const String products = '$baseUrl/client/products';
@@ -37,18 +38,30 @@ class Endpoints {
   static String shopCoupons(int shopId) => '$baseUrl/client/shops/$shopId/coupons';
 
   // Loyalty
-  static const String loyaltyCreateCard = '$baseUrl/client/loyalty/create-card';
-  static String loyaltyCardByPhone(int shopId) => '$baseUrl/client/loyalty/shops/$shopId';
+  static const String loyaltyCards = '$baseUrl/client/loyalty';
+  static const String loyaltyStats = '$baseUrl/client/loyalty/stats';
+  static const String loyaltyCreateCard = '$baseUrl/client/loyalty/cards';
+  static String loyaltyCardDetail(int id) => '$baseUrl/client/loyalty/cards/$id';
+  static String loyaltyCardHistory(int id) => '$baseUrl/client/loyalty/cards/$id/history';
+  static String loyaltyCardRewards(int id) => '$baseUrl/client/loyalty/cards/$id/rewards';
+  static String loyaltyCardQrCode(int id) => '$baseUrl/client/loyalty/cards/$id/qr-code';
+  static String loyaltyCardVerifyPin(int id) => '$baseUrl/client/loyalty/cards/$id/verify-pin';
+  static String loyaltyCardByShop(int shopId) => '$baseUrl/client/loyalty/shops/$shopId';
   static const String loyaltyCalculateDiscount = '$baseUrl/client/loyalty/calculate-discount';
-  static const String loyaltyValidatePIN = '$baseUrl/client/loyalty/validate-pin';
 
-  // Delivery Zones
+  // Delivery Zones & Options
   static String deliveryZones(int shopId) => '$baseUrl/client/shops/$shopId/delivery-zones';
+  static String deliveryOptions(int shopId) => '$baseUrl/client/shops/$shopId/delivery-options';
   static const String deliveryZoneCalculateFee = '$baseUrl/client/delivery-zones/calculate-fee';
 
   // Favorites
   static const String favorites = '$baseUrl/client/favorites';
-  static String removeFavorite(int shopId) => '$baseUrl/client/favorites/$shopId';
+  static const String favoritesStats = '$baseUrl/client/favorites/stats';
+  static const String favoritesSuggestions = '$baseUrl/client/favorites/suggestions';
+  static const String favoritesToggle = '$baseUrl/client/favorites/toggle';
+  static String favoriteDetail(int id) => '$baseUrl/client/favorites/$id';
+  static String favoriteCheck(int id) => '$baseUrl/client/favorites/$id/check';
+  static String removeFavorite(int id) => '$baseUrl/client/favorites/$id';
 
   // Restaurant (Menus du jour)
   static String restaurantDailyMenus(int restaurantId) => '$baseUrl/client/restaurants/$restaurantId/daily-menus';
@@ -57,6 +70,7 @@ class Endpoints {
 
   // Payment methods
   static String shopPaymentMethods(int shopId) => '$baseUrl/client/shops/$shopId/payment-methods';
+  static String vendorPaymentMethods(int shopId) => '$baseUrl/vendor/shops/$shopId/payment-methods';
 
   // Wave Payment (Mode Screenshot)
   static const String waveCreateWithProof = '$baseUrl/mobile/orders/create-with-wave-proof';
@@ -73,6 +87,23 @@ class Endpoints {
   static const String clientForgotPassword = '$baseUrl/client/forgot-password';
   static const String clientResetPassword = '$baseUrl/client/reset-password';
 
+  // Profil Client (necessite authentification Bearer Token)
+  static const String clientProfileStats = '$baseUrl/client/profile/stats';
+  static const String clientProfilePassword = '$baseUrl/client/profile/password';
+  static const String clientProfileAddresses = '$baseUrl/client/profile/addresses';
+  static String clientProfileAddress(int id) => '$baseUrl/client/profile/addresses/$id';
+  static String clientProfileAddressDefault(int id) => '$baseUrl/client/profile/addresses/$id/default';
+
+  // Dashboard Client (nécessite authentification Bearer Token)
+  static const String dashboard = '$baseUrl/client/dashboard';
+  static const String dashboardOrders = '$baseUrl/client/dashboard/orders';
+  static String dashboardOrderDetails(int id) => '$baseUrl/client/dashboard/orders/$id';
+  static const String dashboardLoyalty = '$baseUrl/client/dashboard/loyalty';
+  static const String dashboardFavorites = '$baseUrl/client/dashboard/favorites';
+  static const String dashboardStats = '$baseUrl/client/dashboard/stats';
+  static const String dashboardNotifications = '$baseUrl/client/dashboard/notifications';
+  static const String dashboardNotificationsRead = '$baseUrl/client/dashboard/notifications/read';
+
   // Notifications Client (nécessite authentification Bearer Token)
   static const String notifications = '$baseUrl/client/notifications';
   static String notificationDetails(int id) => '$baseUrl/client/notifications/$id';
@@ -84,5 +115,11 @@ class Endpoints {
   static const String notificationsClearRead = '$baseUrl/client/notifications/clear-read';
   static const String notificationsSettings = '$baseUrl/client/notifications/settings';
   static const String notificationsRegisterDevice = '$baseUrl/client/notifications/register-device';
+
+  // Support Tickets (nécessite authentification Bearer Token)
+  static const String support = '$baseUrl/client/support';
+  static const String supportOptions = '$baseUrl/client/support/options';
+  static String supportDetail(int id) => '$baseUrl/client/support/$id';
+  static String supportStatus(int id) => '$baseUrl/client/support/$id/status';
 
 }

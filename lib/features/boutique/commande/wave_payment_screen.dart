@@ -47,9 +47,19 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
   WaveProofResponse? _response;
   WavePaymentStatus? _paymentStatus;
   Timer? _pollingTimer;
+  bool _waveOpened = false; // Wave a été ouvert au moins une fois
 
   // Couleur Wave
   static const Color waveColor = Color(0xFF1BA5E0);
+
+  @override
+  void initState() {
+    super.initState();
+    // Ouvrir automatiquement le lien Wave du vendeur au chargement
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _openWaveApp();
+    });
+  }
 
   @override
   void dispose() {
@@ -58,40 +68,47 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
   }
 
   /// Ouvrir le lien Wave du vendeur
+  /// Le wave_payment_link (format https://wave.com/m/M_xxx) ouvre l'app Wave directement
   Future<void> _openWaveApp() async {
     String? urlToOpen = widget.wavePaymentLink;
 
-    // Si pas de lien, essayer avec le numéro Wave
+    // Si le lien est un numero/code (pas une URL), construire le lien Wave
+    if (urlToOpen != null && !urlToOpen.startsWith('http')) {
+      urlToOpen = 'https://wave.com/m/$urlToOpen';
+    }
+
+    // Si pas de lien, essayer avec le numéro Wave du vendeur
     if (urlToOpen == null && widget.vendorWaveNumber != null) {
       urlToOpen = 'https://wave.com/m/${widget.vendorWaveNumber}';
     }
 
-    if (urlToOpen == null) {
-      setState(() {
-        _errorMessage = 'Aucun lien Wave disponible. Veuillez contacter le vendeur.';
-      });
-      return;
-    }
+    print('[Wave] urlToOpen: $urlToOpen');
 
-    try {
-      final uri = Uri.parse(urlToOpen);
-      if (await canLaunchUrl(uri)) {
+    if (urlToOpen != null) {
+      try {
+        final uri = Uri.parse(urlToOpen);
         await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        // Essayer d'ouvrir l'app Wave directement
-        final waveUri = Uri.parse('wave://');
-        if (await canLaunchUrl(waveUri)) {
-          await launchUrl(waveUri, mode: LaunchMode.externalApplication);
-        } else {
+        if (mounted) {
           setState(() {
-            _errorMessage = 'Impossible d\'ouvrir Wave. Assurez-vous que l\'app est installée.';
+            _waveOpened = true;
+          });
+        }
+        return;
+      } catch (e) {
+        print('[Wave] Erreur ouverture lien: $e');
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'Impossible d\'ouvrir Wave. Vérifiez que l\'app Wave est installée.';
           });
         }
       }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Erreur lors de l\'ouverture de Wave: $e';
-      });
+    } else {
+      // Pas de lien Wave disponible
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Le lien de paiement Wave du vendeur n\'est pas disponible.';
+        });
+      }
     }
   }
 
@@ -539,20 +556,28 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: _waveOpened ? Colors.green.shade50 : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade100),
+        border: Border.all(
+          color: _waveOpened ? Colors.green.shade100 : Colors.blue.shade100,
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: waveColor, size: 24),
+          Icon(
+            _waveOpened ? Icons.camera_alt : Icons.info_outline,
+            color: _waveOpened ? Colors.green.shade700 : waveColor,
+            size: 24,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Effectuez le paiement via Wave, puis envoyez une capture d\'écran de la confirmation.',
+              _waveOpened
+                  ? 'Apres avoir payé, prenez une capture d\'écran de la confirmation Wave et envoyez-la ci-dessous.'
+                  : 'Vous allez être redirigé vers Wave pour effectuer le paiement.',
               style: GoogleFonts.openSans(
                 fontSize: 13,
-                color: Colors.blue.shade800,
+                color: _waveOpened ? Colors.green.shade800 : Colors.blue.shade800,
                 height: 1.4,
               ),
             ),
@@ -567,7 +592,10 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: _waveOpened ? Colors.green : Colors.grey.shade200,
+          width: _waveOpened ? 2 : 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -589,18 +617,20 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: waveColor.withOpacity(0.1),
+                    color: (_waveOpened ? Colors.green : waveColor).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
-                    child: Text(
-                      '1',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: waveColor,
-                      ),
-                    ),
+                    child: _waveOpened
+                        ? Icon(Icons.check, color: Colors.green, size: 24)
+                        : Text(
+                            '1',
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: waveColor,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -609,7 +639,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ouvrir Wave et payer',
+                        _waveOpened ? 'Wave ouvert' : 'Ouvrir Wave et payer',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -617,16 +647,38 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Cliquez pour ouvrir l\'app Wave',
+                        _waveOpened
+                            ? 'Effectuez le paiement puis revenez ici'
+                            : 'Redirection vers Wave...',
                         style: GoogleFonts.openSans(
                           fontSize: 13,
-                          color: Colors.grey.shade600,
+                          color: _waveOpened ? Colors.green : Colors.grey.shade600,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.open_in_new, color: waveColor, size: 24),
+                if (_waveOpened)
+                  TextButton(
+                    onPressed: _openWaveApp,
+                    child: Text(
+                      'Réouvrir',
+                      style: GoogleFonts.openSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: waveColor,
+                      ),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: waveColor,
+                    ),
+                  ),
               ],
             ),
           ),

@@ -134,15 +134,17 @@ class Product {
 class ProductCategory {
   final int id;
   final String name;
+  final String? description;
   final String? color;
-  final String? icon;
+  final String? image;
   final int? productsCount;
 
   ProductCategory({
     required this.id,
     required this.name,
+    this.description,
     this.color,
-    this.icon,
+    this.image,
     this.productsCount,
   });
 
@@ -150,8 +152,9 @@ class ProductCategory {
     return ProductCategory(
       id: _parseInt(json['id']) ?? 0,
       name: json['name']?.toString() ?? '',
+      description: json['description']?.toString(),
       color: json['color']?.toString(),
-      icon: json['icon']?.toString(),
+      image: json['image']?.toString(),
       productsCount: _parseInt(json['products_count']),
     );
   }
@@ -172,8 +175,9 @@ class ProductCategory {
     return {
       'id': id,
       'name': name,
+      'description': description,
       'color': color,
-      'icon': icon,
+      'image': image,
       'products_count': productsCount,
     };
   }

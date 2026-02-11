@@ -4,13 +4,14 @@ import './utils/api_endpoint.dart';
 import './models/client_model.dart';
 import '../core/services/storage_service.dart';
 import './notification_service.dart';
+import './push_notification_service.dart';
 
 /// Service d'authentification client pour TIKA
 ///
-/// Gère l'inscription, la connexion, la vérification OTP et la déconnexion.
+/// Gere l'inscription, la connexion, la verification OTP et la deconnexion.
 /// L'authentification est OPTIONNELLE - les clients peuvent utiliser l'app
 /// sans compte, mais un compte permet de recevoir les notifications et
-/// synchroniser les données.
+/// synchroniser les donnees.
 class AuthService {
   static String? _authToken;
   static Client? _currentClient;
@@ -20,14 +21,24 @@ class AuthService {
   // GETTERS
   // ============================================================
 
-  /// Vérifier si l'utilisateur est authentifié
+  /// Verifier si l'utilisateur est authentifie
   static bool get isAuthenticated => _authToken != null && _authToken!.isNotEmpty;
 
-  /// Récupérer le client connecté (null si non connecté)
+  /// Recuperer le client connecte (null si non connecte)
   static Client? get currentClient => _currentClient;
 
-  /// Récupérer le token d'authentification
+  /// Recuperer le token d'authentification
   static String? get authToken => _authToken;
+
+  /// Recharger le token depuis le stockage si absent en memoire
+  static Future<void> ensureToken() async {
+    if (_authToken != null) return;
+    final token = await StorageService.getAuthToken();
+    if (token != null && token.isNotEmpty) {
+      _authToken = token;
+      print('[AuthService] Token recharge depuis stockage');
+    }
+  }
 
   /// Headers avec authentification Bearer
   static Map<String, String> get _headers => {
@@ -40,37 +51,31 @@ class AuthService {
   // INITIALISATION
   // ============================================================
 
-  /// Initialiser le service au démarrage de l'app
+  /// Initialiser le service au demarrage de l'app
   /// Charge le token et les infos client depuis le stockage local
   static Future<void> initialize() async {
     if (_initialized) return;
 
-    print('🔐 [AuthService] Initialisation...');
+    print('[AuthService] Initialisation...');
 
     try {
-      // Charger le token depuis le stockage
       final token = await StorageService.getAuthToken();
       if (token != null && token.isNotEmpty) {
         _authToken = token;
 
-        // Charger les infos client depuis le stockage
         final clientData = await StorageService.getAuthClient();
         if (clientData != null) {
           _currentClient = Client.fromJson(clientData);
-          print('👤 [AuthService] Client restauré: ${_currentClient!.name}');
+          print('[AuthService] Client restaure: ${_currentClient!.name}');
         }
 
-        // Mettre à jour le token dans NotificationService
         NotificationService.setAuthToken(_authToken);
-
-        // Optionnel: Vérifier si le token est toujours valide
-        // await _validateToken();
       }
 
       _initialized = true;
-      print('✅ [AuthService] Initialisé - Authentifié: $isAuthenticated');
+      print('[AuthService] Initialise - Authentifie: $isAuthenticated');
     } catch (e) {
-      print('❌ [AuthService] Erreur initialisation: $e');
+      print('[AuthService] Erreur initialisation: $e');
       _initialized = true;
     }
   }
@@ -81,25 +86,26 @@ class AuthService {
 
   /// Inscrire un nouveau client
   ///
-  /// [name] - Nom complet du client
-  /// [phone] - Numéro de téléphone (sans indicatif)
-  /// [password] - Mot de passe (min 6 caractères)
+  /// [firstName] - Prenom du client
+  /// [lastName] - Nom de famille du client
+  /// [phone] - Numero de telephone (sans indicatif)
+  /// [password] - Mot de passe (min 6 caracteres)
   /// [email] - Email (optionnel)
   static Future<AuthResponse> register({
-    required String name,
+    required String firstName,
+    required String lastName,
     required String phone,
     required String password,
     String? email,
   }) async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 REGISTER');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📱 Phone: $phone');
-    print('👤 Name: $name');
+    print('REGISTER');
+    print('Phone: $phone');
+    print('Name: $firstName $lastName');
 
     try {
       final body = {
-        'name': name,
+        'first_name': firstName,
+        'last_name': lastName,
         'phone': _formatPhone(phone),
         'password': password,
         'password_confirmation': password,
@@ -114,8 +120,8 @@ class AuthService {
         body: jsonEncode(body),
       );
 
-      print('📥 Response Status: ${response.statusCode}');
-      print('📥 Response Body: ${response.body}');
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
@@ -124,22 +130,19 @@ class AuthService {
 
         if (authResponse.success && authResponse.token != null) {
           await _saveAuthData(authResponse.token!, authResponse.client);
-          print('✅ Inscription réussie');
+          print('Inscription reussie');
         }
 
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return authResponse;
       } else {
-        print('❌ Erreur inscription: ${response.statusCode}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Erreur inscription: ${response.statusCode}');
         return AuthResponse.fromJson(data);
       }
     } catch (e) {
-      print('❌ Exception: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Exception: $e');
       return AuthResponse(
         success: false,
-        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
+        message: 'Erreur de connexion. Verifiez votre connexion internet.',
       );
     }
   }
@@ -150,16 +153,14 @@ class AuthService {
 
   /// Connecter un client existant
   ///
-  /// [phone] - Numéro de téléphone
+  /// [phone] - Numero de telephone
   /// [password] - Mot de passe
   static Future<AuthResponse> login({
     required String phone,
     required String password,
   }) async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 LOGIN');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📱 Phone: $phone');
+    print('LOGIN');
+    print('Phone: $phone');
 
     try {
       final response = await http.post(
@@ -171,8 +172,8 @@ class AuthService {
         }),
       );
 
-      print('📥 Response Status: ${response.statusCode}');
-      print('📥 Response Body: ${response.body}');
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
@@ -181,43 +182,35 @@ class AuthService {
 
         if (authResponse.success && authResponse.token != null) {
           await _saveAuthData(authResponse.token!, authResponse.client);
-          print('✅ Connexion réussie');
+          print('Connexion reussie');
         }
 
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return authResponse;
       } else {
-        print('❌ Erreur connexion: ${response.statusCode}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Erreur connexion: ${response.statusCode}');
         return AuthResponse.fromJson(data);
       }
     } catch (e) {
-      print('❌ Exception: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Exception: $e');
       return AuthResponse(
         success: false,
-        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
+        message: 'Erreur de connexion. Verifiez votre connexion internet.',
       );
     }
   }
 
   // ============================================================
-  // OTP (VÉRIFICATION TÉLÉPHONE)
+  // OTP (VERIFICATION TELEPHONE)
   // ============================================================
 
-  /// Envoyer un code OTP au numéro de téléphone
-  ///
-  /// [phone] - Numéro de téléphone
-  /// [type] - Type d'OTP: 'register', 'login', 'reset_password'
+  /// Envoyer un code OTP au numero de telephone
   static Future<OtpResponse> sendOtp({
     required String phone,
     String type = 'register',
   }) async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 SEND OTP');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📱 Phone: $phone');
-    print('📋 Type: $type');
+    print('SEND OTP');
+    print('Phone: $phone');
+    print('Type: $type');
 
     try {
       final response = await http.post(
@@ -229,49 +222,40 @@ class AuthService {
         }),
       );
 
-      print('📥 Response Status: ${response.statusCode}');
-      print('📥 Response Body: ${response.body}');
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        print('✅ OTP envoyé');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('OTP envoye');
         return OtpResponse.fromJson(data);
       } else {
-        print('❌ Erreur envoi OTP: ${response.statusCode}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Erreur envoi OTP: ${response.statusCode}');
         return OtpResponse(
           success: false,
           message: data['message'] ?? 'Erreur lors de l\'envoi du code',
         );
       }
     } catch (e) {
-      print('❌ Exception: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Exception: $e');
       return OtpResponse(
         success: false,
-        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
+        message: 'Erreur de connexion. Verifiez votre connexion internet.',
       );
     }
   }
 
-  /// Vérifier le code OTP
-  ///
-  /// [phone] - Numéro de téléphone
-  /// [otp] - Code OTP à 6 chiffres
-  /// [type] - Type d'OTP: 'register', 'login', 'reset_password'
+  /// Verifier le code OTP
   static Future<AuthResponse> verifyOtp({
     required String phone,
     required String otp,
     String type = 'register',
   }) async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 VERIFY OTP');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📱 Phone: $phone');
-    print('🔢 OTP: $otp');
-    print('📋 Type: $type');
+    print('VERIFY OTP');
+    print('Phone: $phone');
+    print('OTP: $otp');
+    print('Type: $type');
 
     try {
       final response = await http.post(
@@ -284,48 +268,42 @@ class AuthService {
         }),
       );
 
-      print('📥 Response Status: ${response.statusCode}');
-      print('📥 Response Body: ${response.body}');
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
         final authResponse = AuthResponse.fromJson(data);
 
-        // Si la vérification retourne un token, on connecte le client
         if (authResponse.success && authResponse.token != null) {
           await _saveAuthData(authResponse.token!, authResponse.client);
-          print('✅ OTP vérifié et client connecté');
+          print('OTP verifie et client connecte');
         } else {
-          print('✅ OTP vérifié');
+          print('OTP verifie');
         }
 
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return authResponse;
       } else {
-        print('❌ Erreur vérification OTP: ${response.statusCode}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Erreur verification OTP: ${response.statusCode}');
         return AuthResponse.fromJson(data);
       }
     } catch (e) {
-      print('❌ Exception: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Exception: $e');
       return AuthResponse(
         success: false,
-        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
+        message: 'Erreur de connexion. Verifiez votre connexion internet.',
       );
     }
   }
 
   // ============================================================
-  // MOT DE PASSE OUBLIÉ
+  // MOT DE PASSE OUBLIE
   // ============================================================
 
-  /// Demander la réinitialisation du mot de passe
+  /// Demander la reinitialisation du mot de passe
   static Future<OtpResponse> forgotPassword({required String phone}) async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 FORGOT PASSWORD');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('FORGOT PASSWORD');
 
     try {
       final response = await http.post(
@@ -334,41 +312,36 @@ class AuthService {
         body: jsonEncode({'phone': _formatPhone(phone)}),
       );
 
-      print('📥 Response Status: ${response.statusCode}');
+      print('Response Status: ${response.statusCode}');
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        print('✅ Code de réinitialisation envoyé');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Code de reinitialisation envoye');
         return OtpResponse.fromJson(data);
       } else {
-        print('❌ Erreur: ${response.statusCode}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Erreur: ${response.statusCode}');
         return OtpResponse(
           success: false,
           message: data['message'] ?? 'Erreur lors de l\'envoi du code',
         );
       }
     } catch (e) {
-      print('❌ Exception: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Exception: $e');
       return OtpResponse(
         success: false,
-        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
+        message: 'Erreur de connexion. Verifiez votre connexion internet.',
       );
     }
   }
 
-  /// Réinitialiser le mot de passe avec le code OTP
+  /// Reinitialiser le mot de passe avec le code OTP
   static Future<AuthResponse> resetPassword({
     required String phone,
     required String otp,
     required String newPassword,
   }) async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 RESET PASSWORD');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('RESET PASSWORD');
 
     try {
       final response = await http.post(
@@ -382,25 +355,22 @@ class AuthService {
         }),
       );
 
-      print('📥 Response Status: ${response.statusCode}');
+      print('Response Status: ${response.statusCode}');
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        print('✅ Mot de passe réinitialisé');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Mot de passe reinitialise');
         return AuthResponse.fromJson(data);
       } else {
-        print('❌ Erreur: ${response.statusCode}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Erreur: ${response.statusCode}');
         return AuthResponse.fromJson(data);
       }
     } catch (e) {
-      print('❌ Exception: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Exception: $e');
       return AuthResponse(
         success: false,
-        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
+        message: 'Erreur de connexion. Verifiez votre connexion internet.',
       );
     }
   }
@@ -409,16 +379,14 @@ class AuthService {
   // PROFIL
   // ============================================================
 
-  /// Récupérer le profil du client connecté
+  /// Recuperer le profil du client connecte
   static Future<Client?> getProfile() async {
     if (!isAuthenticated) {
-      print('⚠️ [AuthService] Non authentifié');
+      print('[AuthService] Non authentifie');
       return null;
     }
 
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 GET PROFILE');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('GET PROFILE');
 
     try {
       final response = await http.get(
@@ -426,51 +394,50 @@ class AuthService {
         headers: _headers,
       );
 
-      print('📥 Response Status: ${response.statusCode}');
+      print('Response Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final clientData = data['data'] ?? data['client'] ?? data['user'] ?? data;
+        // Support structure: data.data.profile or data.data or data.client or data
+        final clientData = data['data'] is Map && data['data']['profile'] != null
+            ? data['data']['profile']
+            : data['data'] ?? data['client'] ?? data['user'] ?? data;
         _currentClient = Client.fromJson(clientData);
         await StorageService.saveAuthClient(_currentClient!.toJson());
-        print('✅ Profil récupéré: ${_currentClient!.name}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Profil recupere: ${_currentClient!.name}');
         return _currentClient;
       } else if (response.statusCode == 401) {
-        // Token expiré ou invalide
-        print('⚠️ Token invalide - Déconnexion');
+        print('Token invalide - Deconnexion');
         await logout();
         return null;
       }
     } catch (e) {
-      print('❌ Exception: $e');
+      print('Exception: $e');
     }
 
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return _currentClient;
   }
 
-  /// Mettre à jour le profil du client
-  ///
-  /// [name] - Nouveau nom (optionnel)
-  /// [email] - Nouvel email (optionnel)
+  /// Mettre a jour le profil du client
   static Future<Client?> updateProfile({
-    String? name,
+    String? firstName,
+    String? lastName,
     String? email,
+    String? birthDate,
   }) async {
     if (!isAuthenticated) {
-      print('⚠️ [AuthService] Non authentifié');
+      print('[AuthService] Non authentifie');
       return null;
     }
 
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 UPDATE PROFILE');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('UPDATE PROFILE');
 
     try {
       final body = <String, dynamic>{};
-      if (name != null) body['name'] = name;
+      if (firstName != null) body['first_name'] = firstName;
+      if (lastName != null) body['last_name'] = lastName;
       if (email != null) body['email'] = email;
+      if (birthDate != null) body['birth_date'] = birthDate;
 
       final response = await http.put(
         Uri.parse(Endpoints.clientProfile),
@@ -478,37 +445,34 @@ class AuthService {
         body: jsonEncode(body),
       );
 
-      print('📥 Response Status: ${response.statusCode}');
+      print('Response Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final clientData = data['data'] ?? data['client'] ?? data['user'] ?? data;
+        final clientData = data['data'] is Map && data['data']['profile'] != null
+            ? data['data']['profile']
+            : data['data'] ?? data['client'] ?? data['user'] ?? data;
         _currentClient = Client.fromJson(clientData);
         await StorageService.saveAuthClient(_currentClient!.toJson());
-        print('✅ Profil mis à jour: ${_currentClient!.name}');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('Profil mis a jour: ${_currentClient!.name}');
         return _currentClient;
       }
     } catch (e) {
-      print('❌ Exception: $e');
+      print('Exception: $e');
     }
 
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return null;
   }
 
   // ============================================================
-  // DÉCONNEXION
+  // DECONNEXION
   // ============================================================
 
-  /// Déconnecter le client
+  /// Deconnecter le client
   static Future<void> logout() async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 LOGOUT');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('LOGOUT');
 
     try {
-      // Appeler l'API de déconnexion si authentifié
       if (isAuthenticated) {
         await http.post(
           Uri.parse(Endpoints.clientLogout),
@@ -516,38 +480,36 @@ class AuthService {
         );
       }
     } catch (e) {
-      print('⚠️ Erreur API logout (ignorée): $e');
+      print('Erreur API logout (ignoree): $e');
     }
 
-    // Nettoyer les données locales
     _authToken = null;
     _currentClient = null;
 
-    // Supprimer les données du stockage
     await StorageService.clearAuthData();
 
-    // Notifier NotificationService
     NotificationService.setAuthToken(null);
 
-    print('✅ Déconnexion réussie');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    // Arreter le polling et remettre le badge a zero
+    PushNotificationService.stopPolling();
+    PushNotificationService.unreadCount.value = 0;
+
+    print('Deconnexion reussie');
   }
 
   // ============================================================
-  // HELPERS PRIVÉS
+  // HELPERS PRIVES
   // ============================================================
 
-  /// Sauvegarder les données d'authentification
+  /// Sauvegarder les donnees d'authentification
   static Future<void> _saveAuthData(String token, Client? client) async {
     _authToken = token;
     _currentClient = client;
 
-    // Sauvegarder dans le stockage local
     await StorageService.saveAuthToken(token);
     if (client != null) {
       await StorageService.saveAuthClient(client.toJson());
 
-      // Synchroniser avec les infos client existantes
       await StorageService.saveCustomerInfo(
         name: client.name,
         phone: client.phone,
@@ -555,20 +517,22 @@ class AuthService {
       );
     }
 
-    // Mettre à jour NotificationService
     NotificationService.setAuthToken(token);
+
+    // Enregistrer le token FCM aupres du backend pour recevoir les push
+    PushNotificationService.registerDeviceToken();
+
+    // Demarrer le polling des notifications pour le badge
+    PushNotificationService.startPolling();
   }
 
-  /// Formater le numéro de téléphone (supprimer espaces et indicatif si présent)
+  /// Formater le numero de telephone (supprimer espaces et indicatif si present)
   static String _formatPhone(String phone) {
-    // Supprimer les espaces
     String formatted = phone.replaceAll(' ', '');
 
-    // Si le numéro commence par +225, le supprimer
     if (formatted.startsWith('+225')) {
       formatted = formatted.substring(4);
     }
-    // Si le numéro commence par 00225
     if (formatted.startsWith('00225')) {
       formatted = formatted.substring(5);
     }

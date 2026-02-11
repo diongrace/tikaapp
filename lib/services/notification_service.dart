@@ -1,11 +1,12 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './utils/api_endpoint.dart';
+import './auth_service.dart';
 import '../core/services/storage_service.dart';
 
 /// Service de gestion des notifications client
 ///
-/// IMPORTANT: Nécessite une authentification Bearer Token
+/// IMPORTANT: Nécessite une authentification Bearer Token (via AuthService)
 /// Si pas de token, utilise le stockage local comme fallback
 ///
 /// Types de notifications:
@@ -16,22 +17,17 @@ import '../core/services/storage_service.dart';
 /// - delivery: Livraison
 /// - payment: Paiement
 class NotificationService {
-  static String? _authToken;
+  /// Compatibilité — ne fait plus rien, on utilise AuthService.authToken directement
+  static void setAuthToken(String? token) {}
 
-  /// Définir le token d'authentification
-  static void setAuthToken(String? token) {
-    _authToken = token;
-    print('🔑 [NotificationService] Token ${token != null ? "défini" : "supprimé"}');
-  }
+  /// Vérifier si l'utilisateur est authentifié (via AuthService)
+  static bool get isAuthenticated => AuthService.isAuthenticated;
 
-  /// Vérifier si l'utilisateur est authentifié
-  static bool get isAuthenticated => _authToken != null && _authToken!.isNotEmpty;
-
-  /// Headers avec authentification
+  /// Headers avec authentification Bearer (via AuthService)
   static Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    if (_authToken != null) 'Authorization': 'Bearer $_authToken',
+    if (AuthService.authToken != null) 'Authorization': 'Bearer ${AuthService.authToken}',
   };
 
   // ============================================================
@@ -52,6 +48,7 @@ class NotificationService {
   }) async {
     // Si pas authentifié, utiliser le stockage local
     if (!isAuthenticated) {
+      
       return _getLocalNotifications(type: type, status: status);
     }
 
@@ -72,13 +69,75 @@ class NotificationService {
       final response = await http.get(uri, headers: _headers);
 
       print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
+      print('📥 URL: $uri');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('✅ Notifications récupérées');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-        return NotificationListResponse.fromJson(data['data']);
+        final responseData = data['data'];
+        print('📋 Type responseData: ${responseData?.runtimeType}');
+        print('📋 Clés responseData: ${responseData is Map ? (responseData as Map).keys.toList() : "N/A"}');
+
+        if (responseData is Map<String, dynamic>) {
+          // Format standard: { data: { notifications: [...], unread_count: N } }
+          // OU format Laravel paginé: { data: { data: [...], current_page: N, ... } }
+          if (responseData.containsKey('notifications')) {
+            print('📋 Format détecté: data.notifications');
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            return NotificationListResponse.fromJson(responseData);
+          } else if (responseData.containsKey('data') && responseData['data'] is List) {
+            // Format Laravel paginé: { data: { data: [...], current_page, total, ... } }
+            print('📋 Format détecté: Laravel paginé (data.data)');
+            final paginatedList = responseData['data'] as List;
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            return NotificationListResponse(
+              unreadCount: responseData['unread_count'] ?? 0,
+              totalCount: responseData['total'] ?? paginatedList.length,
+              notifications: paginatedList
+                  .map((n) => NotificationItem.fromJson(n as Map<String, dynamic>))
+                  .toList(),
+              pagination: NotificationPagination(
+                currentPage: responseData['current_page'] ?? 1,
+                lastPage: responseData['last_page'] ?? 1,
+                perPage: responseData['per_page'] ?? 20,
+                total: responseData['total'] ?? paginatedList.length,
+              ),
+            );
+          } else if (responseData.containsKey('items') && responseData['items'] is List) {
+            print('📋 Format détecté: data.items');
+            final itemsList = responseData['items'] as List;
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            return NotificationListResponse(
+              unreadCount: responseData['unread_count'] ?? 0,
+              totalCount: responseData['total_count'] ?? itemsList.length,
+              notifications: itemsList
+                  .map((n) => NotificationItem.fromJson(n as Map<String, dynamic>))
+                  .toList(),
+            );
+          } else {
+            // Tenter le format standard malgré l'absence de 'notifications'
+            print('📋 Format non reconnu, tentative standard. Clés: ${responseData.keys.toList()}');
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            return NotificationListResponse.fromJson(responseData);
+          }
+        } else if (responseData is List) {
+          // Format direct: { data: [ ... ] }
+          print('📋 Format détecté: data = List directe (${responseData.length} items)');
+          print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          return NotificationListResponse(
+            unreadCount: 0,
+            totalCount: responseData.length,
+            notifications: responseData
+                .map((n) => NotificationItem.fromJson(n as Map<String, dynamic>))
+                .toList(),
+          );
+        } else {
+          print('⚠️ responseData est null ou type inattendu: ${responseData?.runtimeType}');
+          print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          return _getLocalNotifications(type: type, status: status);
+        }
       } else if (response.statusCode == 401) {
         print('⚠️ Non authentifié - Utilisation du stockage local');
         return _getLocalNotifications(type: type, status: status);
@@ -138,9 +197,18 @@ class NotificationService {
         headers: _headers,
       );
 
+      print('📤 GET unread-count - Status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['data']['unread_count'] ?? 0;
+        // Supporter plusieurs formats de réponse
+        final count = data['data']?['unread_count']
+            ?? data['unread_count']
+            ?? data['data']?['count']
+            ?? data['count']
+            ?? 0;
+        print('📋 Unread count: $count');
+        return count is int ? count : int.tryParse(count.toString()) ?? 0;
       }
     } catch (e) {
       print('❌ Erreur getUnreadCount: $e');
@@ -385,11 +453,16 @@ class NotificationService {
     String deviceType = 'android',
   }) async {
     if (!isAuthenticated) {
-      print('⚠️ Impossible d\'enregistrer le device sans authentification');
+      print('⚠️ [registerDevice] Non authentifié - Auth token: ${AuthService.authToken != null}');
       return false;
     }
 
     try {
+      print('📤 POST /client/notifications/register-device');
+      print('🔗 URL: ${Endpoints.notificationsRegisterDevice}');
+      print('📱 Device type: $deviceType');
+      print('🔑 FCM token: ${fcmToken.length > 20 ? '${fcmToken.substring(0, 20)}...' : fcmToken}');
+
       final response = await http.post(
         Uri.parse(Endpoints.notificationsRegisterDevice),
         headers: _headers,
@@ -399,9 +472,14 @@ class NotificationService {
         }),
       );
 
+      print('📥 Register device status: ${response.statusCode}');
+      print('📄 Register device body: ${response.body}');
+
       if (response.statusCode == 200) {
         print('✅ Device enregistré pour les push notifications');
         return true;
+      } else {
+        print('❌ Échec enregistrement device: HTTP ${response.statusCode}');
       }
     } catch (e) {
       print('❌ Erreur registerDevice: $e');

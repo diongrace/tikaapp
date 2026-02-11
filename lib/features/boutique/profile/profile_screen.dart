@@ -2,16 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'personal_info_screen.dart';
 import 'addresses_screen.dart';
+import 'security_screen.dart';
 import 'payment_methods_screen.dart';
 import 'notifications_screen.dart';
 import 'help_support_screen.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/profile_service.dart';
+import '../../../services/order_service.dart';
+import '../../../services/device_service.dart';
+import '../../../services/favorites_service.dart';
+import '../../../services/loyalty_service.dart';
+import '../../../services/dashboard_service.dart';
 import '../../../core/messages/message_modal.dart';
 import '../../auth/auth_choice_screen.dart';
+import '../history/global_history_screen.dart';
+import '../favorites/favorites_boutiques_screen.dart';
+import '../loyalty/loyalty_card_page.dart';
 
-/// Écran de profil client - Conforme à l'API TIKA
-/// Affiche le profil connecté ou les infos locales
+/// Ecran de profil client - Conforme a l'API TIKA
+/// Affiche le profil connecte ou les infos locales
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -35,19 +45,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadCustomerData() async {
-    // Vérifier si le client est authentifié
     _isAuthenticated = AuthService.isAuthenticated;
 
     if (_isAuthenticated && AuthService.currentClient != null) {
-      // Utiliser les infos du client authentifié
       final client = AuthService.currentClient!;
       setState(() {
         _customerName = client.name;
         _customerPhone = client.phone;
         _customerEmail = client.email ?? '';
       });
+
+      // Charger les stats depuis l'API
+      final stats = await ProfileService.getStats();
+      if (stats != null && mounted) {
+        setState(() {
+          _ordersCount = stats.totalOrders;
+          _favoritesCount = stats.favoritesCount;
+          _loyaltyPoints = stats.loyaltyPoints;
+        });
+      }
     } else {
-      // Utiliser les infos stockées localement
       final customerInfo = await StorageService.getCustomerInfo();
       setState(() {
         _customerName = customerInfo['name'] ?? 'Client';
@@ -56,30 +73,109 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     }
 
-    // Charger les statistiques
-    final orders = await StorageService.getOrders();
-    final favorites = await StorageService.getFavoriteShopIds();
-    final loyaltyCard = await StorageService.getLoyaltyCard();
+    // Toujours enrichir avec les donnees reelles
+    await _loadRealStats();
+  }
 
-    setState(() {
-      _ordersCount = orders.length;
-      _favoritesCount = favorites.length;
-      _loyaltyPoints = loyaltyCard?['points'] ?? 0;
-    });
+  /// Charger les stats reelles depuis les APIs
+  Future<void> _loadRealStats() async {
+    int ordersCount = _ordersCount;
+    int favoritesCount = _favoritesCount;
+    int loyaltyPoints = _loyaltyPoints;
+
+    // 1. Dashboard authentifie (source la plus fiable)
+    if (_isAuthenticated) {
+      try {
+        final overview = await DashboardService.getOverview();
+        if (overview.totalOrders > ordersCount) {
+          ordersCount = overview.totalOrders;
+        }
+        if (overview.favoritesCount > favoritesCount) {
+          favoritesCount = overview.favoritesCount;
+        }
+        if (overview.loyaltyPoints > loyaltyPoints) {
+          loyaltyPoints = overview.loyaltyPoints;
+        }
+      } catch (e) {
+        print('Profile: erreur chargement dashboard: $e');
+      }
+    }
+
+    // 2. Commandes via device fingerprint (fallback)
+    try {
+      final deviceFingerprint = await DeviceService.getDeviceFingerprint();
+      final response = await OrderService.getOrdersByDevice(
+        deviceFingerprint: deviceFingerprint,
+      );
+      final pagination = response['pagination'] as Map<String, dynamic>?;
+      final total = pagination?['total'] as int? ?? 0;
+      final orders = response['orders'] as List? ?? [];
+      final realCount = total > 0 ? total : orders.length;
+      if (realCount > ordersCount) {
+        ordersCount = realCount;
+      }
+    } catch (e) {
+      print('Profile: erreur chargement commandes device: $e');
+    }
+
+    // 3. Favoris via API
+    if (_isAuthenticated) {
+      try {
+        await AuthService.ensureToken();
+        final favs = await FavoritesService.getFavorites();
+        if (favs.length > favoritesCount) {
+          favoritesCount = favs.length;
+        }
+      } catch (e) {
+        print('Profile: erreur chargement favoris: $e');
+      }
+    }
+
+    // 3. Fallback local pour favoris
+    try {
+      final localFavs = await StorageService.getFavoriteShopIds();
+      if (localFavs.length > favoritesCount) {
+        favoritesCount = localFavs.length;
+      }
+    } catch (e) {}
+
+    // 4. Points fidelite via API
+    if (_isAuthenticated) {
+      try {
+        await AuthService.ensureToken();
+        final cards = await LoyaltyService.getMyCards();
+        int totalPoints = 0;
+        for (final card in cards) {
+          totalPoints += card.points;
+        }
+        if (totalPoints > loyaltyPoints) {
+          loyaltyPoints = totalPoints;
+        }
+      } catch (e) {
+        print('Profile: erreur chargement fidelite: $e');
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _ordersCount = ordersCount;
+        _favoritesCount = favoritesCount;
+        _loyaltyPoints = loyaltyPoints;
+      });
+    }
   }
 
   Future<void> _logout() async {
-    // Afficher une confirmation
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Déconnexion',
+          'Deconnexion',
           style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Êtes-vous sûr de vouloir vous déconnecter ?',
+          'Etes-vous sur de vouloir vous deconnecter ?',
           style: GoogleFonts.openSans(),
         ),
         actions: [
@@ -93,7 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
-              'Déconnexion',
+              'Deconnexion',
               style: GoogleFonts.openSans(
                 color: Colors.red,
                 fontWeight: FontWeight.w600,
@@ -107,13 +203,127 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirm == true) {
       await AuthService.logout();
       if (mounted) {
-        showSuccessModal(context, 'Déconnexion réussie');
+        showSuccessModal(context, 'Deconnexion reussie');
         await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) {
           Navigator.pop(context);
         }
       }
     }
+  }
+
+  /// Naviguer vers les cartes de fidelite
+  Future<void> _navigateToLoyalty() async {
+    if (!_isAuthenticated) {
+      _goToAuth();
+      return;
+    }
+
+    try {
+      await AuthService.ensureToken();
+      final cards = await LoyaltyService.getMyCards();
+
+      if (!mounted) return;
+
+      if (cards.isEmpty) {
+        // Aucune carte
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Aucune carte de fidelite. Visitez une boutique pour en creer une.',
+              style: GoogleFonts.openSans(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFF8936A8),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      } else if (cards.length == 1) {
+        // Une seule carte → ouvrir directement
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LoyaltyCardPage(loyaltyCard: cards.first),
+          ),
+        );
+      } else {
+        // Plusieurs cartes → afficher la liste
+        _showLoyaltyCardPicker(cards);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Afficher le picker de cartes de fidelite
+  void _showLoyaltyCardPicker(List cards) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Mes cartes de fidelite',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...cards.map((card) => ListTile(
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8936A8).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.card_giftcard_rounded,
+                        color: Color(0xFF8936A8), size: 22),
+                  ),
+                  title: Text(
+                    card.shopName,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${card.points} points',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: Colors.grey),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LoyaltyCardPage(loyaltyCard: card),
+                      ),
+                    );
+                  },
+                )),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _goToAuth() async {
@@ -145,7 +355,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header violet avec dégradé
+            // Header violet avec degrade
             Stack(
               children: [
                 Container(
@@ -161,13 +371,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-                // Barre de navigation avec flèche retour
                 SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                     child: Row(
                       children: [
-                        // Bouton retour
                         Container(
                           width: 48,
                           height: 48,
@@ -191,7 +399,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const Spacer(),
-                        // Espace vide pour centrer le titre
                         const SizedBox(width: 48),
                       ],
                     ),
@@ -267,7 +474,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           const SizedBox(height: 12),
 
-                          // Email (si renseigné)
                           if (_customerEmail.isNotEmpty)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -286,7 +492,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           if (_customerEmail.isNotEmpty) const SizedBox(height: 8),
 
-                          // Téléphone (si renseigné)
                           if (_customerPhone.isNotEmpty)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -311,19 +516,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   // Statistiques (Commandes, Favoris, Points)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: Row(
                       children: [
                         Expanded(
-                          child: _buildStatCard(_ordersCount.toString(), _ordersCount > 1 ? 'Commandes' : 'Commande'),
+                          child: _buildStatCard(
+                            _ordersCount.toString(),
+                            _ordersCount > 1 ? 'Commandes' : 'Commande',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const GlobalHistoryScreen(),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _buildStatCard(_favoritesCount.toString(), 'Favoris'),
+                          child: _buildStatCard(
+                            _favoritesCount.toString(),
+                            'Favoris',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const FavoritesBoutiquesScreen(),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _buildStatCard(_loyaltyPoints.toString(), 'Points'),
+                          child: _buildStatCard(
+                            _loyaltyPoints.toString(),
+                            'Points',
+                            onTap: () => _navigateToLoyalty(),
+                          ),
                         ),
                       ],
                     ),
@@ -331,7 +562,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Carte de fidélité
+                  // Carte de fidelite
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Container(
@@ -362,7 +593,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const Icon(Icons.credit_card, color: Colors.white, size: 24),
                               const SizedBox(width: 12),
                               Text(
-                                'Programme de fidélité',
+                                'Programme de fidelite',
                                 style: GoogleFonts.openSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -388,7 +619,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             _loyaltyPoints > 0
                                 ? 'Valeur: ${(_loyaltyPoints * 5).toStringAsFixed(0)} FCFA'
-                                : 'Créez une carte pour gagner des points',
+                                : 'Creez une carte pour gagner des points',
                             style: GoogleFonts.openSans(
                               fontSize: 14,
                               color: Colors.white.withOpacity(0.9),
@@ -398,7 +629,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 20),
 
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () => _navigateToLoyalty(),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white.withOpacity(0.3),
                               foregroundColor: Colors.white,
@@ -431,7 +662,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuOption(
                           icon: Icons.person_outline,
                           title: 'Informations personnelles',
-                          subtitle: 'Nom, téléphone, email',
+                          subtitle: 'Prenom, nom, telephone, email',
                           onTap: () async {
                             final result = await Navigator.push(
                               context,
@@ -439,7 +670,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 builder: (context) => const PersonalInfoScreen(),
                               ),
                             );
-                            // Recharger les données si modifiées
                             if (result == true) {
                               _loadCustomerData();
                             }
@@ -449,7 +679,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuOption(
                           icon: Icons.location_on_outlined,
                           title: 'Adresses de livraison',
-                          subtitle: 'Gérer vos adresses',
+                          subtitle: 'Gerer vos adresses',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -459,6 +689,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
+                        if (_isAuthenticated) ...[
+                          const SizedBox(height: 12),
+                          _buildMenuOption(
+                            icon: Icons.shield_outlined,
+                            title: 'Securite',
+                            subtitle: 'Mot de passe, confidentialite',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SecurityScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                         const SizedBox(height: 12),
                         _buildMenuOption(
                           icon: Icons.credit_card_outlined,
@@ -477,7 +723,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuOption(
                           icon: Icons.notifications_outlined,
                           title: 'Notifications',
-                          subtitle: 'Gérer vos alertes',
+                          subtitle: 'Gerer vos alertes',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -507,7 +753,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Bouton Connexion / Déconnexion
+                  // Bouton Connexion / Deconnexion
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _isAuthenticated
@@ -527,7 +773,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '© 2025 Tika. Tous droits réservés.',
+                    '2025 Tika. Tous droits reserves.',
                     style: GoogleFonts.openSans(
                       fontSize: 12,
                       color: Colors.grey.shade500,
@@ -544,39 +790,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatCard(String value, String label) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.openSans(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF8936A8),
+  Widget _buildStatCard(String value, String label, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.openSans(
-              fontSize: 13,
-              color: Colors.grey.shade700,
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.openSans(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF8936A8),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.openSans(
+                fontSize: 13,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -707,7 +956,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Synchronisez vos données',
+                        'Synchronisez vos donnees',
                         style: GoogleFonts.openSans(
                           fontSize: 13,
                           color: Colors.white.withOpacity(0.8),
@@ -771,7 +1020,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Déconnexion',
+                        'Deconnexion',
                         style: GoogleFonts.openSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -780,7 +1029,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Se déconnecter de ce compte',
+                        'Se deconnecter de ce compte',
                         style: GoogleFonts.openSans(
                           fontSize: 13,
                           color: Colors.grey.shade600,

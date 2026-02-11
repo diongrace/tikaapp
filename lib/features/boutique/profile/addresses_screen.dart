@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../services/auth_service.dart';
+import '../../../services/profile_service.dart';
+import '../../../services/models/profile_model.dart';
+import '../../../core/services/storage_service.dart';
 
-/// Écran de la liste des adresses de livraison
+/// Ecran de la liste des adresses de livraison
+/// Utilise l'API quand authentifie, stockage local sinon
 class AddressesScreen extends StatefulWidget {
   const AddressesScreen({super.key});
 
@@ -10,71 +15,89 @@ class AddressesScreen extends StatefulWidget {
 }
 
 class _AddressesScreenState extends State<AddressesScreen> {
-  // Liste des adresses enregistrées
-  final List<Map<String, dynamic>> _addresses = [
-    {
-      'id': '1',
-      'name': 'Maison',
-      'address': 'Cocody, Angré 7ème tranche\nAbidjan, Côte d\'Ivoire',
-      'isDefault': true,
-    },
-    {
-      'id': '2',
-      'name': 'Bureau',
-      'address': 'Plateau, Avenue Franchet d\'Esperey\nAbidjan, Côte d\'Ivoire',
-      'isDefault': false,
-    },
-  ];
+  bool _isAuthenticated = false;
+  bool _isLoading = true;
 
-  void _setDefaultAddress(String id) {
-    setState(() {
-      for (var address in _addresses) {
-        address['isDefault'] = address['id'] == id;
+  // Mode API
+  List<ProfileAddress> _apiAddresses = [];
+
+  // Mode local
+  List<Map<String, dynamic>> _localAddresses = [];
+
+  static const int _maxAddresses = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAddresses();
+  }
+
+  Future<void> _loadAddresses() async {
+    setState(() => _isLoading = true);
+
+    _isAuthenticated = AuthService.isAuthenticated;
+
+    if (_isAuthenticated) {
+      final addresses = await ProfileService.getAddresses();
+      if (mounted) {
+        setState(() {
+          _apiAddresses = addresses;
+          _isLoading = false;
+        });
       }
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Adresse par défaut modifiée',
-          style: GoogleFonts.openSans(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: const Color(0xFF4CAF50),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-    );
+    } else {
+      final addresses = await StorageService.getCustomerAddresses();
+      if (mounted) {
+        setState(() {
+          _localAddresses = addresses;
+          _isLoading = false;
+        });
+      }
+    }
   }
 
-  void _deleteAddress(String id) {
-    setState(() {
-      _addresses.removeWhere((address) => address['id'] == id);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Adresse supprimée',
-          style: GoogleFonts.openSans(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-    );
+  int get _addressCount =>
+      _isAuthenticated ? _apiAddresses.length : _localAddresses.length;
+
+  Future<void> _setDefaultAddress(dynamic id) async {
+    if (_isAuthenticated) {
+      final success = await ProfileService.setDefaultAddress(id as int);
+      if (success) {
+        await _loadAddresses();
+        if (mounted) _showSnackBar('Adresse par defaut modifiee', Colors.green);
+      } else {
+        if (mounted) _showSnackBar('Erreur', Colors.red);
+      }
+    } else {
+      setState(() {
+        for (var address in _localAddresses) {
+          address['isDefault'] = address['id'] == id;
+        }
+      });
+      await StorageService.saveCustomerAddresses(_localAddresses);
+      _showSnackBar('Adresse par defaut modifiee', Colors.green);
+    }
   }
 
-  void _showDeleteConfirmation(String id, String name) {
+  Future<void> _deleteAddress(dynamic id) async {
+    if (_isAuthenticated) {
+      final success = await ProfileService.deleteAddress(id as int);
+      if (success) {
+        await _loadAddresses();
+        if (mounted) _showSnackBar('Adresse supprimee', Colors.red);
+      } else {
+        if (mounted) _showSnackBar('Erreur lors de la suppression', Colors.red);
+      }
+    } else {
+      setState(() {
+        _localAddresses.removeWhere((address) => address['id'] == id);
+      });
+      await StorageService.saveCustomerAddresses(_localAddresses);
+      _showSnackBar('Adresse supprimee', Colors.red);
+    }
+  }
+
+  void _showDeleteConfirmation(dynamic id, String name) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -110,93 +133,148 @@ class _AddressesScreenState extends State<AddressesScreen> {
   }
 
   void _showAddAddressDialog() {
-    final nameController = TextEditingController();
+    if (_addressCount >= _maxAddresses) {
+      _showSnackBar('Maximum $_maxAddresses adresses', Colors.orange);
+      return;
+    }
+
+    final labelController = TextEditingController();
     final addressController = TextEditingController();
+    final cityController = TextEditingController();
+    bool isAdding = false;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Ajouter une adresse',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Nom',
-                hintText: 'Ex: Maison, Bureau',
-                labelStyle: GoogleFonts.openSans(),
-                hintStyle: GoogleFonts.openSans(color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            'Ajouter une adresse',
+            style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: labelController,
+                  decoration: InputDecoration(
+                    labelText: 'Nom',
+                    hintText: 'Ex: Maison, Bureau',
+                    labelStyle: GoogleFonts.openSans(),
+                    hintStyle: GoogleFonts.openSans(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: addressController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Adresse',
+                    hintText: 'Adresse complete',
+                    labelStyle: GoogleFonts.openSans(),
+                    hintStyle: GoogleFonts.openSans(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: cityController,
+                  decoration: InputDecoration(
+                    labelText: 'Ville (optionnel)',
+                    hintText: 'Ex: Abidjan',
+                    labelStyle: GoogleFonts.openSans(),
+                    hintStyle: GoogleFonts.openSans(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isAdding ? null : () => Navigator.pop(context),
+              child: Text(
+                'Annuler',
+                style: GoogleFonts.openSans(color: Colors.grey),
               ),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: addressController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: 'Adresse',
-                hintText: 'Adresse complète',
-                labelStyle: GoogleFonts.openSans(),
-                hintStyle: GoogleFonts.openSans(color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+            TextButton(
+              onPressed: isAdding
+                  ? null
+                  : () async {
+                      if (labelController.text.isEmpty || addressController.text.isEmpty) {
+                        return;
+                      }
+
+                      if (_isAuthenticated) {
+                        setDialogState(() => isAdding = true);
+                        final newAddress = await ProfileService.addAddress(
+                          label: labelController.text,
+                          address: addressController.text,
+                          city: cityController.text.isNotEmpty ? cityController.text : null,
+                        );
+                        if (!context.mounted) return;
+                        setDialogState(() => isAdding = false);
+
+                        if (newAddress != null) {
+                          Navigator.pop(context);
+                          await _loadAddresses();
+                          if (mounted) _showSnackBar('Adresse ajoutee', Colors.green);
+                        } else {
+                          if (mounted) _showSnackBar('Erreur lors de l\'ajout', Colors.red);
+                        }
+                      } else {
+                        setState(() {
+                          _localAddresses.add({
+                            'id': DateTime.now().toString(),
+                            'name': labelController.text,
+                            'address': addressController.text,
+                            'city': cityController.text,
+                            'isDefault': _localAddresses.isEmpty,
+                          });
+                        });
+                        await StorageService.saveCustomerAddresses(_localAddresses);
+                        if (!context.mounted) return;
+                        Navigator.pop(context);
+                        _showSnackBar('Adresse ajoutee', Colors.green);
+                      }
+                    },
+              child: isAdding
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      'Ajouter',
+                      style: GoogleFonts.openSans(color: const Color(0xFF8936A8)),
+                    ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Annuler',
-              style: GoogleFonts.openSans(color: Colors.grey),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty &&
-                  addressController.text.isNotEmpty) {
-                setState(() {
-                  _addresses.add({
-                    'id': DateTime.now().toString(),
-                    'name': nameController.text,
-                    'address': addressController.text,
-                    'isDefault': false,
-                  });
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Adresse ajoutée avec succès',
-                      style: GoogleFonts.openSans(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    backgroundColor: const Color(0xFF4CAF50),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                );
-              }
-            },
-            child: Text(
-              'Ajouter',
-              style: GoogleFonts.openSans(color: const Color(0xFF8936A8)),
-            ),
-          ),
-        ],
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -234,51 +312,84 @@ class _AddressesScreenState extends State<AddressesScreen> {
 
             // Contenu
             Expanded(
-              child: _addresses.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: _addresses.length,
-                      itemBuilder: (context, index) {
-                        final address = _addresses[index];
-                        return _buildAddressCard(address);
-                      },
-                    ),
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Color(0xFF8936A8)),
+                    )
+                  : _addressCount == 0
+                      ? _buildEmptyState()
+                      : _isAuthenticated
+                          ? _buildApiList()
+                          : _buildLocalList(),
             ),
           ],
         ),
       ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFD48EFC), Color(0xFF8936A8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(100),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF8936A8).withOpacity(0.4),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+      floatingActionButton: _isLoading
+          ? null
+          : Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFD48EFC), Color(0xFF8936A8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(100),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8936A8).withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton.extended(
+                onPressed: _showAddAddressDialog,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: Text(
+                  'Ajouter',
+                  style: GoogleFonts.openSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
-          ],
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: _showAddAddressDialog,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          icon: const Icon(Icons.add, color: Colors.white),
-          label: Text(
-            'Ajouter',
-            style: GoogleFonts.openSans(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
+    );
+  }
+
+  Widget _buildApiList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _apiAddresses.length,
+      itemBuilder: (context, index) {
+        final address = _apiAddresses[index];
+        return _buildAddressCard(
+          id: address.id,
+          name: address.label,
+          address: address.fullAddress,
+          isDefault: address.isDefault,
+        );
+      },
+    );
+  }
+
+  Widget _buildLocalList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _localAddresses.length,
+      itemBuilder: (context, index) {
+        final address = _localAddresses[index];
+        return _buildAddressCard(
+          id: address['id'],
+          name: address['name'] ?? '',
+          address: address['address'] ?? '',
+          isDefault: address['isDefault'] ?? false,
+        );
+      },
     );
   }
 
@@ -287,7 +398,6 @@ class _AddressesScreenState extends State<AddressesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icône
           Container(
             width: 120,
             height: 120,
@@ -304,9 +414,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
 
           const SizedBox(height: 32),
 
-          // Titre
           Text(
-            'Aucune adresse enregistrée',
+            'Aucune adresse enregistree',
             style: GoogleFonts.openSans(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -316,7 +425,6 @@ class _AddressesScreenState extends State<AddressesScreen> {
 
           const SizedBox(height: 12),
 
-          // Description
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
@@ -334,9 +442,12 @@ class _AddressesScreenState extends State<AddressesScreen> {
     );
   }
 
-  Widget _buildAddressCard(Map<String, dynamic> address) {
-    final isDefault = address['isDefault'] ?? false;
-
+  Widget _buildAddressCard({
+    required dynamic id,
+    required String name,
+    required String address,
+    required bool isDefault,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -358,7 +469,6 @@ class _AddressesScreenState extends State<AddressesScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icône
             Container(
               width: 50,
               height: 50,
@@ -375,7 +485,6 @@ class _AddressesScreenState extends State<AddressesScreen> {
 
             const SizedBox(width: 16),
 
-            // Informations
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,7 +492,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   Row(
                     children: [
                       Text(
-                        address['name'],
+                        name,
                         style: GoogleFonts.openSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -400,7 +509,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Par défaut',
+                            'Par defaut',
                             style: GoogleFonts.openSans(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -413,7 +522,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    address['address'],
+                    address,
                     style: GoogleFonts.openSans(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -424,13 +533,12 @@ class _AddressesScreenState extends State<AddressesScreen> {
               ),
             ),
 
-            // Menu
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'default') {
-                  _setDefaultAddress(address['id']);
+                  _setDefaultAddress(id);
                 } else if (value == 'delete') {
-                  _showDeleteConfirmation(address['id'], address['name']);
+                  _showDeleteConfirmation(id, name);
                 }
               },
               itemBuilder: (context) => [
@@ -443,7 +551,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                             size: 20, color: Color(0xFF8936A8)),
                         const SizedBox(width: 12),
                         Text(
-                          'Définir par défaut',
+                          'Definir par defaut',
                           style: GoogleFonts.openSans(fontSize: 14),
                         ),
                       ],

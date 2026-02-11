@@ -2,177 +2,398 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './utils/api_endpoint.dart';
 import './models/loyalty_card_model.dart';
+import './auth_service.dart';
 
+/// Service pour gerer les cartes de fidelite
+/// Endpoints:
+/// 1. GET    /client/loyalty                      - Toutes mes cartes
+/// 2. GET    /client/loyalty/cards/{id}           - Detail carte
+/// 3. GET    /client/loyalty/shops/{id}           - Carte pour une boutique
+/// 4. POST   /client/loyalty/cards                - Creer une carte
+/// 5. GET    /client/loyalty/cards/{id}/history   - Historique
+/// 6. GET    /client/loyalty/cards/{id}/rewards   - Recompenses
+/// 7. GET    /client/loyalty/cards/{id}/qr-code   - QR Code
+/// 8. POST   /client/loyalty/cards/{id}/verify-pin - Verifier PIN
+/// 9. GET    /client/loyalty/stats                - Statistiques
 class LoyaltyService {
-  static const Map<String, String> _headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
+  static Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (AuthService.authToken != null)
+          'Authorization': 'Bearer ${AuthService.authToken}',
+      };
 
-  /// 1. Créer une carte de fidélité
-  /// Endpoint: POST /client/loyalty/create-card
-  static Future<LoyaltyCard> createCard({
-    required int shopId,
-    required String phone,
-    required String customerName,
-    String? email,
-    String? pinCode,
-  }) async {
-    final body = {
-      'shop_id': shopId,
-      'customer_phone': phone,  // L'API attend 'customer_phone', pas 'phone'
-      'customer_name': customerName,
-      if (email != null) 'email': email,
-      if (pinCode != null) 'pin_code': pinCode,
-    };
+  // ============================================================
+  // 1. GET /client/loyalty - Toutes mes cartes
+  // ============================================================
 
-    // Debug: afficher ce qui est envoyé
-    print('📤 Création carte fidélité - Body envoyé:');
-    print(jsonEncode(body));
+  static Future<List<LoyaltyCard>> getMyCards() async {
+    try {
+      await AuthService.ensureToken();
+      print('GET /client/loyalty');
+      final response = await http.get(
+        Uri.parse(Endpoints.loyaltyCards),
+        headers: _headers,
+      );
+      print('Status: ${response.statusCode}');
 
-    final response = await http.post(
-      Uri.parse(Endpoints.loyaltyCreateCard),
-      headers: _headers,
-      body: jsonEncode(body),
-    );
-
-    // Debug: afficher la réponse
-    print('📥 Réponse API - Status: ${response.statusCode}');
-    print('📥 Réponse API - Body: ${response.body}');
-
-    if (response.statusCode == 200) {
-      try {
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('📊 Data décodée: $data');
-
-        // Vérifier la structure de la réponse
-        if (data == null) {
-          throw Exception('Réponse API vide');
+        if (data['success'] == true && data['data'] != null) {
+          final cardsData = data['data']['cards'];
+          if (cardsData is List) {
+            final cards = cardsData
+                .map((e) => LoyaltyCard.fromJson(e as Map<String, dynamic>))
+                .toList();
+            print('${cards.length} cartes recuperees');
+            return cards;
+          }
         }
+        return [];
+      } else if (response.statusCode == 401) {
+        throw Exception('Authentification requise');
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur getMyCards: $e');
+      rethrow;
+    }
+  }
 
-        if (data['data'] == null) {
-          throw Exception('Champ "data" manquant dans la réponse');
+  // ============================================================
+  // 2. GET /client/loyalty/cards/{id} - Detail carte
+  // ============================================================
+
+  static Future<LoyaltyCardDetail> getCardDetail(int cardId) async {
+    try {
+      await AuthService.ensureToken();
+      print('GET /client/loyalty/cards/$cardId');
+      final response = await http.get(
+        Uri.parse(Endpoints.loyaltyCardDetail(cardId)),
+        headers: _headers,
+      );
+      print('Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final responseData = data['data'];
+
+          final card = LoyaltyCard.fromJson(responseData['card'] as Map<String, dynamic>);
+
+          final rewards = (responseData['rewards'] as List?)
+              ?.map((e) => LoyaltyReward.fromJson(e as Map<String, dynamic>))
+              .toList() ?? [];
+
+          final transactions = (responseData['recent_transactions'] as List?)
+              ?.map((e) => LoyaltyTransaction.fromJson(e as Map<String, dynamic>))
+              .toList() ?? [];
+
+          print('Detail carte: ${card.points} pts, ${rewards.length} recompenses, ${transactions.length} transactions');
+          return LoyaltyCardDetail(
+            card: card,
+            rewards: rewards,
+            recentTransactions: transactions,
+          );
         }
+        throw Exception('Reponse invalide');
+      } else if (response.statusCode == 404) {
+        throw Exception('Carte introuvable');
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur getCardDetail: $e');
+      rethrow;
+    }
+  }
 
-        // L'API peut retourner soit "loyalty_card" soit "card"
-        final cardData = data['data']['loyalty_card'] ?? data['data']['card'];
+  // ============================================================
+  // 3. GET /client/loyalty/shops/{id} - Carte pour une boutique
+  // ============================================================
 
+  static Future<LoyaltyCard?> getCardForShop(int shopId) async {
+    try {
+      await AuthService.ensureToken();
+      print('GET /client/loyalty/shops/$shopId');
+      final response = await http.get(
+        Uri.parse(Endpoints.loyaltyCardByShop(shopId)),
+        headers: _headers,
+      );
+      print('Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final hasCard = data['data']['has_card'] == true;
+          if (hasCard && data['data']['card'] != null) {
+            return LoyaltyCard.fromJson(data['data']['card'] as Map<String, dynamic>);
+          }
+        }
+        return null;
+      } else if (response.statusCode == 404) {
+        return null;
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur getCardForShop: $e');
+      if (e.toString().contains('404')) return null;
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // 4. POST /client/loyalty/cards - Creer une carte
+  // ============================================================
+
+  /// Cree une carte de fidelite. Seul shop_id est requis.
+  /// Le PIN est auto-genere depuis les 4 derniers chiffres du telephone.
+  static Future<LoyaltyCard> createCard({required int shopId}) async {
+    try {
+      await AuthService.ensureToken();
+      print('POST /client/loyalty/cards (shop_id: $shopId)');
+      final response = await http.post(
+        Uri.parse(Endpoints.loyaltyCreateCard),
+        headers: _headers,
+        body: jsonEncode({'shop_id': shopId}),
+      );
+      print('Status: ${response.statusCode}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final cardData = data['data']?['card'];
         if (cardData == null) {
-          throw Exception('Aucune carte trouvée dans la réponse');
+          throw Exception('Carte non trouvee dans la reponse');
         }
-
-        print('📇 Carte de fidélité reçue: $cardData');
-        return LoyaltyCard.fromJson(cardData);
-      } catch (e) {
-        print('❌ Erreur lors du parsing: $e');
-        rethrow;
+        print('Carte creee');
+        return LoyaltyCard.fromJson(cardData as Map<String, dynamic>);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Programme fidelite non actif');
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Erreur lors de la creation');
       }
-    } else {
-      final data = jsonDecode(response.body);
-      // Extraire les erreurs de validation si disponibles
-      if (data['errors'] != null) {
-        final errors = data['errors'] as Map<String, dynamic>;
-        final errorMessages = errors.values.map((e) => e.toString()).join(', ');
-        throw Exception(errorMessages);
-      }
-      throw Exception(data['message'] ?? 'Erreur lors de la création de la carte');
+    } catch (e) {
+      print('Erreur createCard: $e');
+      rethrow;
     }
   }
 
-  /// 2. Récupérer une carte de fidélité
-  /// Endpoint: GET /client/loyalty/shops/{shopId}?phone={phone}
-  static Future<LoyaltyCard?> getCard({
-    required int shopId,
-    required String phone,
+  // ============================================================
+  // 5. GET /client/loyalty/cards/{id}/history - Historique
+  // ============================================================
+
+  static Future<List<LoyaltyTransaction>> getCardHistory(
+    int cardId, {
+    String type = 'all',
+    int perPage = 20,
   }) async {
-    final uri = Uri.parse(Endpoints.loyaltyCardByPhone(shopId))
-        .replace(queryParameters: {'phone': phone});
+    try {
+      await AuthService.ensureToken();
+      final uri = Uri.parse(Endpoints.loyaltyCardHistory(cardId)).replace(
+        queryParameters: {
+          'type': type,
+          'per_page': perPage.toString(),
+        },
+      );
 
-    final response = await http.get(uri, headers: _headers);
+      print('GET /client/loyalty/cards/$cardId/history?type=$type');
+      final response = await http.get(uri, headers: _headers);
+      print('Status: ${response.statusCode}');
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return LoyaltyCard.fromJson(data['data']['loyalty_card']);
-    } else if (response.statusCode == 404) {
-      // Aucune carte trouvée
-      return null;
-    } else {
-      final data = jsonDecode(response.body);
-      throw Exception(data['message'] ?? 'Erreur lors de la récupération de la carte');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final transactions = data['data']['transactions'];
+          if (transactions is List) {
+            return transactions
+                .map((e) => LoyaltyTransaction.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+        }
+        return [];
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur getCardHistory: $e');
+      rethrow;
     }
   }
 
-  /// 3. Calculer une réduction fidélité
-  /// Endpoint: POST /client/loyalty/calculate-discount
+  // ============================================================
+  // 6. GET /client/loyalty/cards/{id}/rewards - Recompenses
+  // ============================================================
+
+  /// Retourne { 'available': [...], 'upcoming': [...] }
+  static Future<Map<String, List<LoyaltyReward>>> getCardRewards(int cardId) async {
+    try {
+      await AuthService.ensureToken();
+      print('GET /client/loyalty/cards/$cardId/rewards');
+      final response = await http.get(
+        Uri.parse(Endpoints.loyaltyCardRewards(cardId)),
+        headers: _headers,
+      );
+      print('Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final available = (data['data']['available_rewards'] as List?)
+              ?.map((e) => LoyaltyReward.fromJson(e as Map<String, dynamic>))
+              .toList() ?? [];
+          final upcoming = (data['data']['upcoming_rewards'] as List?)
+              ?.map((e) => LoyaltyReward.fromJson(e as Map<String, dynamic>))
+              .toList() ?? [];
+          return {'available': available, 'upcoming': upcoming};
+        }
+        return {'available': [], 'upcoming': []};
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur getCardRewards: $e');
+      return {'available': [], 'upcoming': []};
+    }
+  }
+
+  // ============================================================
+  // 7. GET /client/loyalty/cards/{id}/qr-code - QR Code
+  // ============================================================
+
+  /// Retourne { 'qr_code': '...', 'qr_data': '{"type":"loyalty_card",...}' }
+  static Future<Map<String, String>> getCardQrCode(int cardId) async {
+    try {
+      await AuthService.ensureToken();
+      print('GET /client/loyalty/cards/$cardId/qr-code');
+      final response = await http.get(
+        Uri.parse(Endpoints.loyaltyCardQrCode(cardId)),
+        headers: _headers,
+      );
+      print('Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          return {
+            'qr_code': data['data']['qr_code']?.toString() ?? '',
+            'qr_data': data['data']['qr_data']?.toString() ?? '',
+          };
+        }
+        return {};
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur getCardQrCode: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // 8. POST /client/loyalty/cards/{id}/verify-pin - Verifier PIN
+  // ============================================================
+
+  static Future<Map<String, dynamic>> verifyPin({
+    required int cardId,
+    required String pinCode,
+  }) async {
+    try {
+      await AuthService.ensureToken();
+      print('POST /client/loyalty/cards/$cardId/verify-pin');
+      final response = await http.post(
+        Uri.parse(Endpoints.loyaltyCardVerifyPin(cardId)),
+        headers: _headers,
+        body: jsonEncode({'pin_code': pinCode}),
+      );
+      print('Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'verified': data['data']?['verified'] ?? true,
+          'message': data['message'],
+        };
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Code PIN invalide');
+      }
+    } catch (e) {
+      print('Erreur verifyPin: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // 9. GET /client/loyalty/stats - Statistiques
+  // ============================================================
+
+  static Future<Map<String, dynamic>> getStats() async {
+    try {
+      await AuthService.ensureToken();
+      print('GET /client/loyalty/stats');
+      final response = await http.get(
+        Uri.parse(Endpoints.loyaltyStats),
+        headers: _headers,
+      );
+      print('Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'] ?? {};
+        }
+        return {};
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur getStats: $e');
+      return {};
+    }
+  }
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+
+  /// Verifier si le client a une carte pour une boutique
+  static Future<bool> hasCard(int shopId) async {
+    final card = await getCardForShop(shopId);
+    return card != null;
+  }
+
+  /// Calculer une reduction fidelite
   static Future<LoyaltyDiscount> calculateDiscount({
     required int cardId,
     required int pointsToUse,
     required int orderTotal,
   }) async {
+    await AuthService.ensureToken();
     final body = {
       'card_id': cardId,
       'points_to_use': pointsToUse,
       'order_total': orderTotal,
     };
 
+    print('POST /client/loyalty/calculate-discount');
     final response = await http.post(
       Uri.parse(Endpoints.loyaltyCalculateDiscount),
       headers: _headers,
       body: jsonEncode(body),
     );
+    print('Status: ${response.statusCode}');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return LoyaltyDiscount.fromJson(data['data']);
     } else {
       final data = jsonDecode(response.body);
-      throw Exception(data['message'] ?? 'Erreur lors du calcul de la réduction');
-    }
-  }
-
-  /// 4. Vérifier si une carte existe
-  /// Utile avant de créer ou d'afficher le formulaire
-  static Future<bool> hasCard({
-    required int shopId,
-    required String phone,
-  }) async {
-    try {
-      final card = await getCard(shopId: shopId, phone: phone);
-      return card != null;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// 5. Valider carte avec code PIN
-  /// Endpoint: POST /client/loyalty/validate-pin
-  static Future<Map<String, dynamic>> validateWithPIN({
-    required String cardNumber,
-    required int shopId,
-    required String pinCode,
-  }) async {
-    final body = {
-      'card_number': cardNumber,
-      'shop_id': shopId,
-      'pin_code': pinCode,
-    };
-
-    final response = await http.post(
-      Uri.parse(Endpoints.loyaltyValidatePIN),
-      headers: _headers,
-      body: jsonEncode(body),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return {
-        'success': data['success'],
-        'valid': data['data']['valid'],
-        'message': data['message'],
-      };
-    } else {
-      final data = jsonDecode(response.body);
-      throw Exception(data['message'] ?? 'Code PIN invalide');
+      throw Exception(data['message'] ?? 'Erreur lors du calcul');
     }
   }
 }

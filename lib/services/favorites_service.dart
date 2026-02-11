@@ -1,301 +1,433 @@
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import './utils/api_endpoint.dart';
 import './models/shop_model.dart';
-import '../core/services/storage_service.dart';
+import './auth_service.dart';
 
 /// Service pour gérer les boutiques favorites
-/// LOGIQUE EXACTE DE L'API TIKA
+/// Authentification: Bearer Token uniquement (Sanctum)
 ///
 /// Endpoints:
-/// - GET /client/favorites?device_fingerprint=xxx : Récupérer les favoris
-/// - POST /client/favorites : Ajouter un favori
-/// - DELETE /client/favorites/{shopId}?device_fingerprint=xxx : Retirer un favori
+/// 1. GET    /client/favorites              - Liste des favoris
+/// 2. GET    /client/favorites/stats        - Statistiques
+/// 3. GET    /client/favorites/suggestions  - Suggestions
+/// 4. POST   /client/favorites              - Ajouter un favori
+/// 5. POST   /client/favorites/toggle       - Toggle favori
+/// 6. GET    /client/favorites/{id}         - Détail d'un favori
+/// 7. GET    /client/favorites/{id}/check   - Vérifier si favori
+/// 8. DELETE /client/favorites/{id}         - Retirer un favori
 class FavoritesService {
-  static const Map<String, String> _headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
+  /// Headers avec authentification Bearer
+  static Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (AuthService.authToken != null)
+          'Authorization': 'Bearer ${AuthService.authToken}',
+      };
 
-  /// 1. Récupérer la liste des boutiques favorites
-  /// GET /client/favorites?device_fingerprint=xxx
-  ///
-  /// Retourne: List<Shop> - Liste des boutiques favorites actives
-  static Future<List<Shop>> getFavorites() async {
+  /// S'assurer que le token est disponible avant une requete
+  static Future<void> _ensureAuth() async {
+    await AuthService.ensureToken();
+  }
+
+  // ============================================================
+  // CACHE PERSISTANT (SharedPreferences + mémoire)
+  // ============================================================
+
+  static const String _cacheKey = 'favorites_shops_cache';
+
+  /// Cache mémoire synchronisé avec SharedPreferences
+  static final Map<int, Shop> _localCache = {};
+  static bool _cacheLoaded = false;
+
+  /// Charger le cache depuis SharedPreferences
+  static Future<void> _loadCacheFromDisk() async {
+    if (_cacheLoaded) return;
     try {
-      // Récupérer le device fingerprint
-      final deviceFingerprint = await StorageService.getDeviceFingerprint();
+      final prefs = await SharedPreferences.getInstance();
+      final cacheJson = prefs.getString(_cacheKey);
+      if (cacheJson != null) {
+        final List<dynamic> list = jsonDecode(cacheJson);
+        for (var item in list) {
+          try {
+            final shop = Shop.fromJson(item as Map<String, dynamic>);
+            _localCache[shop.id] = shop;
+          } catch (_) {}
+        }
+        print('💾 Cache disque chargé: ${_localCache.length} favoris');
+      }
+    } catch (e) {
+      print('❌ Erreur chargement cache disque: $e');
+    }
+    _cacheLoaded = true;
+  }
 
-      // Construire l'URL avec le query parameter
-      final uri = Uri.parse(Endpoints.favorites).replace(
-        queryParameters: {'device_fingerprint': deviceFingerprint},
-      );
+  /// Persister le cache vers SharedPreferences
+  static Future<void> _saveCacheToDisk() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = _localCache.values.map((shop) => shop.toJson()).toList();
+      await prefs.setString(_cacheKey, jsonEncode(list));
+    } catch (e) {
+      print('❌ Erreur sauvegarde cache disque: $e');
+    }
+  }
 
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('📤 GET FAVORITES');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  /// Ajouter une boutique au cache + persister
+  static void addToLocalCache(Shop shop) {
+    _localCache[shop.id] = shop;
+    _saveCacheToDisk();
+    print('💾 Cache: ajouté ${shop.name} (${_localCache.length} favoris)');
+  }
+
+  /// Retirer une boutique du cache + persister
+  static void removeFromLocalCache(int shopId) {
+    _localCache.remove(shopId);
+    _saveCacheToDisk();
+    print('💾 Cache: retiré shopId=$shopId (${_localCache.length} favoris)');
+  }
+
+  /// Vérifier si une boutique est en cache
+  static bool isInLocalCache(int shopId) {
+    return _localCache.containsKey(shopId);
+  }
+
+  /// Vider le cache
+  static void clearLocalCache() {
+    _localCache.clear();
+    _saveCacheToDisk();
+  }
+
+  /// Fallback cache si API vide/erreur
+  static List<Shop> _fallbackToCache() {
+    if (_localCache.isNotEmpty) {
+      print('💾 Fallback cache: ${_localCache.length} favoris');
+      return _localCache.values.toList();
+    }
+    return [];
+  }
+
+  // ============================================================
+  // 1. GET /client/favorites - Liste des favoris
+  // ============================================================
+
+  /// Récupère la liste des boutiques favorites
+  /// [type]: all, restaurant, boutique (défaut: all)
+  /// [search]: recherche par nom/catégorie/ville
+  static Future<List<Shop>> getFavorites({
+    String type = 'all',
+    String? search,
+    int perPage = 50,
+  }) async {
+    await _ensureAuth();
+    await _loadCacheFromDisk();
+    print('💾 Cache après chargement: ${_localCache.length} favoris [${_localCache.keys.toList()}]');
+
+    try {
+      final queryParams = <String, String>{
+        'type': type,
+        'per_page': perPage.toString(),
+        if (search != null && search.isNotEmpty) 'search': search,
+      };
+      final uri = Uri.parse(Endpoints.favorites).replace(queryParameters: queryParams);
+
+      print('📤 GET /client/favorites?type=$type');
       print('🔗 URL: $uri');
-      print('🔑 Device Fingerprint: $deviceFingerprint');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('🔑 Auth: ${AuthService.authToken != null ? "Bearer token present" : "No token"}');
 
-      // Appel API
       final response = await http.get(uri, headers: _headers);
+      print('📥 Status: ${response.statusCode}');
+      print('📄 Body: ${response.body}');
 
-      print('📥 Response Status: ${response.statusCode}');
-
-      // Traitement de la réponse
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        if (data['success'] == true) {
-          // L'API retourne: { success: true, data: { favorites: [...] } }
-          final favoritesData = data['data'];
+        if (data['success'] == true && data['data'] != null) {
+          final responseData = data['data'];
 
-          if (favoritesData == null) {
-            print('⚠️ data est null');
-            return [];
-          }
-
-          // Extraire la liste des favoris
+          // Extraire la liste des favoris selon le format API
+          // Format attendu: { data: { favorites: [...], summary: {...}, pagination: {...} } }
           List favoritesList = [];
-
-          if (favoritesData['favorites'] != null) {
-            favoritesList = favoritesData['favorites'] as List;
-          } else if (favoritesData is List) {
-            favoritesList = favoritesData;
-          } else {
-            print('⚠️ Structure de favoris non reconnue');
-            return [];
+          if (responseData['favorites'] is List) {
+            favoritesList = responseData['favorites'] as List;
+          } else if (responseData is List) {
+            favoritesList = responseData;
           }
+
+          print('📋 ${favoritesList.length} favoris depuis l\'API');
 
           if (favoritesList.isEmpty) {
-            print('ℹ️ Aucun favori trouvé');
-            return [];
+            print('ℹ️ API retourne 0 favoris');
+            return _fallbackToCache();
           }
 
-          print('✅ ${favoritesList.length} favoris trouvés');
-
-          // Extraire les boutiques des favoris
-          // Chaque favori a la structure: { id, shop_id, shop: {...}, created_at }
+          // Parser les favoris — format API: objets directs avec id, name, logo, etc.
           final shops = <Shop>[];
-
-          for (var i = 0; i < favoritesList.length; i++) {
+          for (var favorite in favoritesList) {
             try {
-              final favorite = favoritesList[i];
-
-              if (favorite['shop'] != null) {
-                final shop = Shop.fromJson(favorite['shop'] as Map<String, dynamic>);
-                shops.add(shop);
-              } else {
-                print('⚠️ Favori $i sans boutique (supprimée?)');
-              }
+              final map = favorite as Map<String, dynamic>;
+              shops.add(Shop.fromJson(map));
+              print('  ✅ ${map['name']}');
             } catch (e) {
-              print('❌ Erreur parsing favori $i: $e');
+              print('  ❌ Erreur parsing: $e');
             }
           }
 
-          print('✅ ${shops.length} boutiques valides chargées');
-          print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          // Synchroniser le cache avec l'API
+          _localCache.clear();
+          for (var shop in shops) {
+            _localCache[shop.id] = shop;
+          }
+          _saveCacheToDisk();
 
+          print('✅ ${shops.length} favoris chargés');
           return shops;
-        } else {
-          print('⚠️ success = false');
-          print('   Message: ${data['message']}');
-          return [];
         }
-      } else if (response.statusCode == 500) {
-        // Erreur serveur - Backend non corrigé
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        print('❌ ERREUR 500 - BACKEND NON CORRIGÉ');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        throw Exception(
-          'Le serveur a rencontré une erreur. '
-          'Le backend doit être corrigé (voir GUIDE_CORRECTION_FAVORIS.md)'
-        );
+
+        print('⚠️ Réponse inattendue: ${data['message'] ?? 'success != true'}');
+        return _fallbackToCache();
+      } else if (response.statusCode == 401) {
+        print('❌ Non authentifié (401)');
+        throw Exception('Authentification requise');
       } else {
-        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+        print('❌ Erreur HTTP ${response.statusCode}');
+        return _fallbackToCache();
       }
     } catch (e) {
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       print('❌ Erreur getFavorites: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-      // Si erreur serveur, propager l'exception
-      if (e.toString().contains('serveur')) {
-        rethrow;
+      if (_localCache.isNotEmpty) {
+        return _fallbackToCache();
       }
+      rethrow;
+    }
+  }
 
-      // Pour les autres erreurs, retourner liste vide
+  // ============================================================
+  // 2. GET /client/favorites/stats - Statistiques
+  // ============================================================
+
+  static Future<Map<String, dynamic>> getStats() async {
+    try {
+      print('📤 GET /client/favorites/stats');
+      final response = await http.get(
+        Uri.parse(Endpoints.favoritesStats),
+        headers: _headers,
+      );
+      print('📥 Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'] ?? {};
+        }
+      }
+      return {};
+    } catch (e) {
+      print('❌ Erreur getStats: $e');
+      return {};
+    }
+  }
+
+  // ============================================================
+  // 3. GET /client/favorites/suggestions - Suggestions
+  // ============================================================
+
+  static Future<List<Shop>> getSuggestions({int limit = 10}) async {
+    try {
+      final uri = Uri.parse(Endpoints.favoritesSuggestions).replace(
+        queryParameters: {'limit': limit.toString()},
+      );
+
+      print('📤 GET /client/favorites/suggestions');
+      final response = await http.get(uri, headers: _headers);
+      print('📥 Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final suggestions = data['data']?['suggestions'];
+          if (suggestions is List) {
+            return suggestions
+                .map((e) => Shop.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+        }
+      }
+      return [];
+    } catch (e) {
+      print('❌ Erreur getSuggestions: $e');
       return [];
     }
   }
 
-  /// 2. Ajouter une boutique aux favoris
-  /// POST /client/favorites
-  /// Body: { shop_id: int, device_fingerprint: string }
-  ///
-  /// Retourne: Map avec success, message et data
+  // ============================================================
+  // 4. POST /client/favorites - Ajouter un favori
+  // ============================================================
+
   static Future<Map<String, dynamic>> addFavorite(int shopId) async {
     try {
-      // Récupérer le device fingerprint
-      final deviceFingerprint = await StorageService.getDeviceFingerprint();
-
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('📤 POST ADD FAVORITE');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('🆔 Shop ID: $shopId');
-      print('🔑 Device Fingerprint: $deviceFingerprint');
-
-      // Construire le body selon l'API
-      final body = {
-        'shop_id': shopId,
-        'device_fingerprint': deviceFingerprint,
-      };
-
-      print('📦 Body: ${jsonEncode(body)}');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-      // Appel API
+      await _ensureAuth();
+      print('📤 POST /client/favorites (shop_id: $shopId)');
       final response = await http.post(
         Uri.parse(Endpoints.favorites),
         headers: _headers,
-        body: jsonEncode(body),
+        body: jsonEncode({'shop_id': shopId}),
       );
+      print('📥 Status: ${response.statusCode}');
+      print('📄 Body: ${response.body}');
 
-      print('📥 Response Status: ${response.statusCode}');
-      print('📥 Response Body: ${response.body}');
-
-      // Traitement de la réponse
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        print('✅ Favori ajouté avec succès');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('✅ Favori ajouté');
         return data;
-      } else if (response.statusCode == 409) {
-        // Déjà en favoris
+      } else if (response.statusCode == 400) {
         final data = jsonDecode(response.body);
         print('ℹ️ Déjà en favoris');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        return {
-          'success': true,
-          'message': 'Cette boutique est déjà dans vos favoris',
-          'already_exists': true,
-        };
-      } else if (response.statusCode == 404) {
-        // Boutique introuvable ou inactive
-        print('❌ Boutique introuvable ou inactive');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        throw Exception('Boutique introuvable ou inactive');
-      } else {
-        throw Exception('Erreur ${response.statusCode}: ${response.body}');
-      }
-    } catch (e) {
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('❌ Erreur addFavorite: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      rethrow;
-    }
-  }
-
-  /// 3. Retirer une boutique des favoris
-  /// DELETE /client/favorites/{shopId}?device_fingerprint=xxx
-  ///
-  /// Retourne: Map avec success et message
-  static Future<Map<String, dynamic>> removeFavorite(int shopId) async {
-    try {
-      // Récupérer le device fingerprint
-      final deviceFingerprint = await StorageService.getDeviceFingerprint();
-
-      // Construire l'URL avec le shop ID et le query parameter
-      final uri = Uri.parse(Endpoints.removeFavorite(shopId)).replace(
-        queryParameters: {'device_fingerprint': deviceFingerprint},
-      );
-
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('📤 DELETE REMOVE FAVORITE');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('🔗 URL: $uri');
-      print('🆔 Shop ID: $shopId');
-      print('🔑 Device Fingerprint: $deviceFingerprint');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-      // Appel API
-      final response = await http.delete(uri, headers: _headers);
-
-      print('📥 Response Status: ${response.statusCode}');
-
-      // Traitement de la réponse
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print('✅ Favori retiré avec succès');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return data;
       } else if (response.statusCode == 404) {
-        // Favori non trouvé (peut-être déjà retiré)
-        print('ℹ️ Favori non trouvé');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        return {
-          'success': true,
-          'message': 'Favori introuvable (déjà retiré?)',
-        };
+        throw Exception('Boutique introuvable ou inactive');
       } else {
-        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+        throw Exception('Erreur ${response.statusCode}');
       }
     } catch (e) {
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('❌ Erreur removeFavorite: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('❌ Erreur addFavorite: $e');
       rethrow;
     }
   }
 
-  /// 4. Vérifier si une boutique est en favori
-  /// Utilise getFavorites() et vérifie si le shop_id est présent
-  ///
-  /// Note: Cette méthode fait un appel API à chaque fois.
-  /// Pour des performances optimales, stocker le résultat localement.
-  static Future<bool> isFavorite(int shopId) async {
+  // ============================================================
+  // 5. POST /client/favorites/toggle - Toggle favori (RECOMMANDÉ)
+  // ============================================================
+
+  /// Toggle un favori — endpoint recommandé par l'API
+  /// Retourne { success, message, data: { shop_id, shop_name, is_favorite, action, total_favorites } }
+  static Future<Map<String, dynamic>> toggleFavorite(int shopId) async {
     try {
-      final favorites = await getFavorites();
-      final isFav = favorites.any((shop) => shop.id == shopId);
+      await _ensureAuth();
+      print('📤 POST /client/favorites/toggle (shop_id: $shopId)');
+      print('🔑 Auth: ${AuthService.isAuthenticated ? "OK" : "NON CONNECTE"}');
 
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('🔍 CHECK IS FAVORITE');
-      print('🆔 Shop ID: $shopId');
-      print(isFav ? '✅ Est en favori' : '❌ N\'est pas en favori');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      final response = await http.post(
+        Uri.parse(Endpoints.favoritesToggle),
+        headers: _headers,
+        body: jsonEncode({'shop_id': shopId}),
+      );
+      print('📥 Status: ${response.statusCode}');
+      print('📄 Body: ${response.body}');
 
-      return isFav;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final isFav = data['data']?['is_favorite'] == true;
+        final action = data['data']?['action']; // "added" ou "removed"
+        print('✅ Toggle: is_favorite=$isFav, action=$action');
+        return data;
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Erreur toggleFavorite: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // 6. GET /client/favorites/{id} - Détail d'un favori
+  // ============================================================
+
+  static Future<Map<String, dynamic>> getFavoriteDetail(int shopId) async {
+    try {
+      print('📤 GET /client/favorites/$shopId');
+      final response = await http.get(
+        Uri.parse(Endpoints.favoriteDetail(shopId)),
+        headers: _headers,
+      );
+      print('📥 Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'] ?? {};
+        }
+        return {};
+      } else if (response.statusCode == 404) {
+        throw Exception('Favori introuvable');
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Erreur getFavoriteDetail: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // 7. GET /client/favorites/{id}/check - Vérifier si favori
+  // ============================================================
+
+  /// Vérifie si une boutique est en favori
+  /// Retourne { data: { shop_id, shop_name, is_favorite } }
+  static Future<bool> isFavorite(int shopId) async {
+    await _ensureAuth();
+    await _loadCacheFromDisk();
+
+    // Vérifier d'abord le cache
+    if (_localCache.containsKey(shopId)) {
+      print('💾 isFavorite cache: true (shopId=$shopId)');
+      return true;
+    }
+
+    try {
+      print('📤 GET /client/favorites/$shopId/check');
+      final response = await http.get(
+        Uri.parse(Endpoints.favoriteCheck(shopId)),
+        headers: _headers,
+      );
+      print('📥 Status: ${response.statusCode}');
+      print('📄 Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final isFav = data['data']?['is_favorite'] == true;
+        print(isFav ? '✅ Est en favori' : '❌ N\'est pas en favori');
+        return isFav;
+      }
+      return false;
     } catch (e) {
       print('❌ Erreur isFavorite: $e');
       return false;
     }
   }
 
-  /// 5. Toggle favori (ajouter ou retirer)
-  /// Helper method pour simplifier l'utilisation
-  ///
-  /// @param shopId: ID de la boutique
-  /// @param currentlyFavorite: État actuel (true = déjà en favori)
-  ///
-  /// Retourne: Map avec success et message
-  static Future<Map<String, dynamic>> toggleFavorite(
-    int shopId,
-    bool currentlyFavorite,
-  ) async {
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('🔄 TOGGLE FAVORITE');
-    print('🆔 Shop ID: $shopId');
-    print('📊 État actuel: ${currentlyFavorite ? "EN FAVORI" : "PAS EN FAVORI"}');
-    print('➡️  Action: ${currentlyFavorite ? "RETIRER" : "AJOUTER"}');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  // ============================================================
+  // 8. DELETE /client/favorites/{id} - Retirer un favori
+  // ============================================================
 
-    if (currentlyFavorite) {
-      // Retirer des favoris
-      return await removeFavorite(shopId);
-    } else {
-      // Ajouter aux favoris
-      return await addFavorite(shopId);
+  static Future<Map<String, dynamic>> removeFavorite(int shopId) async {
+    try {
+      await _ensureAuth();
+      removeFromLocalCache(shopId);
+
+      print('📤 DELETE /client/favorites/$shopId');
+      final response = await http.delete(
+        Uri.parse(Endpoints.removeFavorite(shopId)),
+        headers: _headers,
+      );
+      print('📥 Status: ${response.statusCode}');
+      print('📄 Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ Favori retiré');
+        return data;
+      } else if (response.statusCode == 404) {
+        return {'success': true, 'message': 'Favori déjà retiré'};
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Erreur removeFavorite: $e');
+      rethrow;
     }
   }
 }
