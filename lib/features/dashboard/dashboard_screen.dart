@@ -13,6 +13,7 @@ import '../../services/models/dashboard_model.dart';
 import '../../services/models/loyalty_card_model.dart';
 // Ecrans existants du projet (boutique)
 import '../access_boutique/access_boutique_screen.dart';
+import '../boutique/home/home_online_screen.dart';
 import '../boutique/history/global_history_screen.dart';
 import '../boutique/favorites/favorites_boutiques_screen.dart';
 import '../boutique/loyalty/loyalty_card_page.dart';
@@ -1434,7 +1435,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildFavoriteItem(DashboardFavorite favorite) {
     return GestureDetector(
-      onTap: () => _navigateTo(const FavoritesBoutiquesScreen()),
+      onTap: () => _navigateTo(HomeScreen(shopId: favorite.shopId)),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(12),

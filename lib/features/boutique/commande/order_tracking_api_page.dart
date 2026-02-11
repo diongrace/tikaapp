@@ -97,10 +97,17 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
         );
       }
 
-      final order = await OrderService.trackOrder(
-        orderNumber: widget.orderNumber,
-        customerPhone: customerPhone,
-      );
+      Order order;
+      try {
+        order = await OrderService.trackOrder(
+          orderNumber: widget.orderNumber,
+          customerPhone: customerPhone,
+        );
+      } catch (_) {
+        // Fallback: essayer via le token auth (GET par numero)
+        print('[Tracking] trackOrder echoue, fallback getOrderByNumber...');
+        order = await OrderService.getOrderByNumber(widget.orderNumber);
+      }
 
       // Charger les infos de la boutique
       if (order.shopId > 0) {
@@ -216,26 +223,38 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
   }
 
   Future<void> _callShop() async {
-    if (_shopPhone != null && _shopPhone!.isNotEmpty) {
-      final uri = Uri.parse('tel:$_shopPhone');
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
+    if (_shopPhone == null || _shopPhone!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Numero de la boutique non disponible'), backgroundColor: Colors.orange),
+        );
       }
+      return;
+    }
+    final uri = Uri.parse('tel:$_shopPhone');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     }
   }
 
   Future<void> _whatsappShop() async {
-    if (_shopPhone != null && _shopPhone!.isNotEmpty) {
-      // Nettoyer le numéro de téléphone
-      String phone = _shopPhone!.replaceAll(RegExp(r'[^0-9]'), '');
-      if (phone.startsWith('0')) {
-        phone = '225$phone'; // Ajouter l'indicatif Côte d'Ivoire
+    if (_shopPhone == null || _shopPhone!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Numero de la boutique non disponible'), backgroundColor: Colors.orange),
+        );
       }
-      final message = 'Bonjour, je souhaite avoir des informations sur ma commande #${widget.orderNumber}';
-      final uri = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(message)}');
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      return;
+    }
+    // Nettoyer le numéro de téléphone
+    String phone = _shopPhone!.replaceAll(RegExp(r'[^0-9]'), '');
+    if (phone.startsWith('0')) {
+      phone = '225$phone'; // Ajouter l'indicatif Côte d'Ivoire
+    }
+    final message = 'Bonjour, je souhaite avoir des informations sur ma commande #${widget.orderNumber}';
+    final uri = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(message)}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -539,14 +558,14 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           // Timeline de statut
           _buildModernTimeline(_order!),
           const SizedBox(height: 20),
+          // Details des produits
+          _buildProductsDetails(_order!),
+          const SizedBox(height: 20),
           // Infos de livraison
           _buildDeliveryInfo(_order!),
           const SizedBox(height: 20),
           // Contact boutique
-          if (_shopPhone != null && _shopPhone!.isNotEmpty) ...[
-            _buildContactSection(),
-            const SizedBox(height: 20),
-          ],
+          _buildContactSection(),
           const SizedBox(height: 40),
         ],
       ),
