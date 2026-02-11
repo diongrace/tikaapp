@@ -121,6 +121,10 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
       }
 
       // Charger les détails des produits
+      print('[Tracking] items count: ${order.items.length}, itemsCount: ${order.itemsCount}');
+      for (var item in order.items) {
+        print('[Tracking] item: name=${item.productName}, productId=${item.productId}, qty=${item.quantity}, price=${item.price}');
+      }
       _productsDetails = await _loadProductsDetails(order);
 
       setState(() {
@@ -558,9 +562,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           // Timeline de statut
           _buildModernTimeline(_order!),
           const SizedBox(height: 20),
-          // Details des produits
-          _buildProductsDetails(_order!),
-          const SizedBox(height: 20),
+          // TODO: Details des produits (desactive - donnees non disponibles dans l'API tracking)
+          // _buildProductsDetails(_order!),
+          // const SizedBox(height: 20),
           // Infos de livraison
           _buildDeliveryInfo(_order!),
           const SizedBox(height: 20),
@@ -639,15 +643,22 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           const SizedBox(height: 16),
 
           // Liste des produits avec détails enrichis
-          if (hasDetails)
-            ..._productsDetails.asMap().entries.map((entry) {
+          // Construire la liste unifiée: productsDetails ou items bruts
+          if (hasDetails || order.items.isNotEmpty)
+            ...(hasDetails ? _productsDetails : order.items.map((item) => {
+              'name': item.productName ?? 'Article',
+              'image': item.image,
+              'price': item.price,
+              'quantity': item.quantity,
+            }).toList()).asMap().entries.map((entry) {
               final index = entry.key;
               final product = entry.value;
-              final isLast = index == _productsDetails.length - 1;
-              final name = product['name'] as String;
+              final totalItems = hasDetails ? _productsDetails.length : order.items.length;
+              final isLast = index == totalItems - 1;
+              final name = (product['name'] as String?) ?? 'Article';
               final image = product['image'] as String?;
-              final price = product['price'] as double;
-              final quantity = product['quantity'] as int;
+              final price = (product['price'] as num?)?.toDouble() ?? 0.0;
+              final quantity = (product['quantity'] as num?)?.toInt() ?? 1;
 
               return Container(
                 margin: EdgeInsets.only(bottom: isLast ? 0 : 12),
