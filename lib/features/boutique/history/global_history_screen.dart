@@ -1869,12 +1869,14 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     color: primaryColor.withOpacity(0.7),
                   ),
                   const SizedBox(width: 10),
-                  Text(
-                    'Scannez un QR code pour commander',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: primaryColor.withOpacity(0.8),
+                  Flexible(
+                    child: Text(
+                      'Scannez un QR code pour commander',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: primaryColor.withOpacity(0.8),
+                      ),
                     ),
                   ),
                 ],

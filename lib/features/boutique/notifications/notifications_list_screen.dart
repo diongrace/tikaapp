@@ -13,7 +13,8 @@ class NotificationsListScreen extends StatefulWidget {
 
 class _NotificationsListScreenState extends State<NotificationsListScreen>
     with SingleTickerProviderStateMixin {
-  List<NotificationItem> _notifications = [];
+  List<NotificationItem> _allNotifications = []; // Toutes les notifications
+  List<NotificationItem> _notifications = []; // Notifications filtrées
   bool _isLoading = true;
   String? _errorMessage;
   int _unreadCount = 0;
@@ -48,8 +49,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
     if (_tabController.indexIsChanging) return;
     setState(() {
       _selectedFilter = _filters[_tabController.index]['id'];
+      _notifications = _filterNotifications(_allNotifications, _selectedFilter);
     });
-    _loadNotifications();
   }
 
   Future<void> _loadNotifications() async {
@@ -59,15 +60,16 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
     });
 
     try {
+      // Toujours charger TOUTES les notifications, filtrage local ensuite
       final response = await NotificationService.getNotifications(
-        type: _selectedFilter == 'all' ? null : _selectedFilter,
         status: 'all',
       );
 
       final unreadCount = await NotificationService.getUnreadCount();
 
       setState(() {
-        _notifications = response.notifications;
+        _allNotifications = response.notifications;
+        _notifications = _filterNotifications(_allNotifications, _selectedFilter);
         _unreadCount = unreadCount;
         _isLoading = false;
       });
@@ -77,6 +79,79 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
         _isLoading = false;
       });
     }
+  }
+
+  /// Filtrer les notifications localement par catégorie
+  /// Détecte le type à partir du champ type ET du contenu (titre/message)
+  List<NotificationItem> _filterNotifications(List<NotificationItem> all, String filter) {
+    if (filter == 'all') return all;
+
+    return all.where((n) {
+      final detectedType = _detectNotificationType(n);
+      return detectedType == filter;
+    }).toList();
+  }
+
+  /// Détecter le type réel d'une notification à partir de son type API + contenu
+  String _detectNotificationType(NotificationItem notification) {
+    final type = notification.type.toLowerCase();
+
+    // Si le backend a déjà un type précis, l'utiliser
+    if (['order', 'payment', 'wave_payment', 'loyalty', 'promo', 'promotion', 'delivery'].contains(type)) {
+      if (type == 'wave_payment') return 'payment';
+      if (type == 'promotion') return 'promo';
+      return type;
+    }
+
+    // Sinon, détecter à partir du titre et du message
+    final title = notification.title.toLowerCase();
+    final message = notification.message.toLowerCase();
+    final content = '$title $message';
+
+    // Détection commande
+    if (content.contains('commande') ||
+        content.contains('order') ||
+        content.contains('#tk') ||
+        content.contains('prête') ||
+        content.contains('livrée') ||
+        content.contains('annulée') ||
+        content.contains('confirmée') ||
+        content.contains('en préparation') ||
+        content.contains('en cours de livraison')) {
+      return 'order';
+    }
+
+    // Détection paiement
+    if (content.contains('paiement') ||
+        content.contains('payment') ||
+        content.contains('wave') ||
+        content.contains('payé') ||
+        content.contains('remboursement') ||
+        content.contains('facture') ||
+        content.contains('reçu')) {
+      return 'payment';
+    }
+
+    // Détection fidélité
+    if (content.contains('fidélité') ||
+        content.contains('loyalty') ||
+        content.contains('points') ||
+        content.contains('récompense') ||
+        content.contains('carte de fidélité')) {
+      return 'loyalty';
+    }
+
+    // Détection promo
+    if (content.contains('promo') ||
+        content.contains('réduction') ||
+        content.contains('offre') ||
+        content.contains('coupon') ||
+        content.contains('solde') ||
+        content.contains('%')) {
+      return 'promo';
+    }
+
+    return 'other';
   }
 
   Future<void> _markAsRead(int id) async {
@@ -495,8 +570,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
 
   Widget _buildNotificationCard(NotificationItem notification) {
     final isRead = notification.isRead;
-    final iconData = _getIconForType(notification.type);
-    final color = _getColorForType(notification.type);
+    final detectedType = _detectNotificationType(notification);
+    final iconData = _getIconForType(detectedType);
+    final color = _getColorForType(detectedType);
 
     return Dismissible(
       key: Key(notification.id.toString()),
@@ -580,7 +656,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              notification.typeLabel,
+                              _getTypeLabelForDisplay(detectedType),
                               style: GoogleFonts.openSans(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -647,6 +723,23 @@ class _NotificationsListScreenState extends State<NotificationsListScreen>
         ),
       ),
     );
+  }
+
+  String _getTypeLabelForDisplay(String type) {
+    switch (type) {
+      case 'order':
+        return 'Commande';
+      case 'payment':
+        return 'Paiement';
+      case 'loyalty':
+        return 'Fidélité';
+      case 'promo':
+        return 'Promotion';
+      case 'delivery':
+        return 'Livraison';
+      default:
+        return 'Notification';
+    }
   }
 
   IconData _getIconForType(String type) {

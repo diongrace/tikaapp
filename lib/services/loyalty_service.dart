@@ -132,14 +132,15 @@ class LoyaltyService {
           }
         }
         return null;
-      } else if (response.statusCode == 404) {
+      } else if (response.statusCode == 404 || response.statusCode == 422) {
+        // 404 = pas de carte, 422 = paramètres invalides → pas de carte
         return null;
       } else {
         throw Exception('Erreur ${response.statusCode}');
       }
     } catch (e) {
       print('Erreur getCardForShop: $e');
-      if (e.toString().contains('404')) return null;
+      if (e.toString().contains('404') || e.toString().contains('422')) return null;
       rethrow;
     }
   }

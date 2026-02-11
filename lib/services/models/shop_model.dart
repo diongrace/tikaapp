@@ -27,6 +27,7 @@ class Shop {
   // Wave Payment
   final bool waveEnabled;
   final String? wavePaymentLink;
+  final String? wavePhone;
   final bool wavePartialPaymentEnabled;
   final int wavePartialPaymentPercentage;
 
@@ -54,6 +55,7 @@ class Shop {
     this.distance,
     this.waveEnabled = false,
     this.wavePaymentLink,
+    this.wavePhone,
     this.wavePartialPaymentEnabled = false,
     this.wavePartialPaymentPercentage = 0,
   });
@@ -88,8 +90,18 @@ class Shop {
         : null;
     print('🖼️ [Shop.fromJson] id=${json['id']} banner_url=$bannerUrlRaw => parsed=$parsedBannerUrl');
 
-    // Chercher le lien Wave dans plusieurs champs possibles
-    final wavePaymentLinkRaw = json['wave_payment_link']
+    // Parser l'objet wave structuré (nouveau format API)
+    // L'API retourne: { "wave": { "enabled": true, "payment_link": "...", "phone": "...", "partial_payment_enabled": false, "partial_payment_percentage": 0 } }
+    final waveObj = json['wave'] is Map ? json['wave'] as Map<String, dynamic> : null;
+
+    // Wave enabled: d'abord depuis l'objet wave, sinon champs plats
+    final bool parsedWaveEnabled = waveObj != null
+        ? (waveObj['enabled'] == true || waveObj['enabled'] == 1)
+        : (json['wave_enabled'] == true || json['wave_enabled'] == 1);
+
+    // Wave payment link: d'abord depuis l'objet wave, sinon champs plats
+    final wavePaymentLinkRaw = waveObj?['payment_link']
+        ?? json['wave_payment_link']
         ?? json['wave_link']
         ?? json['wave_url']
         ?? json['wave_number']
@@ -99,6 +111,20 @@ class Shop {
         ?? (json['payment_settings'] is Map ? json['payment_settings']['wave_link'] : null)
         ?? (json['payment'] is Map ? json['payment']['wave_link'] : null)
         ?? (json['payment'] is Map ? json['payment']['wave_payment_link'] : null);
+
+    // Wave phone: depuis l'objet wave ou champs plats
+    final wavePhoneRaw = waveObj?['phone']
+        ?? json['wave_phone']
+        ?? json['wave_number'];
+
+    // Wave partial payment: depuis l'objet wave ou champs plats
+    final bool parsedPartialEnabled = waveObj != null
+        ? (waveObj['partial_payment_enabled'] == true || waveObj['partial_payment_enabled'] == 1)
+        : (json['wave_partial_payment_enabled'] == true || json['wave_partial_payment_enabled'] == 1);
+
+    final int parsedPartialPercentage = waveObj != null
+        ? (_parseInt(waveObj['partial_payment_percentage']) ?? 0)
+        : (_parseInt(json['wave_partial_payment_percentage']) ?? 0);
 
     return Shop(
       id: _parseInt(json['id']) ?? 0,
@@ -126,10 +152,11 @@ class Shop {
       theme: json['theme'] != null ? ShopTheme.fromJson(json['theme']) : null,
       isFeatured: json['is_featured'] == true || json['is_featured'] == 1,
       distance: _parseDouble(json['distance']),
-      waveEnabled: json['wave_enabled'] == true || json['wave_enabled'] == 1,
+      waveEnabled: parsedWaveEnabled,
       wavePaymentLink: wavePaymentLinkRaw?.toString(),
-      wavePartialPaymentEnabled: json['wave_partial_payment_enabled'] == true || json['wave_partial_payment_enabled'] == 1,
-      wavePartialPaymentPercentage: _parseInt(json['wave_partial_payment_percentage']) ?? 0,
+      wavePhone: wavePhoneRaw?.toString(),
+      wavePartialPaymentEnabled: parsedPartialEnabled,
+      wavePartialPaymentPercentage: parsedPartialPercentage,
     );
   }
 
@@ -179,6 +206,7 @@ class Shop {
       distance: distance,
       waveEnabled: waveEnabled,
       wavePaymentLink: wavePaymentLink,
+      wavePhone: wavePhone,
       wavePartialPaymentEnabled: wavePartialPaymentEnabled,
       wavePartialPaymentPercentage: wavePartialPaymentPercentage,
     );
@@ -223,10 +251,13 @@ class Shop {
       'theme': theme?.toJson(),
       'is_featured': isFeatured,
       'distance': distance,
-      'wave_enabled': waveEnabled,
-      'wave_payment_link': wavePaymentLink,
-      'wave_partial_payment_enabled': wavePartialPaymentEnabled,
-      'wave_partial_payment_percentage': wavePartialPaymentPercentage,
+      'wave': {
+        'enabled': waveEnabled,
+        'payment_link': wavePaymentLink,
+        'phone': wavePhone,
+        'partial_payment_enabled': wavePartialPaymentEnabled,
+        'partial_payment_percentage': wavePartialPaymentPercentage,
+      },
     };
   }
 }

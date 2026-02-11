@@ -83,8 +83,19 @@ class ShopService {
         }
       }
 
-      // Chercher wave_payment_link dans responseData (peut etre en dehors de l'objet shop)
-      if (shopData['wave_payment_link'] == null) {
+      // Chercher l'objet wave dans responseData ou shopData
+      // L'API retourne un objet wave: { enabled, payment_link, phone, partial_payment_enabled, partial_payment_percentage }
+      if (shopData['wave'] == null) {
+        // Chercher l'objet wave dans responseData (niveau parent)
+        final waveFromData = responseData['wave'];
+        if (waveFromData is Map) {
+          shopData['wave'] = waveFromData;
+          print('🌊 [getShopById] objet wave trouvé dans data: $waveFromData');
+        }
+      }
+
+      // Fallback: chercher wave_payment_link en champs plats si pas d'objet wave
+      if (shopData['wave'] == null && shopData['wave_payment_link'] == null) {
         final waveLink = responseData['wave_payment_link']
             ?? responseData['wave_link']
             ?? responseData['wave_url']
@@ -120,6 +131,7 @@ class ShopService {
 
       print('✅ [getShopById] Boutique trouvée: ${shopData['name']}');
       print('🖼️ [getShopById] Banner final: ${shopData['banner_url'] ?? shopData['banner'] ?? shopData['cover_image'] ?? 'AUCUN'}');
+      print('🌊 [getShopById] wave obj: ${shopData['wave']}');
       print('🌊 [getShopById] wave_payment_link: ${shopData['wave_payment_link'] ?? 'AUCUN'}');
       print('🔑 [getShopById] Clés shop: ${shopData.keys.toList()}');
       print('🔑 [getShopById] Clés responseData: ${responseData.keys.toList()}');
@@ -193,7 +205,15 @@ class ShopService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final shopData = Map<String, dynamic>.from(data['data']['shop']);
+      final responseData = data['data'] as Map<String, dynamic>? ?? data;
+      final shopData = Map<String, dynamic>.from(responseData['shop'] ?? responseData);
+
+      // Chercher l'objet wave dans responseData si absent de shopData
+      if (shopData['wave'] == null && responseData['wave'] is Map) {
+        shopData['wave'] = responseData['wave'];
+        print('🌊 [getShopBySlug] objet wave trouvé dans data: ${responseData['wave']}');
+      }
+
       print('✅ [getShopBySlug] Boutique trouvée: ${shopData['name']}');
       return Shop.fromJson(shopData);
     } else {
@@ -375,7 +395,8 @@ class ShopService {
   }
 
   // 10. Récupérer les méthodes de paiement d'une boutique
-  static Future<List<PaymentMethod>> getPaymentMethods(int shopId) async {
+  // L'API retourne aussi un objet wave: { enabled, payment_link, phone, partial_payment_enabled, partial_payment_percentage }
+  static Future<Map<String, dynamic>> getPaymentMethodsWithWave(int shopId) async {
     final response = await http.get(
       Uri.parse(Endpoints.shopPaymentMethods(shopId)),
       headers: _headers,
@@ -383,14 +404,35 @@ class ShopService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final methods = data['data']['payment_methods'] ?? data['data'];
+      final responseData = data['data'] ?? data;
+
+      // Extraire les méthodes de paiement
+      final methods = responseData['payment_methods'] ?? responseData;
+      List<PaymentMethod> paymentMethods = [];
       if (methods is List) {
-        return methods.map((e) => PaymentMethod.fromJson(e)).toList();
+        paymentMethods = methods.map((e) => PaymentMethod.fromJson(e)).toList();
       }
-      return [];
+
+      // Extraire l'objet wave
+      Map<String, dynamic>? waveData;
+      if (responseData['wave'] is Map) {
+        waveData = Map<String, dynamic>.from(responseData['wave']);
+        print('🌊 [getPaymentMethodsWithWave] Wave data: $waveData');
+      }
+
+      return {
+        'payment_methods': paymentMethods,
+        'wave': waveData,
+      };
     } else {
       throw Exception('Erreur lors du chargement des méthodes de paiement');
     }
+  }
+
+  // Version simplifiée qui retourne juste la liste (compatibilité)
+  static Future<List<PaymentMethod>> getPaymentMethods(int shopId) async {
+    final result = await getPaymentMethodsWithWave(shopId);
+    return result['payment_methods'] as List<PaymentMethod>;
   }
 
   // 11. Récupérer les coupons actifs d'une boutique
@@ -525,6 +567,24 @@ class ShopService {
       final paymentData = data['data'] ?? data;
       if (paymentData is Map) {
         print('🌊 [_getWavePaymentLink] Clés data: ${paymentData.keys.toList()}');
+      }
+
+      // Cas 0: objet wave structuré dans la réponse
+      // L'API retourne: { "wave": { "enabled": true, "payment_link": "...", "phone": "..." } }
+      final waveObj = paymentData['wave'];
+      if (waveObj is Map) {
+        final waveLink = waveObj['payment_link'];
+        final waveEnabled = waveObj['enabled'] == true || waveObj['enabled'] == 1;
+        print('🌊 [_getWavePaymentLink] Objet wave trouvé: enabled=$waveEnabled, link=$waveLink');
+        if (waveEnabled && waveLink != null && waveLink.toString().isNotEmpty) {
+          return waveLink.toString();
+        }
+        // Fallback sur le phone si pas de payment_link
+        final wavePhone = waveObj['phone'];
+        if (waveEnabled && wavePhone != null && wavePhone.toString().isNotEmpty) {
+          print('🌊 [_getWavePaymentLink] Fallback wave phone: $wavePhone');
+          return wavePhone.toString();
+        }
       }
 
       // Cas 1: wave_payment_link directement dans data

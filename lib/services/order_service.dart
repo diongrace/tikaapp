@@ -99,6 +99,7 @@ class OrderService {
     print('   - customer_phone: $customerPhone');
     print('   - service_type: $serviceType');
     print('   - device_fingerprint: $deviceFingerprint');
+    print('   - payment_method: $paymentMethod');
     print('   - items: ${items.length} produits');
     if (deliveryAddress != null) {
       print('   - delivery_address: $deliveryAddress');
@@ -140,9 +141,6 @@ class OrderService {
         print('   - Status: ${orderData['status']}');
         print('   - Payment Status: ${orderData['payment_status']}');
 
-        // ⚠️ IMPORTANT: L'API backend doit automatiquement décrémenter le stock
-        // des produits commandés. Si ce n'est pas le cas, contactez l'équipe backend.
-        print('⚠️ RAPPEL: Le backend doit décrémenter le stock automatiquement');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         // Chercher wave_redirect et wave_url à tous les niveaux possibles

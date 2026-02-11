@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:uuid/uuid.dart';
 import '../panier/cart_manager.dart';
 import 'form_widgets.dart';
 import 'loading_success_page.dart';
@@ -12,6 +11,7 @@ import '../../../core/messages/message_modal.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/order_service.dart';
+import '../../../services/wave_payment_service.dart';
 import '../../../services/device_service.dart';
 import '../../../services/shop_service.dart';
 import '../../../services/models/shop_model.dart';
@@ -121,6 +121,70 @@ class _CommandeScreenState extends State<CommandeScreen> {
     }
   }
 
+  /// Construire l'URL Wave avec le montant pré-rempli
+  /// Format Wave: https://wave.com/m/M_xxx?amount=3500
+  String _buildWaveUrlWithAmount(String waveUrl, int amount) {
+    final uri = Uri.tryParse(waveUrl);
+    if (uri == null) return waveUrl;
+
+    // Si l'URL a déjà un paramètre amount, ne pas le remplacer
+    if (uri.queryParameters.containsKey('amount')) {
+      return waveUrl;
+    }
+
+    // Ajouter le montant en query parameter
+    final newUri = uri.replace(queryParameters: {
+      ...uri.queryParameters,
+      'amount': amount.toString(),
+    });
+    return newUri.toString();
+  }
+
+  /// Ouvrir Wave directement avec le montant (fallback si l'API échoue)
+  Future<void> _openWaveDirectly() async {
+    final total = _cartManager.totalPrice;
+
+    // Chercher le lien Wave
+    String? waveUrl = widget.shop?.wavePaymentLink;
+    if (waveUrl == null || waveUrl.isEmpty) {
+      try {
+        waveUrl = await ShopService.getWavePaymentLink(widget.shopId);
+      } catch (_) {}
+    }
+
+    if (waveUrl == null || waveUrl.isEmpty) {
+      final wavePhone = widget.shop?.wavePhone;
+      if (wavePhone != null && wavePhone.isNotEmpty) {
+        waveUrl = 'https://wave.com/m/$wavePhone';
+      }
+    }
+
+    if (waveUrl != null && waveUrl.isNotEmpty) {
+      final urlWithAmount = _buildWaveUrlWithAmount(
+        waveUrl.startsWith('http') ? waveUrl : 'https://wave.com/m/$waveUrl',
+        total,
+      );
+
+      print('🌊 Ouverture Wave directe: $urlWithAmount (montant: $total FCFA)');
+
+      try {
+        await launchUrl(
+          Uri.parse(urlWithAmount),
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (e) {
+        print('🌊 Erreur ouverture Wave: $e');
+        if (mounted) {
+          showErrorModal(context, 'Impossible d\'ouvrir Wave');
+        }
+      }
+    } else {
+      if (mounted) {
+        showErrorModal(context, 'Le lien de paiement Wave n\'est pas disponible pour cette boutique');
+      }
+    }
+  }
+
   /// Mapper le mode de livraison au format API
   /// API attend: "Livraison à domicile", "À emporter", "Sur place"
   String _mapDeliveryModeToApi(String? mode) {
@@ -219,7 +283,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
               // Fermer la page de résumé
               Navigator.of(context).pop();
 
-              // Wave → page de paiement Wave, sinon création de commande
+              // Wave → WavePaymentScreen (ouvre Wave + capture), sinon création directe
               if (_selectedPaymentMethod == 'wave') {
                 _navigateToWavePayment();
               } else {
@@ -235,83 +299,138 @@ class _CommandeScreenState extends State<CommandeScreen> {
     );
   }
 
-  /// Naviguer vers l'écran de paiement Wave (Mode Screenshot)
+  /// Naviguer vers l'écran de paiement Wave
   ///
-  /// Flux:
-  /// 1. Sauvegarder commande en attente localement
-  /// 2. Afficher le lien Wave du vendeur → client paie
-  /// 3. Client prend screenshot de la confirmation
-  /// 4. POST /mobile/orders/create-with-wave-proof (commande + preuve)
+  /// Flux correct (selon le dev back):
+  /// 1. Afficher WavePaymentScreen SANS créer de commande
+  /// 2. Client ouvre Wave, effectue le paiement
+  /// 3. Client revient, soumet la capture d'écran
+  /// 4. POST /mobile/orders/create-with-wave-proof → crée la commande + valide le paiement
   Future<void> _navigateToWavePayment() async {
     if (!mounted) return;
 
-    // Générer un ID unique pour la commande en attente
-    final pendingOrderId = const Uuid().v4();
-    final total = _cartManager.totalPrice.toDouble();
+    try {
+      print('🌊 ━━━ WAVE: OUVERTURE ÉCRAN PAIEMENT ━━━');
+      final items = _cartManager.getItemsForOrder();
+      final deviceFingerprint = await DeviceService.getDeviceFingerprint();
+      final serviceType = _mapDeliveryModeToApi(_selectedDeliveryMode);
+      final totalAmount = _cartManager.totalPrice.toDouble();
 
-    // Sauvegarder les données de commande en cache pour Wave
-    final pendingOrderData = {
-      'pending_order_id': pendingOrderId,
-      'shop_id': widget.shopId,
-      'customer_name': _nomController.text,
-      'customer_phone': _phoneController.text,
-      'customer_email': _emailController.text.isNotEmpty ? _emailController.text : null,
-      'service_type': _mapDeliveryModeToApi(_selectedDeliveryMode),
-      'delivery_address': _addressController.text.isNotEmpty ? _addressController.text : null,
-      'items': _cartManager.getItemsForOrder(),
-      'total': total,
-      'created_at': DateTime.now().toIso8601String(),
-    };
-
-    // Sauvegarder en cache local
-    await StorageService.savePendingWaveOrder(pendingOrderData);
-
-    // Récupérer le lien Wave du vendeur
-    String? wavePaymentLink = widget.shop?.wavePaymentLink;
-
-    print('🌊 ━━━ WAVE NAVIGATION ━━━');
-    print('🌊 Shop: ${widget.shop?.name} (ID: ${widget.shopId})');
-    print('🌊 wavePaymentLink en memoire: $wavePaymentLink');
-
-    // Si pas de lien en mémoire, rechercher via les API
-    if (wavePaymentLink == null) {
-      try {
-        wavePaymentLink = await ShopService.getWavePaymentLink(widget.shopId);
-      } catch (e) {
-        print('🌊 Erreur recherche wave link: $e');
+      String? deliveryAddress;
+      if (_selectedDeliveryMode == 'Livraison' && _addressController.text.isNotEmpty) {
+        deliveryAddress = _addressController.text;
       }
-    }
 
-    print('🌊 wavePaymentLink final: $wavePaymentLink');
-    print('🌊 ━━━━━━━━━━━━━━━━━━━━━━');
+      // Récupérer le lien Wave
+      String? wavePaymentLink = widget.shop?.wavePaymentLink;
+      if (wavePaymentLink == null || wavePaymentLink.isEmpty) {
+        try {
+          wavePaymentLink = await ShopService.getWavePaymentLink(widget.shopId);
+        } catch (_) {}
+      }
 
-    if (!mounted) return;
+      print('🌊 Montant: $totalAmount FCFA');
+      print('🌊 wavePaymentLink: $wavePaymentLink');
+      print('🌊 ━━━━━━━━━━━━━━━━━━━━━━');
 
-    // Naviguer vers l'écran Wave
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => BoutiqueThemeProvider(
-          shop: widget.shop,
-          child: WavePaymentScreen(
-            pendingOrderId: pendingOrderId,
-            amount: total,
-            wavePaymentLink: wavePaymentLink,
-            onPaymentSuccess: (response) {
-              print('✅ Wave payment success: ${response.orderNumber}');
-            },
-            onCancel: () {
-              print('❌ Wave payment cancelled');
-            },
+      if (!mounted) return;
+
+      // Naviguer vers WavePaymentScreen avec les données de commande
+      // La commande sera créée au moment de la soumission de la preuve
+      final result = await Navigator.of(context).push<WaveProofResponse>(
+        MaterialPageRoute(
+          builder: (context) => BoutiqueThemeProvider(
+            shop: widget.shop,
+            child: WavePaymentScreen(
+              amount: totalAmount,
+              wavePaymentLink: wavePaymentLink,
+              vendorWaveNumber: widget.shop?.wavePhone,
+              shopId: widget.shopId,
+              customerName: _nomController.text,
+              customerPhone: _phoneController.text,
+              serviceType: serviceType,
+              deviceFingerprint: deviceFingerprint,
+              items: items,
+              customerEmail: _emailController.text.isNotEmpty ? _emailController.text : null,
+              customerAddress: _addressController.text.isNotEmpty ? _addressController.text : null,
+              deliveryAddress: deliveryAddress,
+              onPaymentSuccess: (waveResponse) {
+                print('✅ Wave: commande créée + preuve soumise');
+              },
+              onCancel: () {
+                print('❌ Wave annulé');
+              },
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    if (result == true && mounted) {
-      // Paiement réussi - nettoyer et retourner
-      _cartManager.clear();
-      await StorageService.deletePendingWaveOrder(pendingOrderId);
-      Navigator.of(context).pop(true);
+      if (mounted && result != null) {
+        // La commande a été créée avec succès via createOrderWithWaveProof
+        final orderNumber = result.orderNumber ?? '';
+        final receiptUrl = result.receiptUrl ??
+            'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt/download';
+        final receiptViewUrl = result.receiptViewUrl ??
+            'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt';
+
+        final orderData = {
+          'orderNumber': orderNumber,
+          'customerPhone': _phoneController.text,
+          'customerName': _nomController.text,
+          'receiptUrl': receiptUrl,
+          'receiptViewUrl': receiptViewUrl,
+          'shopId': widget.shopId,
+          'orderDate': DateTime.now(),
+          'boutiqueName': widget.shop?.name ?? 'Tika Shop',
+          'shopLogoUrl': widget.shop?.logoUrl ?? 'lib/core/assets/logo.png',
+          'total': result.totalAmount ?? totalAmount,
+          'deliveryMode': _selectedDeliveryMode ?? 'À emporter',
+          'paymentMode': 'Wave (preuve envoyée)',
+          'items': _cartManager.items.map((item) {
+            return {
+              'name': item['name'],
+              'quantity': item['quantity'],
+              'price': item['price'],
+              'image': item['image'],
+            };
+          }).toList(),
+          'deliveryInfo': {
+            'name': _nomController.text,
+            'phone': _phoneController.text,
+            'address': _addressController.text,
+          },
+        };
+
+        await StorageService.saveOrder(orderData);
+        await StorageService.saveCustomerInfo(
+          name: _nomController.text,
+          phone: _phoneController.text,
+          email: _emailController.text.isNotEmpty ? _emailController.text : null,
+        );
+        _cartManager.clear();
+
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => BoutiqueThemeProvider(
+              shop: widget.shop,
+              child: LoadingSuccessPage(orderData: orderData),
+            ),
+          ),
+        );
+
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+    } catch (e) {
+      print('🌊 ❌ Erreur Wave: $e');
+      if (mounted) {
+        final errorDetails = e.toString().replaceAll('Exception:', '').trim();
+        print('🌊 ❌ Détails erreur: $errorDetails');
+        showErrorModal(context, errorDetails.isNotEmpty
+            ? errorDetails
+            : 'Erreur lors du paiement Wave.');
+      }
     }
   }
 
@@ -363,31 +482,6 @@ class _CommandeScreenState extends State<CommandeScreen> {
       print('   - Order Number: ${response['order_number']}');
       print('   - Status: ${response['status']}');
       print('   - Payment Status: ${response['payment_status']}');
-
-      // GESTION REDIRECTION WAVE — Ouvrir Wave directement (comme le web)
-      // Accepter wave_redirect OU wave_url seul (certains backends ne renvoient que l'URL)
-      final waveUrl = response['wave_url']?.toString();
-      if (response['wave_redirect'] == true || (waveUrl != null && waveUrl.isNotEmpty)) {
-        print('🌊 REDIRECTION WAVE DÉTECTÉE');
-        print('   - Wave URL: $waveUrl');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-        if (waveUrl != null && waveUrl.isNotEmpty) {
-          // Ouvrir l'URL Wave → Wave app s'ouvre avec montant + marchand
-          try {
-            await launchUrl(
-              Uri.parse(waveUrl),
-              mode: LaunchMode.externalApplication,
-            );
-            print('🌊 Wave ouvert avec succes');
-          } catch (e) {
-            print('🌊 Erreur ouverture Wave: $e');
-          }
-        }
-
-        // Continuer vers la page de succes (la commande est deja creee)
-        // Le backend confirmera le paiement via webhook Wave
-      }
 
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
@@ -964,17 +1058,21 @@ class _CommandeScreenState extends State<CommandeScreen> {
           title: 'Espèces',
           description: 'Paiement à la livraison ou au retrait',
         ),
-        const SizedBox(height: 12),
 
-        // Option Wave (avec capture d'écran)
-        _buildPaymentOptionWithImage(
-          id: 'wave',
-          imagePath: 'lib/core/assets/WAVE.png',
-          title: 'Wave',
-          description: 'Paiement par capture d\'écran',
-          color: const Color(0xFF1BA5E0),
-          badge: 'Recommandé',
-        ),
+        // Option Wave (affichée seulement si Wave est activé pour cette boutique)
+        if (widget.shop?.waveEnabled ?? false) ...[
+          const SizedBox(height: 12),
+          _buildPaymentOptionWithImage(
+            id: 'wave',
+            imagePath: 'lib/core/assets/WAVE.png',
+            title: 'Wave',
+            description: widget.shop?.wavePartialPaymentEnabled == true
+                ? 'Paiement partiel (${widget.shop?.wavePartialPaymentPercentage}%) ou total'
+                : 'Paiement mobile Wave',
+            color: const Color(0xFF1BA5E0),
+            badge: 'Recommandé',
+          ),
+        ],
 
         // ============================================================
         // MODES DE PAIEMENT NON DISPONIBLES DANS L'API ACTUELLE

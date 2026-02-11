@@ -420,7 +420,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
-                backgroundColor: const Color(0xFF8936A8),
+                backgroundColor: const Color.fromARGB(255, 242, 237, 244),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -432,11 +432,14 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 children: [
                   const Icon(Icons.explore_rounded, size: 22),
                   const SizedBox(width: 10),
-                  Text(
-                    'Explorer les boutiques',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                  Flexible(
+                    child: Text(
+                      'Explorer les boutiques',
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],

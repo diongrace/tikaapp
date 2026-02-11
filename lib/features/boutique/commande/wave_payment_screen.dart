@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/boutique_theme_provider.dart';
+import '../../../services/order_service.dart';
 import '../../../services/wave_payment_service.dart';
 
 /// Écran de paiement Wave (Mode Screenshot)
@@ -17,22 +18,40 @@ import '../../../services/wave_payment_service.dart';
 /// 5. Afficher le statut de validation
 class WavePaymentScreen extends StatefulWidget {
   final int? orderId;
-  final String? pendingOrderId;
   final double amount;
   final String? wavePaymentLink;
   final String? vendorWaveNumber;
   final Function(WaveProofResponse)? onPaymentSuccess;
   final VoidCallback? onCancel;
 
+  // Données de commande (pour créer la commande au moment de la soumission)
+  final int shopId;
+  final String customerName;
+  final String customerPhone;
+  final String serviceType;
+  final String deviceFingerprint;
+  final List<Map<String, dynamic>> items;
+  final String? customerEmail;
+  final String? customerAddress;
+  final String? deliveryAddress;
+
   const WavePaymentScreen({
     super.key,
     this.orderId,
-    this.pendingOrderId,
     required this.amount,
     this.wavePaymentLink,
     this.vendorWaveNumber,
     this.onPaymentSuccess,
     this.onCancel,
+    required this.shopId,
+    required this.customerName,
+    required this.customerPhone,
+    required this.serviceType,
+    required this.deviceFingerprint,
+    required this.items,
+    this.customerEmail,
+    this.customerAddress,
+    this.deliveryAddress,
   });
 
   @override
@@ -67,8 +86,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
     super.dispose();
   }
 
-  /// Ouvrir le lien Wave du vendeur
-  /// Le wave_payment_link (format https://wave.com/m/M_xxx) ouvre l'app Wave directement
+  /// Ouvrir le lien Wave du vendeur avec le montant pré-rempli
   Future<void> _openWaveApp() async {
     String? urlToOpen = widget.wavePaymentLink;
 
@@ -80,6 +98,17 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
     // Si pas de lien, essayer avec le numéro Wave du vendeur
     if (urlToOpen == null && widget.vendorWaveNumber != null) {
       urlToOpen = 'https://wave.com/m/${widget.vendorWaveNumber}';
+    }
+
+    // Ajouter le montant à l'URL Wave
+    if (urlToOpen != null) {
+      final uri = Uri.tryParse(urlToOpen);
+      if (uri != null && !uri.queryParameters.containsKey('amount')) {
+        urlToOpen = uri.replace(queryParameters: {
+          ...uri.queryParameters,
+          'amount': widget.amount.toStringAsFixed(0),
+        }).toString();
+      }
     }
 
     print('[Wave] urlToOpen: $urlToOpen');
@@ -175,20 +204,66 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
     try {
       WaveProofResponse response;
 
-      if (widget.pendingOrderId != null) {
-        // Créer commande avec preuve Wave
-        response = await WavePaymentService.createOrderWithWaveProof(
-          pendingOrderId: widget.pendingOrderId!,
-          screenshotPath: _screenshot!.path,
-        );
-      } else if (widget.orderId != null) {
+      if (widget.orderId != null) {
         // Soumettre preuve pour commande existante
         response = await WavePaymentService.submitWaveProof(
           orderId: widget.orderId!,
           screenshotPath: _screenshot!.path,
         );
       } else {
-        throw Exception('Aucun ID de commande fourni');
+        // Étape 1: Créer la commande via l'API standard avec payment_method='wave'
+        print('🌊 ━━━ WAVE: CRÉATION COMMANDE AU MOMENT DU PAIEMENT ━━━');
+        print('🌊 payment_method envoyé: wave');
+        final orderResponse = await OrderService.createOrder(
+          shopId: widget.shopId,
+          customerName: widget.customerName,
+          customerPhone: widget.customerPhone,
+          serviceType: widget.serviceType,
+          deviceFingerprint: widget.deviceFingerprint,
+          items: widget.items,
+          paymentMethod: 'wave',
+          customerEmail: widget.customerEmail,
+          customerAddress: widget.customerAddress,
+          deliveryAddress: widget.deliveryAddress,
+        );
+
+        final orderIdRaw = orderResponse['order_id'];
+        final orderId = orderIdRaw is int
+            ? orderIdRaw
+            : int.tryParse(orderIdRaw?.toString() ?? '');
+
+        if (orderId == null) {
+          throw Exception('Erreur: impossible de récupérer l\'ID de la commande');
+        }
+
+        print('🌊 Commande créée: orderId=$orderId');
+        print('🌊 ━━━ WAVE: SOUMISSION PREUVE ━━━');
+
+        // Étape 2: Soumettre la preuve Wave sur cette commande
+        response = await WavePaymentService.submitWaveProof(
+          orderId: orderId,
+          screenshotPath: _screenshot!.path,
+        );
+
+        // Enrichir la réponse avec les données de la commande
+        final totalAmountRaw = orderResponse['total_amount'];
+        final totalAmount = totalAmountRaw is num
+            ? totalAmountRaw.toDouble()
+            : double.tryParse(totalAmountRaw?.toString() ?? '');
+
+        response = WaveProofResponse(
+          success: response.success,
+          message: response.message,
+          orderId: orderId,
+          orderNumber: orderResponse['order_number']?.toString(),
+          totalAmount: totalAmount ?? widget.amount,
+          paymentStatus: response.paymentStatus ?? orderResponse['payment_status']?.toString(),
+          receiptUrl: orderResponse['receipt_url']?.toString(),
+          receiptViewUrl: orderResponse['receipt_view_url']?.toString(),
+          validation: response.validation,
+        );
+
+        print('🌊 ✅ Commande créée + preuve soumise avec succès');
       }
 
       setState(() {
@@ -196,14 +271,15 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         _isSubmitting = false;
       });
 
-      // Démarrer le polling du statut si la commande est créée
-      if (response.orderId != null) {
-        _startStatusPolling(response.orderId!);
-      }
-
       // Callback de succès
       if (widget.onPaymentSuccess != null) {
         widget.onPaymentSuccess!(response);
+      }
+
+      // La validation est automatique côté backend
+      // Naviguer directement vers le succès après soumission
+      if (mounted) {
+        _showSuccessAndReturn(response);
       }
     } on WaveValidationException catch (e) {
       setState(() {
@@ -320,7 +396,47 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
     );
   }
 
-  /// Afficher le dialog de succès
+  /// Preuve soumise avec succès → afficher confirmation et retourner
+  void _showSuccessAndReturn(WaveProofResponse response) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green, size: 32),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Commande envoyée !',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Votre paiement Wave et votre commande ont été envoyés avec succès. Votre commande est en cours de traitement.',
+          style: GoogleFonts.openSans(),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // Fermer le dialog
+              Navigator.pop(context, response); // Retourner la réponse au commande_screen
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: waveColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('Continuer', style: GoogleFonts.openSans(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Afficher le dialog de succès (polling)
   void _showSuccessDialog() {
     showDialog(
       context: context,
@@ -345,7 +461,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pop(context, true);
+              Navigator.pop(context, _response);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,

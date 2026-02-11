@@ -21,20 +21,32 @@ class WavePaymentService {
   /// Créer une commande avec preuve Wave en une seule étape
   /// POST /api/mobile/orders/create-with-wave-proof
   ///
-  /// Paramètres:
-  /// - pendingOrderId: ID de la commande en attente (du cache local)
-  /// - screenshotPath: Chemin vers la capture d'écran Wave
+  /// Envoie TOUTES les données de commande + la capture d'écran Wave
+  /// Le backend crée la commande ET valide le paiement en même temps
   ///
   /// Retourne les données de la commande créée avec le statut de validation
   static Future<WaveProofResponse> createOrderWithWaveProof({
-    required String pendingOrderId,
     required String screenshotPath,
+    required int shopId,
+    required String customerName,
+    required String customerPhone,
+    required String serviceType,
+    required String deviceFingerprint,
+    required List<Map<String, dynamic>> items,
+    String paymentMethod = 'wave',
+    String? customerEmail,
+    String? customerAddress,
+    String? deliveryAddress,
+    String? notes,
   }) async {
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     print('📤 POST CREATE ORDER WITH WAVE PROOF');
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     print('🔗 Endpoint: ${Endpoints.waveCreateWithProof}');
-    print('📦 Pending Order ID: $pendingOrderId');
+    print('📦 Shop ID: $shopId');
+    print('📦 Customer: $customerName ($customerPhone)');
+    print('📦 Service: $serviceType');
+    print('📦 Items: ${items.length} produits');
     print('📸 Screenshot Path: $screenshotPath');
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
@@ -45,11 +57,39 @@ class WavePaymentService {
       // Ajouter les headers
       request.headers.addAll(_headers);
 
-      // Ajouter le pending_order_id
-      request.fields['pending_order_id'] = pendingOrderId;
+      // Ajouter tous les champs de commande
+      request.fields['shop_id'] = shopId.toString();
+      request.fields['customer_name'] = customerName;
+      request.fields['customer_phone'] = customerPhone;
+      request.fields['service_type'] = serviceType;
+      request.fields['device_fingerprint'] = deviceFingerprint;
+      request.fields['payment_method'] = paymentMethod;
+
+      if (customerEmail != null && customerEmail.isNotEmpty) {
+        request.fields['customer_email'] = customerEmail;
+      }
+      if (customerAddress != null && customerAddress.isNotEmpty) {
+        request.fields['customer_address'] = customerAddress;
+      }
+      if (deliveryAddress != null && deliveryAddress.isNotEmpty) {
+        request.fields['delivery_address'] = deliveryAddress;
+      }
+      if (notes != null && notes.isNotEmpty) {
+        request.fields['notes'] = notes;
+      }
+
+      // Ajouter les items en format multipart
+      for (int i = 0; i < items.length; i++) {
+        final item = items[i];
+        request.fields['items[$i][product_id]'] = item['product_id'].toString();
+        request.fields['items[$i][quantity]'] = item['quantity'].toString();
+        request.fields['items[$i][price]'] = item['price'].toString();
+        if (item['portion_id'] != null) {
+          request.fields['items[$i][portion_id]'] = item['portion_id'].toString();
+        }
+      }
 
       // Ajouter la capture d'écran
-      final file = File(screenshotPath);
       final extension = screenshotPath.split('.').last.toLowerCase();
       final mimeType = _getMimeType(extension);
 
@@ -70,6 +110,9 @@ class WavePaymentService {
 
       final data = jsonDecode(response.body);
 
+      // Extraire les données de la commande (peut être à la racine ou dans data.order)
+      final orderData = data['data']?['order'] ?? data;
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('✅ Commande créée avec preuve Wave');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -77,10 +120,12 @@ class WavePaymentService {
         return WaveProofResponse(
           success: data['success'] ?? true,
           message: data['message'] ?? 'Commande créée avec succès',
-          orderId: data['order_id'],
-          orderNumber: data['order_number'],
-          totalAmount: (data['total_amount'] as num?)?.toDouble(),
-          paymentStatus: data['payment_status'],
+          orderId: orderData['id'] ?? orderData['order_id'],
+          orderNumber: orderData['order_number'],
+          totalAmount: _parseDouble(orderData['total_amount']),
+          paymentStatus: orderData['payment_status'],
+          receiptUrl: orderData['receipt_url'],
+          receiptViewUrl: orderData['receipt_view_url'],
           validation: data['validation'] != null
               ? WaveValidation.fromJson(data['validation'])
               : null,
@@ -107,6 +152,13 @@ class WavePaymentService {
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       rethrow;
     }
+  }
+
+  /// Parser un double depuis une valeur qui peut être String ou num
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
   }
 
   /// Soumettre une preuve de paiement Wave pour une commande existante
@@ -246,6 +298,8 @@ class WaveProofResponse {
   final String? orderNumber;
   final double? totalAmount;
   final String? paymentStatus;
+  final String? receiptUrl;
+  final String? receiptViewUrl;
   final WaveValidation? validation;
 
   WaveProofResponse({
@@ -255,6 +309,8 @@ class WaveProofResponse {
     this.orderNumber,
     this.totalAmount,
     this.paymentStatus,
+    this.receiptUrl,
+    this.receiptViewUrl,
     this.validation,
   });
 }
