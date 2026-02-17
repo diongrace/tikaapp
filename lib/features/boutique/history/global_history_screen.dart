@@ -1,14 +1,19 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../services/order_service.dart';
 import '../../../services/device_service.dart';
 import '../../../services/shop_service.dart';
 import '../../../services/product_service.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/models/order_model.dart';
 import '../../../services/models/product_model.dart';
+import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/storage_service.dart';
 import '../commande/order_tracking_api_page.dart';
+import '../commande/receipt_view_page.dart';
 
 /// Écran d'historique global de toutes les commandes du client
 /// Utilise l'API pour récupérer les commandes via device_fingerprint
@@ -270,6 +275,421 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
           ),
         ),
       );
+    }
+  }
+
+  /// Recommander une commande
+  /// Vérifier si une commande est annulable
+  bool _canCancel(Order order) {
+    if (order.status == 'annulée' || order.status == 'livrée' || order.status == 'prete') return false;
+    if (order.status == 'recue') return true;
+    if (order.status == 'en_traitement') {
+      final elapsed = DateTime.now().difference(order.createdAt);
+      return elapsed.inMinutes < 20;
+    }
+    return false;
+  }
+
+  /// Temps restant pour annuler (en minutes)
+  int _cancelMinutesLeft(Order order) {
+    if (order.status != 'en_traitement') return -1;
+    final elapsed = DateTime.now().difference(order.createdAt);
+    return (20 - elapsed.inMinutes).clamp(0, 20);
+  }
+
+  Future<void> _reorder(Order order) async {
+    if (!AuthService.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connectez-vous pour recommander'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Recommander', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        content: Text(
+          'Voulez-vous passer la meme commande #${order.orderNumber} ?',
+          style: GoogleFonts.openSans(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+            child: Text('Oui, recommander', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    try {
+      final token = AuthService.authToken!;
+      // Étape 1: Vérifier la disponibilité
+      final checkResult = await OrderService.reorder(order.id, token);
+      print('📋 REORDER checkResult: $checkResult');
+
+      if (!mounted) return;
+
+      // Étape 2: Afficher le récapitulatif
+      final reorderData = checkResult['data'];
+      final items = reorderData?['items'] as List? ?? [];
+      final total = reorderData?['total'] ?? reorderData?['total_amount'] ?? order.totalAmount;
+
+      final confirmReorder = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Récapitulatif', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Commande #${order.orderNumber}', style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey)),
+              const SizedBox(height: 12),
+              if (items.isNotEmpty)
+                ...items.map((item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: Text(
+                        '${item['quantity'] ?? 1}x ${item['product_name'] ?? item['name'] ?? 'Produit'}',
+                        style: GoogleFonts.openSans(fontSize: 13),
+                      )),
+                      Text('${item['price'] ?? ''} F', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ))
+              else
+                Text('${order.itemsCount > 0 ? order.itemsCount : order.items.length} article(s)', style: GoogleFonts.openSans(fontSize: 13)),
+              const Divider(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Total', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  Text('$total F', style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey))),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+              child: Text('Confirmer', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmReorder != true || !mounted) return;
+
+      // Étape 3: Confirmer la recommande
+      final result = await OrderService.confirmReorder(orderId: order.id, token: token);
+      print('📋 CONFIRM REORDER result: $result');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Commande recréée !', textAlign: TextAlign.center),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
+        await Future.delayed(const Duration(milliseconds: 800));
+        if (mounted) await _loadOrders();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', ''), textAlign: TextAlign.center),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Annuler une commande
+  Future<void> _cancelOrder(Order order) async {
+    if (!AuthService.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connectez-vous pour annuler'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    final reasonController = TextEditingController();
+    final minutesLeft = _cancelMinutesLeft(order);
+
+    final dialogResult = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Annuler la commande', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Voulez-vous annuler #${order.orderNumber} ?',
+              style: GoogleFonts.openSans(fontSize: 14),
+            ),
+            if (minutesLeft > 0) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Temps restant: $minutesLeft min',
+                  style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              maxLines: 2,
+              maxLength: 500,
+              decoration: InputDecoration(
+                hintText: 'Raison (optionnel)',
+                hintStyle: GoogleFonts.openSans(fontSize: 13),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Non', style: GoogleFonts.openSans(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, {'reason': reasonController.text}),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+            child: Text('Oui, annuler', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+
+    if (dialogResult == null || !mounted) return;
+
+    try {
+      final token = AuthService.authToken!;
+      final response = await OrderService.cancelOrder(order.id, token, reason: dialogResult['reason']?.toString());
+
+      if (mounted) {
+        final success = response['success'] == true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Commande annulée', textAlign: TextAlign.center),
+            backgroundColor: success ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
+          ),
+        );
+        if (success) _loadOrders();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', ''), textAlign: TextAlign.center),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Noter une commande
+  Future<void> _rateOrder(Order order) async {
+    if (!AuthService.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connectez-vous pour noter'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    int selectedRating = 5;
+    final commentController = TextEditingController();
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text('Noter la commande', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '#${order.orderNumber}',
+                style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return GestureDetector(
+                    onTap: () => setDialogState(() => selectedRating = index + 1),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        index < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: const Color(0xFFF59E0B),
+                        size: 36,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: commentController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Commentaire global (optionnel)',
+                  hintStyle: GoogleFonts.openSans(fontSize: 13),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, {
+                'rating': selectedRating,
+                'comment': commentController.text,
+              }),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B)),
+              child: Text('Envoyer', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == null || !mounted) return;
+
+    try {
+      final token = AuthService.authToken!;
+      final rateItems = order.items.map((item) => {
+        'order_item_id': item.id,
+        'rating': result['rating'],
+      }).toList();
+      final response = await OrderService.rateOrder(
+        orderId: order.id,
+        token: token,
+        items: rateItems,
+        globalComment: result['comment']?.toString(),
+      );
+
+      if (mounted) {
+        final alreadyRated = response['already_rated'] == true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Merci pour votre avis !', textAlign: TextAlign.center),
+            backgroundColor: alreadyRated ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', ''), textAlign: TextAlign.center),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Voir le recu d'une commande
+  Future<void> _viewReceipt(Order order) async {
+    if (order.id == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Recu non disponible'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    // Afficher un loader centre
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black26,
+      builder: (ctx) => Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3)),
+              const SizedBox(height: 16),
+              Text('Chargement du recu...', style: GoogleFonts.poppins(fontSize: 14)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final url = Endpoints.orderReceipt(order.id);
+      await AuthService.ensureToken();
+      final token = AuthService.authToken;
+
+      final response = await Dio().get(
+        url,
+        options: Options(
+          followRedirects: true,
+          validateStatus: (status) => true,
+          headers: {
+            'Accept': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // fermer loader
+
+      if (response.statusCode != 200) {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+
+      final data = response.data is String ? jsonDecode(response.data) : response.data;
+      if (data is! Map<String, dynamic> || data['success'] != true) {
+        throw Exception('Recu non disponible');
+      }
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ReceiptViewPage(receiptData: data),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        // Fermer le loader s'il est encore ouvert
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Impossible de charger le recu'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -1534,9 +1954,59 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  // Boutons
+                  // Actions: Recommander, Noter, Annuler
+                  Row(
+                    children: [
+                      // Recommander
+                      Expanded(
+                        child: _buildActionChip(
+                          icon: Icons.replay_rounded,
+                          label: 'Recommander',
+                          color: const Color(0xFF10B981),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _reorder(order);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Noter (seulement si livrée ou prete)
+                      if (order.status == 'livrée' || order.status == 'prete')
+                        Expanded(
+                          child: _buildActionChip(
+                            icon: Icons.star_rounded,
+                            label: 'Noter',
+                            color: const Color(0xFFF59E0B),
+                            onTap: () {
+                              Navigator.pop(context);
+                              _rateOrder(order);
+                            },
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      // Annuler (selon logique métier)
+                      if (_canCancel(order))
+                        Expanded(
+                          child: _buildActionChip(
+                            icon: Icons.cancel_outlined,
+                            label: _cancelMinutesLeft(order) > 0
+                                ? 'Annuler (${_cancelMinutesLeft(order)}m)'
+                                : 'Annuler',
+                            color: const Color(0xFFEF4444),
+                            onTap: () {
+                              Navigator.pop(context);
+                              _cancelOrder(order);
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Boutons navigation
                   Row(
                     children: [
                       // Bouton Fermer
@@ -1566,7 +2036,43 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
+                      // Bouton Recu
+                      Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                              _viewReceipt(order);
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3B82F6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Recu',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       // Bouton Suivre
                       Expanded(
                         flex: 2,
@@ -1605,7 +2111,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    'Suivre la commande',
+                                    'Suivre',
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -1626,6 +2132,44 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Widget pour un bouton d'action compact
+  Widget _buildActionChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: color.withOpacity(0.2)),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.openSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

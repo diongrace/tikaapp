@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
-
-/// Classe contenant tous les styles de texte utilisés dans l'application TIKA
-/// Centralise les styles pour une gestion cohérente et éviter la répétition
+/// Classe contenant tous les styles de texte utilises dans l'application TIKA
+/// Centralise les styles pour une gestion coherente et eviter la repetition
 class AppTextStyles {
+
   // Styles pour les titres
   static TextStyle get appBarTitle => GoogleFonts.inriaSerif(
         fontSize: 16,
@@ -118,4 +118,5 @@ class AppTextStyles {
         fontWeight: FontWeight.bold,
         color: Colors.white,
       );
+
 }

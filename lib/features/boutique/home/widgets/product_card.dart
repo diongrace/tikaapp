@@ -77,6 +77,12 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Obtenir le thème de la boutique pour les couleurs dynamiques
     final shopTheme = BoutiqueThemeProvider.of(context);
+    const double imageHeight = 180;
+    const double priceFontSize = 18;
+    const double nameFontSize = 14;
+    const double badgeFontSize = 11;
+    const double stockFontSize = 11;
+    const double oldPriceFontSize = 13;
 
     final int stock = product['stock'] ?? 0;
     final bool isAvailable = product['isAvailable'] ?? true;
@@ -126,7 +132,7 @@ class ProductCard extends StatelessWidget {
                     child: fullImageUrl != null
                         ? Image.network(
                             fullImageUrl,
-                            height: 180,
+                            height: imageHeight,
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
@@ -136,7 +142,7 @@ class ProductCard extends StatelessWidget {
                                     '⚠️ Image produit non disponible: "${product['name']}"');
                               }
                               return Container(
-                                height: 180,
+                                height: imageHeight,
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
@@ -159,7 +165,7 @@ class ProductCard extends StatelessWidget {
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return Container(
-                                height: 180,
+                                height: imageHeight,
                                 color: Colors.grey[100],
                                 child: Center(
                                   child: CircularProgressIndicator(
@@ -179,7 +185,7 @@ class ProductCard extends StatelessWidget {
                             },
                           )
                         : Container(
-                            height: 180,
+                            height: imageHeight,
                             decoration: BoxDecoration(
                               borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(16)),
@@ -226,7 +232,7 @@ class ProductCard extends StatelessWidget {
                       child: Text(
                         'Stock limité',
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
+                          fontSize: badgeFontSize,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -268,7 +274,7 @@ class ProductCard extends StatelessWidget {
                           Text(
                             '-$discount%',
                             style: GoogleFonts.poppins(
-                              fontSize: 11,
+                              fontSize: badgeFontSize,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
@@ -330,7 +336,7 @@ class ProductCard extends StatelessWidget {
                         child: Text(
                           'Rupture de stock',
                           style: GoogleFonts.poppins(
-                            fontSize: 11,
+                            fontSize: badgeFontSize,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF666666),
                           ),
@@ -354,7 +360,7 @@ class ProductCard extends StatelessWidget {
                       Text(
                         '${product['price']}',
                         style: GoogleFonts.poppins(
-                          fontSize: 18,
+                          fontSize: priceFontSize,
                           fontWeight: FontWeight.w700,
                           color: Colors.black87,
                         ),
@@ -362,7 +368,7 @@ class ProductCard extends StatelessWidget {
                       Text(
                         'F',
                         style: GoogleFonts.poppins(
-                          fontSize: 18,
+                          fontSize: priceFontSize,
                           fontWeight: FontWeight.w700,
                           color: Colors.black87,
                         ),
@@ -375,7 +381,7 @@ class ProductCard extends StatelessWidget {
                             child: Text(
                               '${product['oldPrice']}F',
                               style: GoogleFonts.poppins(
-                                fontSize: 13,
+                                fontSize: oldPriceFontSize,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey.shade500,
                                 decoration: TextDecoration.lineThrough,
@@ -394,7 +400,7 @@ class ProductCard extends StatelessWidget {
                   Text(
                     product['name'],
                     style: GoogleFonts.openSans(
-                      fontSize: 14,
+                      fontSize: nameFontSize,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF666666),
                       height: 1.2,
@@ -410,7 +416,7 @@ class ProductCard extends StatelessWidget {
                       child: Text(
                         'Stock: $stock',
                         style: GoogleFonts.openSans(
-                          fontSize: 11,
+                          fontSize: stockFontSize,
                           color: stock <= 5
                               ? const Color(0xFFFF8C00) // Orange pour stock critique
                               : stock <= 10

@@ -13,6 +13,9 @@ class Product {
   final String? primaryImageUrl;
   final List<ProductPortion>? portions;
   final bool hasPortions;
+  final List<String>? sizes;
+  final List<String>? colors;
+  final String? material;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -31,6 +34,9 @@ class Product {
     this.primaryImageUrl,
     this.portions,
     this.hasPortions = false,
+    this.sizes,
+    this.colors,
+    this.material,
     this.createdAt,
     this.updatedAt,
   });
@@ -38,6 +44,22 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     final parsedPrice = _parseInt(json['price']);
     final parsedComparePrice = _parseInt(json['compare_price']);
+
+    // Debug: Vérifier si l'API renvoie les tailles
+    final allKeys = json.keys.toList();
+    final hasSizesKey = allKeys.contains('sizes');
+    final hasColorsKey = allKeys.contains('colors');
+    final hasMaterialKey = allKeys.contains('material');
+    print('══════════════════════════════════════');
+    print('👕 Produit: "${json['name']}" (ID: ${json['id']})');
+    print('   📋 Toutes les clés API: $allKeys');
+    print('   📏 Champ sizes présent: $hasSizesKey → valeur: ${json['sizes']}');
+    print('   🎨 Champ colors présent: $hasColorsKey → valeur: ${json['colors']}');
+    print('   📦 Champ material présent: $hasMaterialKey → valeur: ${json['material']}');
+    if (!hasSizesKey) {
+      print('   ⚠️ L\'API NE RENVOIE PAS le champ sizes ! Le backend doit l\'ajouter dans ProductResource');
+    }
+    print('══════════════════════════════════════');
 
     // Debug: Afficher les valeurs brutes de l'API pour détecter les incohérences
     if (parsedComparePrice != null) {
@@ -75,6 +97,13 @@ class Product {
               .toList()
           : null,
       hasPortions: json['has_portions'] == true || json['has_portions'] == 1,
+      sizes: json['sizes'] != null && json['sizes'] is List
+          ? List<String>.from((json['sizes'] as List).map((e) => e.toString()))
+          : null,
+      colors: json['colors'] != null && json['colors'] is List
+          ? List<String>.from((json['colors'] as List).map((e) => e.toString()))
+          : null,
+      material: json['material']?.toString(),
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : null,
@@ -113,6 +142,9 @@ class Product {
       'primary_image_url': primaryImageUrl,
       'portions': portions?.map((e) => e.toJson()).toList(),
       'has_portions': hasPortions,
+      'sizes': sizes,
+      'colors': colors,
+      'material': material,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -224,17 +256,27 @@ class ProductImage {
   }
 }
 
-// Classe pour les portions de produits
+// Classe pour les portions de produits (tailles/variantes)
 class ProductPortion {
   final int id;
   final String name;
-  final int? price; // Prix nullable - si null, l'API n'a pas fourni de prix
+  final String? code;
+  final int? price;
+  final int? stock;
+  final bool isDefault;
+  final bool isActive;
+  final int sortOrder;
   final String? description;
 
   ProductPortion({
     required this.id,
     required this.name,
-    this.price, // Pas required, peut être null
+    this.code,
+    this.price,
+    this.stock,
+    this.isDefault = false,
+    this.isActive = true,
+    this.sortOrder = 0,
     this.description,
   });
 
@@ -242,7 +284,12 @@ class ProductPortion {
     return ProductPortion(
       id: _parseInt(json['id']) ?? 0,
       name: json['name']?.toString() ?? '',
-      price: _parseInt(json['price']), // Pas de valeur par défaut - null si l'API ne fournit pas de prix
+      code: json['code']?.toString(),
+      price: _parseInt(json['price']),
+      stock: _parseInt(json['stock']),
+      isDefault: json['is_default'] == true || json['is_default'] == 1,
+      isActive: json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == null,
+      sortOrder: _parseInt(json['sort_order']) ?? 0,
       description: json['description']?.toString(),
     );
   }
@@ -263,7 +310,12 @@ class ProductPortion {
     return {
       'id': id,
       'name': name,
+      if (code != null) 'code': code,
       'price': price,
+      if (stock != null) 'stock': stock,
+      'is_default': isDefault,
+      'is_active': isActive,
+      'sort_order': sortOrder,
       'description': description,
     };
   }

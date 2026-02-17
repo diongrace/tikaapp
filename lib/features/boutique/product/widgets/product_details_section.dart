@@ -8,12 +8,14 @@ class ProductDetailsSection extends StatefulWidget {
   final Map<String, dynamic> product;
   final BoutiqueType boutiqueType;
   final Function(List<String>)? onPreferencesChanged;
+  final Function(String?)? onSizeSelected;
 
   const ProductDetailsSection({
     super.key,
     required this.product,
     required this.boutiqueType,
     this.onPreferencesChanged,
+    this.onSizeSelected,
   });
 
   @override
@@ -25,6 +27,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
   final Set<String> _selectedPreferences = {};
   final TextEditingController _customRequestController = TextEditingController();
   int? _selectedPortionId;
+  String? _selectedSize;
 
   @override
   void dispose() {
@@ -234,22 +237,29 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
 
   /// Sélecteur de portions
   Widget _buildPortionSelector() {
-    final portions = _getPortions();
+    final portions = _getPortions()
+        .where((p) => p['is_active'] != false && p['is_active'] != 0)
+        .toList();
+    if (portions.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       children: portions.map((portion) {
         final isSelected = _selectedPortionId == portion['id'];
+        final stock = portion['stock'];
+        final outOfStock = stock != null && stock is int && stock <= 0;
 
         return GestureDetector(
-          onTap: () {
+          onTap: outOfStock ? null : () {
             setState(() {
               _selectedPortionId = isSelected ? null : portion['id'] as int?;
               _notifyPreferencesChanged();
             });
           },
-          child: Container(
+          child: Opacity(
+            opacity: outOfStock ? 0.4 : 1.0,
+            child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected ? BoutiqueThemeProvider.of(context).primary.withOpacity(0.1) : Colors.white,
@@ -319,8 +329,23 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     ),
                   ),
                 ],
+                if (outOfStock) ...[
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 28),
+                    child: Text(
+                      'Rupture de stock',
+                      style: GoogleFonts.openSans(
+                        fontSize: 11,
+                        color: Colors.red.shade400,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
+          ),
           ),
         );
       }).toList(),
@@ -375,53 +400,127 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
 
   /// Section pour Boutique en ligne
   Widget _buildShopSection() {
-    final details = _getShopDetails();
-    if (details.isEmpty) return const SizedBox.shrink();
+    // Tailles: utiliser sizes de l'API, sinon les portions comme variantes
+    final sizes = widget.product['sizes'];
+    final hasSizes = sizes != null && sizes is List && sizes.isNotEmpty;
+    final hasPortionsForShop = !hasSizes && _hasPortions();
+    final otherDetails = _getShopOtherDetails();
+
+    if (!hasSizes && !hasPortionsForShop && otherDetails.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Caractéristiques',
-          style: GoogleFonts.openSans(
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF2D2D2D),
+        // Sélecteur de taille depuis sizes
+        if (hasSizes) ...[
+          Text(
+            'Taille',
+            style: GoogleFonts.openSans(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF2D2D2D),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
+          const SizedBox(height: 12),
+          _buildSizeSelector(List<String>.from(sizes.map((s) => s.toString()))),
+          const SizedBox(height: 20),
+        ]
+        // Sinon, utiliser les portions comme tailles/variantes
+        else if (hasPortionsForShop) ...[
+          Text(
+            'Taille',
+            style: GoogleFonts.openSans(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF2D2D2D),
+            ),
           ),
-          child: Column(children: details),
-        ),
+          const SizedBox(height: 12),
+          _buildPortionSelector(),
+          const SizedBox(height: 20),
+        ],
+
+        // Autres caractéristiques (couleurs, matière)
+        if (otherDetails.isNotEmpty) ...[
+          Text(
+            'Caractéristiques',
+            style: GoogleFonts.openSans(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF2D2D2D),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(children: otherDetails),
+          ),
+        ],
       ],
     );
   }
 
-  List<Widget> _getShopDetails() {
-    final List<Widget> details = [];
+  /// Sélecteur de taille cliquable
+  Widget _buildSizeSelector(List<String> sizes) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: sizes.map((size) {
+        final isSelected = _selectedSize == size;
 
-    // Tailles
-    final sizes = widget.product['sizes'];
-    if (sizes != null && sizes is List && sizes.isNotEmpty) {
-      details.add(_DetailRow(
-        icon: Icons.straighten_outlined,
-        label: 'Tailles',
-        value: sizes.join(', '),
-        iconColor: const Color(0xFF2196F3),
-      ));
-    }
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedSize = isSelected ? null : size;
+            });
+            widget.onSizeSelected?.call(_selectedSize);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            constraints: const BoxConstraints(minWidth: 52),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? BoutiqueThemeProvider.of(context).primary.withOpacity(0.1)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? BoutiqueThemeProvider.of(context).primary
+                    : Colors.grey.shade300,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Text(
+              size,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? BoutiqueThemeProvider.of(context).primary
+                    : Colors.grey.shade700,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// Retourne les détails autres que les tailles (couleurs, matière)
+  List<Widget> _getShopOtherDetails() {
+    final List<Widget> details = [];
 
     // Couleurs
     final colors = widget.product['colors'];
     if (colors != null && colors is List && colors.isNotEmpty) {
-      if (details.isNotEmpty) details.add(const _DetailDivider());
       details.add(_DetailRow(
         icon: Icons.palette_outlined,
         label: 'Couleurs',

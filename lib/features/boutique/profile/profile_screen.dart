@@ -7,6 +7,7 @@ import 'payment_methods_screen.dart';
 import 'notifications_screen.dart';
 import 'help_support_screen.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/utils/responsive.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/profile_service.dart';
 import '../../../services/order_service.dart';
@@ -101,7 +102,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
 
-    // 2. Commandes via device fingerprint (fallback)
+    // 2. Stats commandes via API authentifiee
+    if (_isAuthenticated) {
+      try {
+        final token = AuthService.authToken!;
+        final stats = await OrderService.getOrderStats(token);
+        final totalFromStats = stats['total_orders'] ?? stats['total'] ?? 0;
+        if (totalFromStats is int && totalFromStats > ordersCount) {
+          ordersCount = totalFromStats;
+        }
+      } catch (e) {
+        print('Profile: erreur chargement order stats: $e');
+      }
+    }
+
+    // 3. Commandes via device fingerprint (fallback)
     try {
       final deviceFingerprint = await DeviceService.getDeviceFingerprint();
       final response = await OrderService.getOrdersByDevice(
@@ -373,7 +388,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                    padding: EdgeInsets.fromLTRB(
+                      Responsive.horizontalPadding(context), 8,
+                      Responsive.horizontalPadding(context), 12,
+                    ),
                     child: Row(
                       children: [
                         Container(

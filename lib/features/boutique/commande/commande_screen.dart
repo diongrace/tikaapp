@@ -13,6 +13,7 @@ import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/order_service.dart';
 import '../../../services/wave_payment_service.dart';
 import '../../../services/device_service.dart';
+import '../../../services/utils/api_endpoint.dart';
 import '../../../services/shop_service.dart';
 import '../../../services/models/shop_model.dart';
 
@@ -368,17 +369,17 @@ class _CommandeScreenState extends State<CommandeScreen> {
       if (mounted && result != null) {
         // La commande a été créée avec succès via createOrderWithWaveProof
         final orderNumber = result.orderNumber ?? '';
-        final receiptUrl = result.receiptUrl ??
-            'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt/download';
-        final receiptViewUrl = result.receiptViewUrl ??
-            'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt';
+        final orderId = result.orderId;
+        final receiptUrl = orderId != null
+            ? Endpoints.orderReceipt(orderId)
+            : null;
 
         final orderData = {
           'orderNumber': orderNumber,
+          'orderId': orderId,
           'customerPhone': _phoneController.text,
           'customerName': _nomController.text,
           'receiptUrl': receiptUrl,
-          'receiptViewUrl': receiptViewUrl,
           'shopId': widget.shopId,
           'orderDate': DateTime.now(),
           'boutiqueName': widget.shop?.name ?? 'Tika Shop',
@@ -487,22 +488,20 @@ class _CommandeScreenState extends State<CommandeScreen> {
 
       // Préparer les données pour la page de succès
       final orderNumber = response['order_number'] as String;
-
-      // Utiliser les URLs de l'API si disponibles, sinon construire les URLs
-      final receiptUrl = response['receipt_url'] ??
-          'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt/download';
-      final receiptViewUrl = response['receipt_view_url'] ??
-          'https://prepro.tika-ci.com/api/client/orders/$orderNumber/receipt';
+      final orderId = response['order_id'];
+      // URL du recu: GET /client/orders/{id}/receipt
+      final receiptUrl = response['receipt_url']
+          ?? (orderId != null ? Endpoints.orderReceipt(orderId as int) : null);
 
       print('📄 Receipt URL: $receiptUrl');
-      print('📄 Receipt View URL: $receiptViewUrl');
+      print('📄 Order ID: $orderId');
 
       final orderData = {
         'orderNumber': orderNumber,
+        'orderId': orderId,
         'customerPhone': _phoneController.text,
         'customerName': _nomController.text,
         'receiptUrl': receiptUrl,
-        'receiptViewUrl': receiptViewUrl,
         'shopId': widget.shopId,
         'orderDate': DateTime.now(),
         'boutiqueName': widget.shop?.name ?? 'Tika Shop',

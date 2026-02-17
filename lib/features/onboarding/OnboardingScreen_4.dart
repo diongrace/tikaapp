@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/services/storage_service.dart';
 
 /// Page d'onboarding 4 : Bénéficier d'une carte de fidélité
 class OnboardingScreen4 extends StatelessWidget {
@@ -93,8 +94,9 @@ class OnboardingScreen4 extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 80.0),
                           child: InkWell(
-                            onTap: () {
-                              // Navigation vers l'écran d'accès boutique
+                            onTap: () async {
+                              await StorageService.setOnboardingSeen();
+                              if (!context.mounted) return;
                               Navigator.pushReplacementNamed(context, '/access-boutique');
                             },
                             borderRadius: BorderRadius.circular(100),

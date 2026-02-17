@@ -142,6 +142,7 @@ class SupportService {
         body: jsonEncode({
           'subject': subject,
           'message': message,
+          'type': category,
           'category': category,
           'priority': priority,
         }),

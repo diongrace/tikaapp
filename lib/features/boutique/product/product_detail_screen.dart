@@ -25,6 +25,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
   bool _isPressed = false;
   bool _isFavorite = false;
+  String? _selectedSize;
 
   // Thème de la boutique
   ShopTheme get _theme => widget.shop?.theme ?? ShopTheme.defaultTheme();
@@ -864,6 +865,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ProductDetailsSection(
                           product: widget.product,
                           boutiqueType: widget.shop!.boutiqueType,
+                          onSizeSelected: (size) {
+                            setState(() {
+                              _selectedSize = size;
+                            });
+                          },
                         ),
                       ],
 
@@ -998,11 +1004,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               return;
                             }
 
+                            // Vérifier si une taille doit être sélectionnée
+                            final sizes = widget.product['sizes'];
+                            final bool hasSizes = sizes != null && sizes is List && sizes.isNotEmpty;
+                            if (hasSizes && _selectedSize == null) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Veuillez choisir une taille'),
+                                    backgroundColor: Colors.orange.shade700,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+
                             // Ajouter au panier
                             final error = CartManager().addItem(
                               widget.product,
                               _quantity,
                               shopId: widget.product['shopId'] as int?,
+                              selectedSize: _selectedSize,
                             );
 
                             if (error != null) {

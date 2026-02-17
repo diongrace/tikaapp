@@ -26,9 +26,16 @@ class Endpoints {
   static String orderByNumber(String orderNumber) => '$baseUrl/client/orders/number/$orderNumber';
   static const String ordersByDevice = '$baseUrl/client/orders/by-device';
 
-  // Receipts (Reçus de commande)
-  static String orderReceiptDownload(String orderNumber) => '$baseUrl/client/orders/$orderNumber/receipt/download';
-  static String orderReceiptView(String orderNumber) => '$baseUrl/client/orders/$orderNumber/receipt';
+  // Receipts (Reçus de commande) — GET /client/orders/{id}/receipt
+  static String orderReceipt(int orderId) => '$baseUrl/client/orders/$orderId/receipt';
+
+  // Orders manquants selon API
+  static const String ordersPending = '$baseUrl/client/orders/pending';
+  static const String ordersStats = '$baseUrl/client/orders/stats';
+  static String orderTrackById(int id) => '$baseUrl/client/orders/$id/track';
+  static String orderReorder(int id) => '$baseUrl/client/orders/$id/reorder';
+  static String orderConfirmReorder(int id) => '$baseUrl/client/orders/$id/confirm-reorder';
+  static String orderRate(int id) => '$baseUrl/client/orders/$id/rate';
 
   // Categories
   static const String categories = '$baseUrl/client/categories';

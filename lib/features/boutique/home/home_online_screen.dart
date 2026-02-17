@@ -208,6 +208,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   Future<void> _toggleFavorite() async {
     if (_currentShop == null) return;
 
+    // Verifier que l'utilisateur est connecte
+    if (!AuthService.isAuthenticated) {
+      if (!mounted) return;
+      final shopTheme = _currentShop?.theme ?? ShopTheme.defaultTheme();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Connectez-vous pour ajouter des favoris',
+            style: GoogleFonts.openSans(),
+          ),
+          backgroundColor: shopTheme.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     try {
       // Appel API toggle — retourne { data: { is_favorite, action, ... } }
       final result = await FavoritesService.toggleFavorite(_currentShop!.id);
@@ -360,6 +381,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     print(' Navigation vers produit: ${product.name} (ID: ${product.id})');
     print('   Prix: ${product.price}');
     print('   Stock: ${product.stockQuantity}');
+    print('   👕 Sizes: ${product.sizes}');
+    print('   🎨 Colors: ${product.colors}');
+    print('   📦 Material: ${product.material}');
 
     try {
       Navigator.push(
@@ -380,6 +404,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
               // Champs spécifiques selon le type de boutique
               'preparation_time': product.cookingTime,
               'portions': product.portions?.map((p) => p.toJson()).toList(),
+              // Champs boutique en ligne (tailles, couleurs, matière)
+              'sizes': product.sizes,
+              'colors': product.colors,
+              'material': product.material,
             },
             shop: _currentShop, // Passer la boutique pour adapter l'affichage
           ),

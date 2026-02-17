@@ -21,6 +21,9 @@ class StorageService {
   static const String _notificationSettingsKey = 'notification_settings';
   static const String _pendingWaveOrdersKey = 'pending_wave_orders';
 
+  // Cle pour l'onboarding
+  static const String _onboardingSeenKey = 'onboarding_seen';
+
   // Clés pour l'authentification client
   static const String _authTokenKey = 'auth_token';
   static const String _authClientKey = 'auth_client';
@@ -38,6 +41,25 @@ class StorageService {
   static Map<String, dynamic>? _memoryNotificationSettings;
   static String? _memoryAuthToken;
   static Map<String, dynamic>? _memoryAuthClient;
+
+  // Onboarding vu
+  static Future<void> setOnboardingSeen() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_onboardingSeenKey, true);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  static Future<bool> hasSeenOnboarding() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_onboardingSeenKey) ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // Sauvegarder la carte de fidélité
   static Future<void> saveLoyaltyCard(Map<String, dynamic> cardData) async {

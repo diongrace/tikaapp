@@ -158,17 +158,22 @@ class OrderService {
           print('🌊 Wave URL: $waveUrl');
         }
 
+        // Construire l'URL du recu avec l'ID de commande
+        final orderId = orderData['id'];
+        final receiptUrl = orderId != null
+            ? Endpoints.orderReceipt(orderId as int)
+            : null;
+
         // Retourner les données essentielles
         return {
           'success': true,
           'message': data['message'] ?? 'Commande créée avec succès',
-          'order_id': orderData['id'],
+          'order_id': orderId,
           'order_number': orderData['order_number'],
           'total_amount': orderData['total_amount'],
           'status': orderData['status'],
           'payment_status': orderData['payment_status'],
-          'receipt_url': orderData['receipt_url'],
-          'receipt_view_url': orderData['receipt_view_url'],
+          'receipt_url': receiptUrl,
           // GESTION WAVE REDIRECT
           'wave_redirect': waveRedirect,
           'wave_url': waveUrl,
@@ -352,38 +357,57 @@ class OrderService {
 
   /// Annuler une commande (nécessite authentification)
   /// POST /client/orders/{id}/cancel
+  ///
+  /// Restaurants/Petit-restau: annulable si statut = recue
+  /// Autres boutiques: annulable si statut = recue ou en_traitement ET < 20 min
+  /// Body: {reason?: string (max 500)}
   static Future<Map<String, dynamic>> cancelOrder(
     int orderId,
-    String token,
-  ) async {
+    String token, {
+    String? reason,
+  }) async {
     final headers = Map<String, String>.from(_headers);
     headers['Authorization'] = 'Bearer $token';
+
+    final body = {
+      if (reason != null && reason.isNotEmpty) 'reason': reason,
+    };
 
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     print('📤 POST CANCEL ORDER');
     print('🔗 Endpoint: ${Endpoints.orderCancel(orderId)}');
+    if (reason != null) print('📦 Reason: $reason');
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     try {
       final response = await http.post(
         Uri.parse(Endpoints.orderCancel(orderId)),
         headers: headers,
+        body: jsonEncode(body),
       );
 
       print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
+
+      final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
         print('✅ Commande annulée');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         return {
-          'success': data['success'] ?? true,
+          'success': true,
           'message': data['message'] ?? 'Commande annulée',
         };
+      } else if (response.statusCode == 422) {
+        // Erreur métier: en préparation, délai dépassé, etc.
+        print('⚠️ Annulation refusée: ${data['message']}');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Annulation impossible',
+        };
       } else {
-        final data = jsonDecode(response.body);
         throw Exception(data['message'] ?? 'Erreur lors de l\'annulation');
       }
     } catch (e) {
@@ -476,6 +500,300 @@ class OrderService {
       } else {
         final data = jsonDecode(response.body);
         throw Exception(data['message'] ?? 'Commande introuvable');
+      }
+    } catch (e) {
+      print('❌ Erreur: $e');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      rethrow;
+    }
+  }
+
+  /// Commandes en cours (nécessite authentification)
+  /// GET /client/orders/pending
+  static Future<List<Order>> getPendingOrders(String token) async {
+    final headers = Map<String, String>.from(_headers);
+    headers['Authorization'] = 'Bearer $token';
+
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('📤 GET PENDING ORDERS');
+    print('🔗 Endpoint: ${Endpoints.ordersPending}');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    try {
+      final response = await http.get(
+        Uri.parse(Endpoints.ordersPending),
+        headers: headers,
+      );
+
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final ordersData = data['data']?['orders'] as List? ?? [];
+        final orders = ordersData.map((e) => Order.fromJson(e)).toList();
+
+        print('✅ ${orders.length} commandes en cours');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return orders;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Erreur lors du chargement');
+      }
+    } catch (e) {
+      print('❌ Erreur: $e');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      rethrow;
+    }
+  }
+
+  /// Suivre une commande par ID (nécessite authentification)
+  /// GET /client/orders/{id}/track
+  static Future<Order> trackOrderById(int orderId, String token) async {
+    final headers = Map<String, String>.from(_headers);
+    headers['Authorization'] = 'Bearer $token';
+
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('📤 GET TRACK ORDER BY ID');
+    print('🔗 Endpoint: ${Endpoints.orderTrackById(orderId)}');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    try {
+      final response = await http.get(
+        Uri.parse(Endpoints.orderTrackById(orderId)),
+        headers: headers,
+      );
+
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] != true) {
+          throw Exception(data['message'] ?? 'Commande introuvable');
+        }
+
+        final orderData = data['data']?['order'];
+        if (orderData == null) {
+          throw Exception('Commande introuvable');
+        }
+
+        print('✅ Suivi de commande chargé');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return Order.fromJson(orderData);
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Commande introuvable');
+      }
+    } catch (e) {
+      print('❌ Erreur: $e');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      rethrow;
+    }
+  }
+
+  /// Vérifier la disponibilité pour recommander (nécessite authentification)
+  /// POST /client/orders/{id}/reorder
+  ///
+  /// Vérifie la disponibilité des produits avant de confirmer
+  static Future<Map<String, dynamic>> reorder(int orderId, String token) async {
+    final headers = Map<String, String>.from(_headers);
+    headers['Authorization'] = 'Bearer $token';
+
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('📤 POST REORDER (vérification)');
+    print('🔗 Endpoint: ${Endpoints.orderReorder(orderId)}');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    try {
+      final response = await http.post(
+        Uri.parse(Endpoints.orderReorder(orderId)),
+        headers: headers,
+      );
+
+      print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Disponibilité vérifiée');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        return {
+          'success': data['success'] ?? true,
+          'message': data['message'] ?? 'Produits disponibles',
+          'data': data['data'],
+        };
+      } else {
+        throw Exception(data['message'] ?? 'Erreur lors de la vérification');
+      }
+    } catch (e) {
+      print('❌ Erreur: $e');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      rethrow;
+    }
+  }
+
+  /// Confirmer la recommande (nécessite authentification)
+  /// POST /client/orders/{id}/confirm-reorder
+  ///
+  /// Body optionnel: {items?, service_type?, delivery_address?, delivery_zone_id?, notes?}
+  static Future<Map<String, dynamic>> confirmReorder({
+    required int orderId,
+    required String token,
+    List<Map<String, dynamic>>? items,
+    String? serviceType,
+    String? deliveryAddress,
+    int? deliveryZoneId,
+    String? notes,
+  }) async {
+    final headers = Map<String, String>.from(_headers);
+    headers['Authorization'] = 'Bearer $token';
+
+    final body = {
+      if (items != null && items.isNotEmpty) 'items': items,
+      if (serviceType != null && serviceType.isNotEmpty) 'service_type': serviceType,
+      if (deliveryAddress != null && deliveryAddress.isNotEmpty) 'delivery_address': deliveryAddress,
+      if (deliveryZoneId != null) 'delivery_zone_id': deliveryZoneId,
+      if (notes != null && notes.isNotEmpty) 'notes': notes,
+    };
+
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('📤 POST CONFIRM REORDER');
+    print('🔗 Endpoint: ${Endpoints.orderConfirmReorder(orderId)}');
+    print('📦 Body: ${jsonEncode(body)}');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    try {
+      final response = await http.post(
+        Uri.parse(Endpoints.orderConfirmReorder(orderId)),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Commande recréée');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Commande créée avec succès !',
+          'order': data['data']?['order'],
+        };
+      } else {
+        throw Exception(data['message'] ?? 'Erreur lors de la recommande');
+      }
+    } catch (e) {
+      print('❌ Erreur: $e');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      rethrow;
+    }
+  }
+
+  /// Noter une commande (nécessite authentification)
+  /// POST /client/orders/{id}/rate
+  /// Statut requis: livree ou prete
+  ///
+  /// Body: {items: [{order_item_id, rating: 1-5, comment?}], global_comment?}
+  static Future<Map<String, dynamic>> rateOrder({
+    required int orderId,
+    required String token,
+    required List<Map<String, dynamic>> items,
+    String? globalComment,
+  }) async {
+    final headers = Map<String, String>.from(_headers);
+    headers['Authorization'] = 'Bearer $token';
+
+    final body = {
+      'items': items,
+      if (globalComment != null && globalComment.isNotEmpty) 'global_comment': globalComment,
+    };
+
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('📤 POST RATE ORDER');
+    print('🔗 Endpoint: ${Endpoints.orderRate(orderId)}');
+    print('📦 Items: ${items.length}');
+    print('📦 Body: ${jsonEncode(body)}');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    try {
+      final response = await http.post(
+        Uri.parse(Endpoints.orderRate(orderId)),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('📥 RATE Response Status: ${response.statusCode}');
+      print('📥 RATE Response Body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        print('✅ Commande notée');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Merci pour votre avis',
+        };
+      } else if (response.statusCode == 422) {
+        final msg = data['message'] ?? '';
+        // Commande déjà notée — pas une vraie erreur
+        if (msg.toString().toLowerCase().contains('deja') ||
+            msg.toString().toLowerCase().contains('déjà')) {
+          print('⚠️ Commande déjà notée');
+          print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          return {
+            'success': false,
+            'already_rated': true,
+            'message': 'Cette commande a déjà été notée.',
+          };
+        }
+        throw Exception(msg.isNotEmpty ? msg : 'Erreur lors de la notation');
+      } else {
+        throw Exception(data['message'] ?? 'Erreur lors de la notation');
+      }
+    } catch (e) {
+      print('❌ Erreur: $e');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      rethrow;
+    }
+  }
+
+  /// Statistiques des commandes (nécessite authentification)
+  /// GET /client/orders/stats
+  static Future<Map<String, dynamic>> getOrderStats(String token) async {
+    final headers = Map<String, String>.from(_headers);
+    headers['Authorization'] = 'Bearer $token';
+
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('📤 GET ORDER STATS');
+    print('🔗 Endpoint: ${Endpoints.ordersStats}');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    try {
+      final response = await http.get(
+        Uri.parse(Endpoints.ordersStats),
+        headers: headers,
+      );
+
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        print('✅ Stats chargées');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        return data['data'] ?? {};
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Erreur lors du chargement des stats');
       }
     } catch (e) {
       print('❌ Erreur: $e');

@@ -110,11 +110,19 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
       }
 
       // Charger les infos de la boutique
-      if (order.shopId > 0) {
+      int shopId = order.shopId;
+      // Fallback: utiliser le shopId sauvegardé localement si l'API ne le retourne pas
+      if (shopId <= 0) {
+        final savedShopId = await StorageService.getLastShopId();
+        if (savedShopId != null) shopId = savedShopId;
+        print('[Tracking] shopId fallback depuis storage: $shopId');
+      }
+      if (shopId > 0) {
         try {
-          final shop = await ShopService.getShopById(order.shopId);
+          final shop = await ShopService.getShopById(shopId);
           _shopLogo = shop.logoUrl.isNotEmpty ? shop.logoUrl : null;
           _shopPhone = (shop.phone?.isNotEmpty == true) ? shop.phone : null;
+          print('[Tracking] Shop phone: ${shop.phone}, shopId: $shopId');
         } catch (e) {
           print('Erreur chargement boutique: $e');
         }

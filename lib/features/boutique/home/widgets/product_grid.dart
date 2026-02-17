@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'product_card.dart';
+import '../../../../core/utils/responsive.dart';
 
 /// Grille de produits affichés en scrollable
 class ProductGrid extends StatelessWidget {
@@ -16,10 +17,13 @@ class ProductGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final columns = Responsive.gridColumns(context);
+    final hPadding = Responsive.horizontalPadding(context);
+
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: 12),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+        crossAxisCount: columns,
         childAspectRatio: isRestaurant ? 0.52 : 0.55,
         crossAxisSpacing: 14,
         mainAxisSpacing: 16,

@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'order_tracking_api_page.dart';
+import 'receipt_view_page.dart';
 import '../loyalty/create_loyalty_card_page.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/auth_service.dart';
@@ -312,38 +315,101 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
 
   // --- Actions ---
 
-  Future<void> _openReceipt() async {
-    if (widget.orderData == null || widget.orderData!['receiptViewUrl'] == null) {
-      _showSnack('Recu non disponible', Colors.orange);
-      return;
-    }
+  /// Recupere les donnees du recu depuis l'API (retourne du JSON, pas un PDF)
+  Future<Map<String, dynamic>> _fetchReceiptData(String url) async {
     await AuthService.ensureToken();
     final token = AuthService.authToken;
-    var url = widget.orderData!['receiptViewUrl'] as String;
-    if (token != null) {
-      final separator = url.contains('?') ? '&' : '?';
-      url = '$url${separator}token=$token';
+    print('📄 [Recu] URL: $url');
+    print('📄 [Recu] Token: ${token != null ? "present" : "ABSENT"}');
+
+    final dio = Dio();
+    final response = await dio.get(
+      url,
+      options: Options(
+        followRedirects: true,
+        validateStatus: (status) => true,
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ),
+    );
+
+    print('📄 [Recu] Status: ${response.statusCode}');
+    print('📄 [Recu] Content-Type: ${response.headers.value('content-type')}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur ${response.statusCode}');
     }
-    final uri = Uri.parse(url);
+
+    // L'API retourne du JSON avec les donnees du recu
+    final data = response.data is String ? jsonDecode(response.data) : response.data;
+
+    if (data is! Map<String, dynamic> || data['success'] != true) {
+      throw Exception(data?['message'] ?? 'Reponse invalide');
+    }
+
+    print('📄 [Recu] Donnees recues OK');
+    return data;
+  }
+
+  Future<void> _openReceipt() async {
+    final url = widget.orderData?['receiptUrl'];
+
+    print('📄 [Recu] _openReceipt()');
+    print('📄 [Recu] orderId: ${widget.orderData?['orderId']}');
+
+    if (widget.orderData == null || url == null) {
+      _showCenteredMessage('Recu non disponible', Colors.orange);
+      return;
+    }
+
+    _showLoadingDialog('Chargement du recu...');
+
     try {
-      await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      final receiptData = await _fetchReceiptData(url as String);
+
+      if (!mounted) return;
+      _dismissDialog();
+
+      final shop = BoutiqueThemeProvider.shopOf(context);
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => BoutiqueThemeProvider(
+            shop: shop,
+            child: ReceiptViewPage(receiptData: receiptData),
+          ),
+        ),
+      );
     } catch (e) {
-      if (mounted) _showSnack('Impossible d\'ouvrir le recu', Colors.red);
+      print('📄 [Recu] ERREUR open: $e');
+      if (mounted) {
+        _dismissDialog();
+        _showCenteredMessage('Impossible de charger le recu', Colors.red);
+      }
     }
   }
 
   Future<void> _downloadReceipt() async {
-    if (widget.orderData == null || widget.orderData!['receiptUrl'] == null) {
-      _showSnack('Recu non disponible', Colors.orange);
+    final receiptUrl = widget.orderData?['receiptUrl'];
+
+    print('📄 [Recu] _downloadReceipt()');
+    print('📄 [Recu] orderId: ${widget.orderData?['orderId']}');
+
+    if (widget.orderData == null || receiptUrl == null) {
+      _showCenteredMessage('Recu non disponible', Colors.orange);
       return;
     }
 
-    final receiptUrl = widget.orderData!['receiptUrl'] as String;
-    final orderNum = widget.orderData!['orderNumber'] as String? ?? 'recu';
-
-    _showSnack('Telechargement en cours...', const Color(0xFF10B981));
+    _showLoadingDialog('Generation du PDF...');
 
     try {
+      final receiptData = await _fetchReceiptData(receiptUrl as String);
+      final receipt = receiptData['data']?['receipt'] ?? receiptData;
+
+      // Generer le PDF localement
+      final pdfBytes = await _generateReceiptPdf(receipt);
+
       if (Platform.isAndroid) {
         final status = await Permission.storage.request();
         if (!status.isGranted) {
@@ -363,39 +429,197 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
 
       if (downloadDir == null) throw Exception('Dossier non accessible');
 
+      final orderNum = receipt['order_number']?.toString() ?? 'recu';
       final filePath = '${downloadDir.path}/recu_$orderNum.pdf';
-      await AuthService.ensureToken();
-      final token = AuthService.authToken;
-      await Dio().download(
-        receiptUrl,
-        filePath,
-        options: Options(
-          responseType: ResponseType.bytes,
-          followRedirects: true,
-          headers: {
-            if (token != null) 'Authorization': 'Bearer $token',
-          },
-        ),
-      );
+      final file = File(filePath);
+      await file.writeAsBytes(pdfBytes);
+
+      print('📄 [Recu] PDF genere: $filePath (${pdfBytes.length} octets)');
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Recu telecharge !'),
-          backgroundColor: const Color(0xFF10B981),
-          action: SnackBarAction(
-            label: 'Ouvrir',
-            textColor: Colors.white,
-            onPressed: () => OpenFilex.open(filePath),
-          ),
-        ),
+      _dismissDialog();
+      _showCenteredMessage(
+        'PDF telecharge !',
+        const Color(0xFF10B981),
+        actionLabel: 'Ouvrir le PDF',
+        onAction: () => OpenFilex.open(filePath),
       );
     } catch (e) {
+      print('📄 [Recu] ERREUR download: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        _showSnack('Erreur de telechargement', Colors.red);
+        _dismissDialog();
+        _showCenteredMessage('Impossible de generer le PDF', Colors.red);
       }
+    }
+  }
+
+  /// Genere un PDF a partir des donnees du recu
+  Future<List<int>> _generateReceiptPdf(Map<String, dynamic> receipt) async {
+    final pdf = pw.Document();
+    final shop = receipt['shop'] as Map<String, dynamic>? ?? {};
+    final customer = receipt['customer'] as Map<String, dynamic>? ?? {};
+    final items = receipt['items'] as List? ?? [];
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Center(
+                child: pw.Column(
+                  children: [
+                    pw.Text(
+                      shop['name']?.toString() ?? 'Boutique',
+                      style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
+                    ),
+                    if (shop['address'] != null)
+                      pw.Text(shop['address'].toString(), style: const pw.TextStyle(fontSize: 11)),
+                    if (shop['phone'] != null)
+                      pw.Text(shop['phone'].toString(), style: const pw.TextStyle(fontSize: 11)),
+                    pw.SizedBox(height: 8),
+                    pw.Text(
+                      'RECU DE COMMANDE',
+                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Divider(),
+              pw.SizedBox(height: 12),
+              _pdfInfoRow('N commande', receipt['order_number']?.toString() ?? '-'),
+              _pdfInfoRow('Date', receipt['date']?.toString() ?? '-'),
+              _pdfInfoRow('Statut', receipt['status']?.toString() ?? '-'),
+              pw.SizedBox(height: 12),
+              pw.Text('CLIENT', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 4),
+              _pdfInfoRow('Nom', customer['name']?.toString() ?? '-'),
+              _pdfInfoRow('Telephone', customer['phone']?.toString() ?? '-'),
+              if (customer['address'] != null && customer['address'].toString().isNotEmpty)
+                _pdfInfoRow('Adresse', customer['address'].toString()),
+              pw.SizedBox(height: 12),
+              pw.Divider(),
+              pw.SizedBox(height: 12),
+              pw.Table(
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(3),
+                  1: const pw.FlexColumnWidth(1),
+                  2: const pw.FlexColumnWidth(1),
+                  3: const pw.FlexColumnWidth(1),
+                },
+                border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                    children: [
+                      _pdfCell('Article', bold: true),
+                      _pdfCell('Qte', bold: true, center: true),
+                      _pdfCell('P.U.', bold: true, center: true),
+                      _pdfCell('Total', bold: true, center: true),
+                    ],
+                  ),
+                  ...items.map((item) {
+                    final m = item as Map<String, dynamic>;
+                    return pw.TableRow(
+                      children: [
+                        _pdfCell(m['name']?.toString() ?? '-'),
+                        _pdfCell('${m['quantity'] ?? 1}', center: true),
+                        _pdfCell('${m['unit_price'] ?? '-'}', center: true),
+                        _pdfCell('${m['total'] ?? '-'}', center: true),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+              pw.SizedBox(height: 16),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.green50,
+                  border: pw.Border.all(color: PdfColors.green),
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('TOTAL', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                    pw.Text(
+                      '${receipt['total'] ?? '0'} FCFA',
+                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 16),
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+              _pdfInfoRow('Paiement', _formatPaymentMethod(receipt['payment_method']?.toString())),
+              _pdfInfoRow('Statut paiement', _formatPaymentStatus(receipt['payment_status']?.toString())),
+              pw.SizedBox(height: 24),
+              pw.Center(
+                child: pw.Text(
+                  'Merci pour votre commande !',
+                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  pw.Widget _pdfInfoRow(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 3),
+      child: pw.Row(
+        children: [
+          pw.SizedBox(
+            width: 120,
+            child: pw.Text(label, style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+          ),
+          pw.Expanded(
+            child: pw.Text(value, style: const pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.right),
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _pdfCell(String text, {bool bold = false, bool center = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(6),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(
+          fontSize: 10,
+          fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+        ),
+        textAlign: center ? pw.TextAlign.center : pw.TextAlign.left,
+      ),
+    );
+  }
+
+  String _formatPaymentMethod(String? method) {
+    switch (method) {
+      case 'especes': return 'Especes';
+      case 'mobile_money': return 'Mobile Money';
+      case 'wave': return 'Wave';
+      case 'carte': return 'Carte bancaire';
+      default: return method ?? '-';
+    }
+  }
+
+  String _formatPaymentStatus(String? status) {
+    switch (status) {
+      case 'pending': return 'En attente';
+      case 'paid': return 'Paye';
+      case 'failed': return 'Echoue';
+      default: return status ?? '-';
     }
   }
 
@@ -419,11 +643,152 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
     );
   }
 
-  void _showSnack(String message, Color color) {
+  /// Affiche un message centre sur l'ecran (pas en bas)
+  void _showCenteredMessage(String message, Color color, {String? actionLabel, VoidCallback? onAction}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black26,
+      builder: (ctx) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  color == Colors.red || color == Colors.orange
+                      ? Icons.warning_rounded
+                      : Icons.check_circle_rounded,
+                  color: Colors.white,
+                  size: 36,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  message,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (actionLabel != null) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        onAction?.call();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: color,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        actionLabel,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                if (actionLabel == null) ...[
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () => Navigator.of(ctx).pop(),
+                    child: Text(
+                      'OK',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+  }
+
+  /// Affiche un indicateur de chargement centre
+  void _showLoadingDialog(String message) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black26,
+      builder: (ctx) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(strokeWidth: 3),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _dismissDialog() {
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
   }
 }
 

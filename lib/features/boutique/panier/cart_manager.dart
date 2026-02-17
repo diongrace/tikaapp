@@ -21,7 +21,7 @@ class CartManager extends ChangeNotifier {
 
   /// Ajoute un produit au panier
   /// Retourne un message d'erreur si l'ajout échoue, null si succès
-  String? addItem(Map<String, dynamic> product, int quantity, {int? shopId}) {
+  String? addItem(Map<String, dynamic> product, int quantity, {int? shopId, String? selectedSize}) {
     // Validation 1: Vérifier la disponibilité du produit
     final int stock = product['stock'] ?? 0;
     final bool isAvailable = product['isAvailable'] ?? true;
@@ -47,13 +47,13 @@ class CartManager extends ChangeNotifier {
       _shopId = shopId;
     }
 
-    // Vérifier si le produit existe déjà dans le panier (par ID)
+    // Vérifier si le produit existe déjà dans le panier (même ID + même taille)
     final existingIndex = _items.indexWhere(
-      (item) => item['id'] == product['id'],
+      (item) => item['id'] == product['id'] && item['size'] == selectedSize,
     );
 
     if (existingIndex >= 0) {
-      // Produit existe, vérifier que la nouvelle quantité ne dépasse pas le stock
+      // Produit existe avec la même taille, vérifier que la nouvelle quantité ne dépasse pas le stock
       final newQuantity = (_items[existingIndex]['quantity'] as int) + quantity;
 
       if (newQuantity > stock) {
@@ -62,7 +62,7 @@ class CartManager extends ChangeNotifier {
 
       _items[existingIndex]['quantity'] = newQuantity;
     } else {
-      // Nouveau produit, vérifier le stock
+      // Nouveau produit ou nouvelle taille, vérifier le stock
       if (quantity > stock) {
         return 'Stock insuffisant. Disponible: $stock';
       }
@@ -75,6 +75,7 @@ class CartManager extends ChangeNotifier {
         'quantity': quantity,          // Quantité pour l'API
         'stock': stock,                // Pour validation continue
         'isAvailable': isAvailable,    // Pour validation continue
+        'size': selectedSize,          // Taille sélectionnée (null si pas de taille)
       });
     }
 
@@ -120,16 +121,20 @@ class CartManager extends ChangeNotifier {
   }
 
   /// Prépare les items au format requis par l'API TIKA pour créer une commande
-  /// Format API: [{"product_id": 15, "quantity": 2, "price": 2500}]
+  /// Format API: [{"product_id": 15, "quantity": 2, "price": 2500, "size": "L"}]
   /// Endpoint: POST /orders-simple
   /// Documentation: 08-API-ORDERS.md lignes 47-63
   List<Map<String, dynamic>> getItemsForOrder() {
     return _items.map((item) {
-      return {
+      final orderItem = {
         'product_id': item['id'],      // ✅ ID du produit (requis par l'API)
         'quantity': item['quantity'],   // ✅ Quantité (requis par l'API)
         'price': item['price'],         // ✅ Prix unitaire (requis par l'API)
       };
+      if (item['size'] != null) {
+        orderItem['size'] = item['size']; // ✅ Taille (si applicable)
+      }
+      return orderItem;
     }).toList();
   }
 

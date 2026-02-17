@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../notifications/notifications_list_screen.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../services/utils/api_endpoint.dart';
 import '../../../../services/push_notification_service.dart';
 
@@ -240,7 +241,10 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
         // Boutons d'action
         SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+            padding: EdgeInsets.fromLTRB(
+              Responsive.horizontalPadding(context), 4,
+              Responsive.horizontalPadding(context), 8,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

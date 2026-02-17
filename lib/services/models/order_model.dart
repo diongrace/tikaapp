@@ -70,8 +70,15 @@ class Order {
         ? (json['items'] as List).map((e) => OrderItem.fromJson(e)).toList()
         : <OrderItem>[];
 
-    // Calculer itemsCount: utiliser items_count de l'API ou la longueur des items
-    final itemsCount = _parseInt(json['items_count']) ?? items.length;
+    // Calculer itemsCount: utiliser items_count/total_items de l'API,
+    // ou la somme des quantités des items
+    final totalQty = items.isNotEmpty
+        ? items.fold<int>(0, (sum, item) => sum + item.quantity)
+        : 0;
+    final itemsCount = _parseInt(json['items_count'])
+        ?? _parseInt(json['total_items'])
+        ?? _parseInt(json['nb_items'])
+        ?? (totalQty > 0 ? totalQty : items.length);
 
     // Parser le shop_name (peut être dans shop.name ou directement shop_name)
     String? shopName;
@@ -205,6 +212,7 @@ class Order {
 
 /// Item d'une commande
 class OrderItem {
+  final int? id;
   final int? productId;
   final int? dailyMenuId;
   final int? supplementId;
@@ -214,6 +222,7 @@ class OrderItem {
   final String? image;
 
   OrderItem({
+    this.id,
     this.productId,
     this.dailyMenuId,
     this.supplementId,
@@ -255,6 +264,7 @@ class OrderItem {
     print('🔍 [OrderItem] Parsing: name=$productName, image=$image');
 
     return OrderItem(
+      id: _parseInt(json['id']),
       productId: _parseInt(json['product_id']),
       dailyMenuId: _parseInt(json['daily_menu_id']),
       supplementId: _parseInt(json['supplement_id']),
@@ -267,6 +277,7 @@ class OrderItem {
 
   Map<String, dynamic> toJson() {
     return {
+      if (id != null) 'id': id,
       if (productId != null) 'product_id': productId,
       if (dailyMenuId != null) 'daily_menu_id': dailyMenuId,
       if (supplementId != null) 'supplement_id': supplementId,

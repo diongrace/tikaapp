@@ -5,6 +5,7 @@ import '../commande/commande_screen.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/boutique_theme_provider.dart';
+import '../../../core/utils/responsive.dart';
 
 class PanierScreen extends StatefulWidget {
   final int shopId;
@@ -118,7 +119,10 @@ class _PanierScreenState extends State<PanierScreen> {
               children: [
                 // Header moderne
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Responsive.horizontalPadding(context),
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.9),
                     border: Border(
@@ -261,7 +265,7 @@ class _PanierScreenState extends State<PanierScreen> {
                       ),
                     )
                   : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
+                      padding: Responsive.screenPadding(context),
                       child: Column(
                         children: [
                           // Liste des articles
@@ -691,6 +695,25 @@ class _PanierScreenState extends State<PanierScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    // Taille sélectionnée
+                    if (item['size'] != null) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Taille : ${item['size']}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
 
                     // Prix
