@@ -16,6 +16,7 @@ import '../../../services/device_service.dart';
 import '../../../services/utils/api_endpoint.dart';
 import '../../../services/shop_service.dart';
 import '../../../services/models/shop_model.dart';
+import '../../../services/auth_service.dart';
 
 /// Écran de finalisation de commande
 /// LOGIQUE EXACTE DE L'API TIKA (docs-api-flutter/08-API-ORDERS.md)
@@ -380,6 +381,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           'customerPhone': _phoneController.text,
           'customerName': _nomController.text,
           'receiptUrl': receiptUrl,
+          'authToken': AuthService.authToken,
           'shopId': widget.shopId,
           'orderDate': DateTime.now(),
           'boutiqueName': widget.shop?.name ?? 'Tika Shop',
@@ -502,6 +504,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         'customerPhone': _phoneController.text,
         'customerName': _nomController.text,
         'receiptUrl': receiptUrl,
+        'authToken': AuthService.authToken,
         'shopId': widget.shopId,
         'orderDate': DateTime.now(),
         'boutiqueName': widget.shop?.name ?? 'Tika Shop',

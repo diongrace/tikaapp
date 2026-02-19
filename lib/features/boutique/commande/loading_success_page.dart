@@ -318,7 +318,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
   /// Recupere les donnees du recu depuis l'API (retourne du JSON, pas un PDF)
   Future<Map<String, dynamic>> _fetchReceiptData(String url) async {
     await AuthService.ensureToken();
-    final token = AuthService.authToken;
+    final token = widget.orderData?['authToken'] as String? ?? AuthService.authToken;
     print('📄 [Recu] URL: $url');
     print('📄 [Recu] Token: ${token != null ? "present" : "ABSENT"}');
 
@@ -359,8 +359,18 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
     print('📄 [Recu] _openReceipt()');
     print('📄 [Recu] orderId: ${widget.orderData?['orderId']}');
 
-    if (widget.orderData == null || url == null) {
+    if (widget.orderData == null) {
       _showCenteredMessage('Recu non disponible', Colors.orange);
+      return;
+    }
+
+    // Verifier le token disponible (stocke dans orderData ou en memoire)
+    await AuthService.ensureToken();
+    final token = widget.orderData?['authToken'] as String? ?? AuthService.authToken;
+
+    // Si pas de token ou pas d'URL, afficher le recu local
+    if (token == null || url == null) {
+      _openLocalReceipt();
       return;
     }
 
@@ -385,9 +395,70 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
       print('📄 [Recu] ERREUR open: $e');
       if (mounted) {
         _dismissDialog();
-        _showCenteredMessage('Impossible de charger le recu', Colors.red);
+        // Fallback sur le recu local en cas d'erreur API
+        _openLocalReceipt();
       }
     }
+  }
+
+  void _openLocalReceipt() {
+    if (!mounted) return;
+    final localData = _buildLocalReceiptData();
+    final shop = BoutiqueThemeProvider.shopOf(context);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BoutiqueThemeProvider(
+          shop: shop,
+          child: ReceiptViewPage(receiptData: localData),
+        ),
+      ),
+    );
+  }
+
+  Map<String, dynamic> _buildLocalReceiptData() {
+    final od = widget.orderData ?? {};
+    final rawItems = od['items'] as List? ?? [];
+    final items = rawItems.map((item) {
+      final m = item as Map<String, dynamic>;
+      final qty = (m['quantity'] ?? 1) as num;
+      final price = (m['price'] ?? 0) as num;
+      return {
+        'name': m['name'] ?? '-',
+        'quantity': qty,
+        'unit_price': price.toString(),
+        'total': (qty * price).toString(),
+      };
+    }).toList();
+
+    final paymentMode = od['paymentMode']?.toString() ?? '';
+    String paymentMethod = 'especes';
+    if (paymentMode.toLowerCase().contains('wave')) {
+      paymentMethod = 'wave';
+    } else if (paymentMode.toLowerCase().contains('mobile') || paymentMode.toLowerCase().contains('momo')) {
+      paymentMethod = 'mobile_money';
+    }
+
+    return {
+      'success': true,
+      'data': {
+        'receipt': {
+          'shop': {'name': od['boutiqueName'] ?? 'Boutique'},
+          'customer': {
+            'name': od['customerName'] ?? (od['deliveryInfo'] as Map?)?['name'] ?? '-',
+            'phone': od['customerPhone'] ?? (od['deliveryInfo'] as Map?)?['phone'] ?? '-',
+            'address': (od['deliveryInfo'] as Map?)?['address'] ?? '',
+          },
+          'items': items,
+          'order_number': od['orderNumber'] ?? '-',
+          'date': od['orderDate']?.toString() ?? DateTime.now().toLocal().toString(),
+          'status': 'Confirmee',
+          'total': od['total']?.toString() ?? '0',
+          'payment_method': paymentMethod,
+          'payment_status': 'pending',
+          'service_type': od['deliveryMode'] ?? '',
+        },
+      },
+    };
   }
 
   Future<void> _downloadReceipt() async {
@@ -396,7 +467,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
     print('📄 [Recu] _downloadReceipt()');
     print('📄 [Recu] orderId: ${widget.orderData?['orderId']}');
 
-    if (widget.orderData == null || receiptUrl == null) {
+    if (widget.orderData == null) {
       _showCenteredMessage('Recu non disponible', Colors.orange);
       return;
     }
@@ -404,8 +475,18 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
     _showLoadingDialog('Generation du PDF...');
 
     try {
-      final receiptData = await _fetchReceiptData(receiptUrl as String);
-      final receipt = receiptData['data']?['receipt'] ?? receiptData;
+      // Verifier le token disponible
+      await AuthService.ensureToken();
+      final token = widget.orderData?['authToken'] as String? ?? AuthService.authToken;
+
+      Map<String, dynamic> receiptData;
+      if (token != null && receiptUrl != null) {
+        receiptData = await _fetchReceiptData(receiptUrl as String);
+      } else {
+        // Fallback: construire le recu depuis les donnees locales
+        receiptData = _buildLocalReceiptData();
+      }
+      final receipt = receiptData['data']?['receipt'] ?? receiptData['receipt'] ?? receiptData;
 
       // Generer le PDF localement
       final pdfBytes = await _generateReceiptPdf(receipt);
