@@ -434,11 +434,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         return;
                       }
 
-                      if (newPasswordController.text.length < 6) {
+                      if (newPasswordController.text.length < 8) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Le mot de passe doit contenir au moins 6 caracteres',
+                              'Le mot de passe doit contenir au moins 8 caracteres',
                               style: GoogleFonts.openSans(),
                             ),
                             backgroundColor: Colors.red,

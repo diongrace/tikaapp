@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../notifications/notifications_list_screen.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
@@ -174,7 +175,7 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                               end: Alignment.bottomRight,
                               colors: [
                                 shopTheme.primary,
-                                shopTheme.secondary,
+                                shopTheme.gradientEnd,
                               ],
                             ),
                           ),
@@ -226,7 +227,7 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                               end: Alignment.bottomRight,
                               colors: [
                                 shopTheme.primary,
-                                shopTheme.secondary,
+                                shopTheme.gradientEnd,
                               ],
                             ),
                           ),
@@ -235,44 +236,101 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                     );
                   },
                 ),
+
+              // ── Gradient overlay bas → transition douce banner→carte ──
+              Positioned(
+                bottom: 0, left: 0, right: 0,
+                child: Container(
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Color(0x66000000)],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        // Boutons d'action
+        // ── Boutons glassmorphisme ────────────────────────────
         SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-              Responsive.horizontalPadding(context), 4,
+              Responsive.horizontalPadding(context), 6,
               Responsive.horizontalPadding(context), 8,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Bouton retour + bouton accueil TIKA
-                Row(
-                  children: [
-                    _buildCircleButton(
-                      icon: Icons.arrow_back,
-                      onPressed: widget.onBackPressed,
-                    ),
-                    if (widget.onHomeTap != null) ...[
-                      const SizedBox(width: 10),
-                      _buildCircleButton(
-                        icon: Icons.storefront_outlined,
-                        onPressed: widget.onHomeTap!,
+                // ── Gauche : retour + accueil dans une pill glass ──
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.18),
+                        blurRadius: 12,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 3),
                       ),
                     ],
-                  ],
+                  ),
+                  child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                    child: Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _glassIconBtn(
+                            icon: Icons.arrow_back_ios_new_rounded,
+                            onTap: widget.onBackPressed,
+                          ),
+                          if (widget.onHomeTap != null) ...[
+                            Container(
+                              width: 1,
+                              height: 22,
+                              color: Colors.black.withOpacity(0.12),
+                            ),
+                            _glassIconBtn(
+                              icon: Icons.storefront_rounded,
+                              onTap: widget.onHomeTap!,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  ),
                 ),
-                // Boutons favoris et notifications
+
+                // ── Droite : favoris + notification ───────────────
                 Row(
                   children: [
-                    _buildCircleButton(
-                      icon: widget.isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: widget.isFavorite ? Colors.red : Colors.black87,
+                    // Bouton favori
+                    // iconColor non passé → auto: blanc si activeTint, sombre sinon
+                    _buildGlassBtn(
+                      icon: widget.isFavorite
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
                       onPressed: widget.onFavoriteToggle,
+                      activeTint: widget.isFavorite ? Colors.red.shade500 : null,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
+                    // Bouton notification
                     _buildNotificationButton(context),
                   ],
                 ),
@@ -284,6 +342,69 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
     );
   }
 
+  // ── Icône simple dans la pill gauche ──────────────────────────────────────
+  Widget _glassIconBtn({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) =>
+      GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          width: 38,
+          height: 44,
+          child: Icon(icon, color: const Color(0xFF1A1A2E), size: 20),
+        ),
+      );
+
+  // ── Bouton glassmorphisme circulaire ──────────────────────────────────────
+  Widget _buildGlassBtn({
+    required IconData icon,
+    required VoidCallback onPressed,
+    Color? activeTint,
+    Color? iconColor,
+  }) {
+    final bool hasActiveTint = activeTint != null;
+    final Color resolvedIconColor = iconColor ??
+        (hasActiveTint ? Colors.white : const Color(0xFF1A1A2E));
+
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.18),
+              blurRadius: 12,
+              spreadRadius: 0,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: activeTint ?? Colors.white.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white,
+                  width: 1,
+                ),
+              ),
+              child: Icon(icon, color: resolvedIconColor, size: 22),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Bouton notification avec badge ────────────────────────────────────────
   Widget _buildNotificationButton(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: PushNotificationService.unreadCount,
@@ -291,51 +412,47 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            // Icone cloche avec animation de secousse
             AnimatedBuilder(
               animation: _shakeAnimation,
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: count > 0 ? _shakeAnimation.value : 0,
-                  child: child,
-                );
-              },
-              child: _buildCircleButton(
-                icon: Icons.notifications_outlined,
+              builder: (context, child) => Transform.rotate(
+                angle: count > 0 ? _shakeAnimation.value : 0,
+                child: child,
+              ),
+              child: _buildGlassBtn(
+                icon: count > 0
+                    ? Icons.notifications_active_rounded
+                    : Icons.notifications_none_rounded,
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const NotificationsListScreen(),
+                      builder: (_) => const NotificationsListScreen(),
                     ),
-                  ).then((_) {
-                    PushNotificationService.refreshUnreadCount();
-                  });
+                  ).then((_) => PushNotificationService.refreshUnreadCount());
                 },
               ),
             ),
-            // Badge avec animation de pulsation
+            // Badge
             if (count > 0)
               Positioned(
-                right: -2,
-                top: -2,
+                right: -3,
+                top: -3,
                 child: AnimatedBuilder(
                   animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _pulseAnimation.value,
-                      child: child,
-                    );
-                  },
+                  builder: (context, child) => Transform.scale(
+                    scale: _pulseAnimation.value,
+                    child: child,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: const Color(0xFFFF3B30),
                       shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.red.withOpacity(0.4),
-                          blurRadius: 6,
+                          color: Colors.red.withOpacity(0.45),
+                          blurRadius: 8,
                           spreadRadius: 1,
                         ),
                       ],
@@ -359,33 +476,6 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
           ],
         );
       },
-    );
-  }
-
-  Widget _buildCircleButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    Color color = Colors.black87,
-  }) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: color, size: 22),
-        onPressed: onPressed,
-        padding: EdgeInsets.zero,
-      ),
     );
   }
 }

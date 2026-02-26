@@ -6,16 +6,22 @@ import './auth_service.dart';
 
 /// Service pour gerer les cartes de fidelite
 /// Endpoints:
-/// 1. GET    /client/loyalty                      - Toutes mes cartes
-/// 2. GET    /client/loyalty/cards/{id}           - Detail carte
-/// 3. GET    /client/loyalty/shops/{id}           - Carte pour une boutique
-/// 4. POST   /client/loyalty/cards                - Creer une carte
-/// 5. GET    /client/loyalty/cards/{id}/history   - Historique
-/// 6. GET    /client/loyalty/cards/{id}/rewards   - Recompenses
-/// 7. GET    /client/loyalty/cards/{id}/qr-code   - QR Code
-/// 8. POST   /client/loyalty/cards/{id}/verify-pin - Verifier PIN
-/// 9. GET    /client/loyalty/stats                - Statistiques
+/// 1. GET    /client/loyalty                          - Toutes mes cartes
+/// 2. GET    /client/loyalty/cards/{id}               - Detail carte
+/// 3. GET    /client/loyalty/shops/{id}               - Carte pour une boutique
+/// 4. POST   /client/loyalty/cards                    - Creer une carte
+/// 4b. DELETE /client/loyalty/cards/{id}              - Supprimer une carte
+/// 5. GET    /client/loyalty/cards/{id}/history       - Historique
+/// 6. GET    /client/loyalty/cards/{id}/rewards       - Recompenses
+/// 7. GET    /client/loyalty/cards/{id}/qr-code       - QR Code
+/// 8. POST   /client/loyalty/cards/{id}/verify-pin    - Verifier PIN
+/// 9. GET    /client/loyalty/stats                    - Statistiques
 class LoyaltyService {
+  /// Cartes créées dans la session en attente de synchronisation API.
+  /// GET /client/loyalty a un délai après POST — on conserve la carte
+  /// localement jusqu'à ce que l'API la retourne d'elle-même.
+  static final List<LoyaltyCard> _pendingCards = [];
+
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -45,11 +51,16 @@ class LoyaltyService {
             final cards = cardsData
                 .map((e) => LoyaltyCard.fromJson(e as Map<String, dynamic>))
                 .toList();
-            print('${cards.length} cartes recuperees');
-            return cards;
+            // Retirer les cartes en attente que l'API retourne maintenant
+            final apiIds = cards.map((c) => c.id).toSet();
+            _pendingCards.removeWhere((c) => apiIds.contains(c.id));
+            // Fusionner avec les cartes encore en attente
+            final merged = [...cards, ..._pendingCards.where((c) => !apiIds.contains(c.id))];
+            print('${cards.length} cartes recuperees (+ ${merged.length - cards.length} en attente)');
+            return merged;
           }
         }
-        return [];
+        return List.from(_pendingCards);
       } else if (response.statusCode == 401) {
         throw Exception('Authentification requise');
       } else {
@@ -131,10 +142,18 @@ class LoyaltyService {
             return LoyaltyCard.fromJson(data['data']['card'] as Map<String, dynamic>);
           }
         }
-        return null;
-      } else if (response.statusCode == 404 || response.statusCode == 422) {
-        // 404 = pas de carte, 422 = paramètres invalides → pas de carte
-        return null;
+        // has_card: false — vérifier les cartes en attente de sync
+        final pending = _pendingCards.where((c) => c.shopId == shopId).firstOrNull;
+        if (pending != null) print('[PENDING] Carte en attente pour shop=$shopId id=${pending.id}');
+        return pending;
+      } else if (response.statusCode == 404) {
+        return null; // boutique introuvable
+      } else if (response.statusCode == 422) {
+        // 422 = programme fidélité non actif pour cette boutique
+        print('🎴 getCardForShop: programme fidélité non actif pour shop=$shopId (422)');
+        final pending = _pendingCards.where((c) => c.shopId == shopId).firstOrNull;
+        if (pending != null) print('[PENDING] Carte en attente pour shop=$shopId id=${pending.id}');
+        return pending;
       } else {
         throw Exception('Erreur ${response.statusCode}');
       }
@@ -168,8 +187,12 @@ class LoyaltyService {
         if (cardData == null) {
           throw Exception('Carte non trouvee dans la reponse');
         }
-        print('Carte creee');
-        return LoyaltyCard.fromJson(cardData as Map<String, dynamic>);
+        final card = LoyaltyCard.fromJson(cardData as Map<String, dynamic>);
+        // Stocker localement car GET /client/loyalty a un délai après création
+        _pendingCards.removeWhere((c) => c.shopId == card.shopId);
+        _pendingCards.add(card);
+        print('Carte creee id=${card.id} shop=${card.shopId}, en attente de sync API');
+        return card;
       } else if (response.statusCode == 422) {
         final data = jsonDecode(response.body);
         throw Exception(data['message'] ?? 'Programme fidelite non actif');
@@ -179,6 +202,35 @@ class LoyaltyService {
       }
     } catch (e) {
       print('Erreur createCard: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // 4b. DELETE /client/loyalty/cards/{id} - Supprimer une carte
+  // ============================================================
+
+  static Future<void> deleteCard(int cardId) async {
+    try {
+      await AuthService.ensureToken();
+      print('DELETE /client/loyalty/cards/$cardId');
+      final response = await http.delete(
+        Uri.parse(Endpoints.loyaltyCardDelete(cardId)),
+        headers: _headers,
+      );
+      print('Status: ${response.statusCode}');
+      print('Réponse: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        _pendingCards.removeWhere((c) => c.id == cardId);
+        print('Carte $cardId supprimée');
+        return;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Erreur lors de la suppression');
+      }
+    } catch (e) {
+      print('Erreur deleteCard: $e');
       rethrow;
     }
   }
@@ -305,12 +357,15 @@ class LoyaltyService {
     try {
       await AuthService.ensureToken();
       print('POST /client/loyalty/cards/$cardId/verify-pin');
+      print('🔐 [verifyPin] PIN saisi: ${pinCode.length} chiffres, valeur: $pinCode');
+      print('🔐 [verifyPin] Téléphone du compte: ${AuthService.currentClient?.phone ?? "non disponible"}');
       final response = await http.post(
         Uri.parse(Endpoints.loyaltyCardVerifyPin(cardId)),
         headers: _headers,
         body: jsonEncode({'pin_code': pinCode}),
       );
       print('Status: ${response.statusCode}');
+      print('🔐 [verifyPin] Réponse brute: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

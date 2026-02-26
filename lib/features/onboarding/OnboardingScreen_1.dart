@@ -14,6 +14,7 @@ class OnboardingScreen1 extends StatelessWidget {
           image: DecorationImage(
             image: AssetImage('lib/core/assets/Shoponline.jpg'),
             fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
           ),
         ),
         child: Column(

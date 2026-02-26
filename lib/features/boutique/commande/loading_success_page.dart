@@ -7,7 +7,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'order_tracking_api_page.dart';
 import 'receipt_view_page.dart';
 import '../loyalty/create_loyalty_card_page.dart';
@@ -185,7 +184,76 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+
+              // Banneau points de fidélité
+              if (widget.orderData?['loyaltyCardId'] != null) ...[
+                Builder(builder: (context) {
+                  final pointValue = widget.orderData?['loyaltyPointValue'] as int? ?? 10;
+                  final rawTotal = widget.orderData?['total'];
+                  final totalInt = rawTotal is int
+                      ? rawTotal
+                      : rawTotal is double
+                          ? rawTotal.toInt()
+                          : int.tryParse(rawTotal?.toString() ?? '') ?? 0;
+                  final pointsEarned = pointValue > 0 ? (totalInt / pointValue).floor() : 0;
+
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3E8FF),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.star_rounded, color: Color(0xFF7C3AED), size: 28),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Carte de fidélité détectée !',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF5B21B6),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.card_giftcard_rounded, color: Color(0xFF7C3AED), size: 16),
+                            const SizedBox(width: 6),
+                            RichText(
+                              text: TextSpan(
+                                style: GoogleFonts.openSans(fontSize: 13, color: const Color(0xFF5B21B6)),
+                                children: [
+                                  const TextSpan(text: 'Vous gagnerez '),
+                                  TextSpan(
+                                    text: '$pointsEarned points',
+                                    style: const TextStyle(fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Points ajoutés après livraison',
+                          style: GoogleFonts.openSans(
+                            fontSize: 11,
+                            color: const Color(0xFF7C3AED).withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 16),
+              ],
+
+              const SizedBox(height: 16),
 
               // Boutons d'action
               if (!_isLoading) ...[
@@ -491,19 +559,12 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
       // Generer le PDF localement
       final pdfBytes = await _generateReceiptPdf(receipt);
 
-      if (Platform.isAndroid) {
-        final status = await Permission.storage.request();
-        if (!status.isGranted) {
-          await Permission.photos.request();
-        }
-      }
-
+      // Dossier de telechargement sans permission requise
       Directory? downloadDir;
       if (Platform.isAndroid) {
-        downloadDir = Directory('/storage/emulated/0/Download');
-        if (!await downloadDir.exists()) {
-          downloadDir = await getExternalStorageDirectory();
-        }
+        // Dossier prive de l'app (aucune permission requise)
+        downloadDir = await getExternalStorageDirectory();
+        downloadDir ??= await getApplicationDocumentsDirectory();
       } else {
         downloadDir = await getApplicationDocumentsDirectory();
       }

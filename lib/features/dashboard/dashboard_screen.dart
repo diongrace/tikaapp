@@ -7,6 +7,7 @@ import '../../services/loyalty_service.dart';
 import '../../services/order_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/push_notification_service.dart';
+import '../../core/services/storage_service.dart';
 import '../../services/models/client_model.dart';
 import '../../services/models/order_model.dart';
 import '../../services/models/dashboard_model.dart';
@@ -47,6 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<Order> _recentOrders = [];
   List<DashboardFavorite> _favorites = [];
   List<LoyaltyCard> _loyaltyCards = [];
+  int? _currentShopId; // ID de la boutique active pour filtrer les commandes
 
   // Animation cloche notification
   late AnimationController _bellController;
@@ -111,7 +113,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
 
     try {
-      // 1. Charger en parallele: overview dashboard, favoris, cartes fidelite, stats
+      // 0. Recuperer la boutique active (pour filtrer les commandes)
+      _currentShopId = await StorageService.getLastShopId();
+      print('[Dashboard] currentShopId: $_currentShopId');
+
+      // 1. Charger en parallele: overview, commandes, favoris, cartes fidelite, stats
       final results = await Future.wait([
         DashboardService.getOverview().catchError((e) {
           print('[Dashboard] Erreur getOverview: $e');
@@ -142,53 +148,40 @@ class _DashboardScreenState extends State<DashboardScreen>
           print('[Dashboard] Erreur getStats: $e');
           return null as DashboardStats?;
         }),
+        // Toujours charger les commandes avec shopId valide (overview retourne shopId=0)
+        DashboardService.getOrders(page: 1, perPage: 10)
+            .then<DashboardPaginatedResponse<Order>?>((r) => r)
+            .catchError((e) {
+          print('[Dashboard] Erreur getOrders: $e');
+          return null as DashboardPaginatedResponse<Order>?;
+        }),
       ]);
 
       var overview = results[0] as DashboardOverview;
       final favorites = results[1] as List<DashboardFavorite>;
       final loyaltyCards = results[2] as List<LoyaltyCard>;
       final stats = results[3] as DashboardStats?;
+      final ordersResponse = results[4] as DashboardPaginatedResponse<Order>?;
 
       print('[Dashboard] overview.totalOrders: ${overview.totalOrders}');
       print('[Dashboard] overview.totalSpent: ${overview.totalSpent}');
-      print('[Dashboard] overview.favoritesCount: ${overview.favoritesCount}');
       print('[Dashboard] overview.recentOrders: ${overview.recentOrders.length}');
+      print('[Dashboard] ordersResponse: ${ordersResponse?.items.length}');
       print('[Dashboard] favorites list: ${favorites.length}');
       print('[Dashboard] loyaltyCards: ${loyaltyCards.length}');
 
-      // 2. FALLBACK COMMANDES: si overview ne retourne pas de commandes, essayer les endpoints alternatifs
-      List<Order> recentOrders = overview.recentOrders;
+      // 2. Commandes: privilegier getOrders (shopId valide) sur overview (shopId=0)
+      List<Order> recentOrders;
       int totalOrders = overview.totalOrders;
       double totalSpent = overview.totalSpent;
 
-      if (recentOrders.isEmpty && AuthService.isAuthenticated) {
-        print('[Dashboard] Aucune commande depuis overview, tentative fallback...');
-        try {
-          // Essayer via DashboardService.getOrders()
-          final ordersResponse = await DashboardService.getOrders(page: 1, perPage: 10);
-          if (ordersResponse.items.isNotEmpty) {
-            recentOrders = ordersResponse.items;
-            if (totalOrders == 0) totalOrders = ordersResponse.total;
-            print('[Dashboard] Fallback DashboardService.getOrders: ${recentOrders.length} commandes, total=${ordersResponse.total}');
-          }
-        } catch (e) {
-          print('[Dashboard] Fallback DashboardService.getOrders echoue: $e');
-          try {
-            // Dernier fallback: OrderService.getOrders() avec token
-            final token = AuthService.authToken;
-            if (token != null) {
-              final result = await OrderService.getOrders(token: token, page: 1);
-              final orders = result['orders'] as List<Order>? ?? [];
-              if (orders.isNotEmpty) {
-                recentOrders = orders;
-                if (totalOrders == 0) totalOrders = orders.length;
-                print('[Dashboard] Fallback OrderService.getOrders: ${orders.length} commandes');
-              }
-            }
-          } catch (e2) {
-            print('[Dashboard] Fallback OrderService.getOrders echoue: $e2');
-          }
-        }
+      if (ordersResponse != null && ordersResponse.items.isNotEmpty) {
+        recentOrders = ordersResponse.items;
+        if (totalOrders == 0) totalOrders = ordersResponse.total;
+        print('[Dashboard] Commandes depuis getOrders: ${recentOrders.length}');
+      } else {
+        recentOrders = overview.recentOrders;
+        print('[Dashboard] Commandes depuis overview: ${recentOrders.length}');
       }
 
       // 3. Calculer totalSpent depuis les commandes si l'API retourne 0
@@ -483,6 +476,10 @@ class _DashboardScreenState extends State<DashboardScreen>
             _buildRecentOrdersSection(),
             const SizedBox(height: 24),
 
+            // Boutiques visitees
+            _buildVisitedShopsSection(),
+            const SizedBox(height: 24),
+
             // Mes Favoris
             _buildFavoritesSection(),
             const SizedBox(height: 24),
@@ -508,7 +505,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       _NavTab(Icons.card_giftcard_rounded, 'Cartes',
           () => _openLoyaltyCards()),
       _NavTab(Icons.favorite_rounded, 'Favoris',
-          () => _navigateTo(const FavoritesBoutiquesScreen())),
+          () => _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false))),
       _NavTab(Icons.bar_chart_rounded, 'Stats',
           () => _navigateTo(const DashboardStatsScreen())),
       _NavTab(Icons.notifications_rounded, 'Notifications',
@@ -627,34 +624,45 @@ class _DashboardScreenState extends State<DashboardScreen>
   // ============================================================
 
   Future<void> _openLoyaltyCards() async {
-    // Toujours re-fetcher les cartes depuis l'API
     try {
       final freshCards = await LoyaltyService.getMyCards();
-      if (mounted) {
-        setState(() => _loyaltyCards = freshCards);
-      }
+      if (mounted) setState(() => _loyaltyCards = freshCards);
     } catch (_) {}
 
     if (_loyaltyCards.isEmpty) {
       _showNoCardDialog();
     } else if (_loyaltyCards.length == 1) {
-      _navigateTo(LoyaltyCardPage(loyaltyCard: _loyaltyCards.first));
+      final card = _loyaltyCards.first;
+      final deleted = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(builder: (_) => LoyaltyCardPage(loyaltyCard: card)),
+      );
+      if (deleted == true && mounted) {
+        // Retirer localement sans re-fetcher l'API (getMyCards a un délai de mise à jour)
+        setState(() => _loyaltyCards.removeWhere((c) => c.id == card.id));
+        _showNoCardDialog(wasDeleted: true);
+      }
     } else {
       _showCardPicker();
     }
   }
 
-  void _showNoCardDialog() {
+  void _showNoCardDialog({bool wasDeleted = false}) {
     // Collecter les boutiques connues (commandes + favoris) sans doublons
+    // Si une boutique courante est connue, on se limite à elle seule
     final Map<int, String> knownShops = {};
     for (final order in _recentOrders) {
       if (order.shopId > 0 && order.shopName != null) {
-        knownShops[order.shopId] = order.shopName!;
+        if (_currentShopId == null || order.shopId == _currentShopId) {
+          knownShops[order.shopId] = order.shopName!;
+        }
       }
     }
     for (final fav in _favorites) {
       if (fav.shopId > 0 && fav.shopName.isNotEmpty) {
-        knownShops[fav.shopId] = fav.shopName;
+        if (_currentShopId == null || fav.shopId == _currentShopId) {
+          knownShops[fav.shopId] = fav.shopName;
+        }
       }
     }
 
@@ -664,6 +672,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       _navigateTo(CreateLoyaltyCardPage(
         shopId: entry.key,
         boutiqueName: entry.value,
+        cardWasDeleted: wasDeleted,
       ));
       return;
     }
@@ -716,7 +725,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pop(ctx);
-                    _navigateTo(const FavoritesBoutiquesScreen());
+                    _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false));
                   },
                   icon: const Icon(Icons.search_rounded, size: 18),
                   label: Text(
@@ -777,6 +786,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         _navigateTo(CreateLoyaltyCardPage(
                           shopId: entry.key,
                           boutiqueName: entry.value,
+                          cardWasDeleted: wasDeleted,
                         ));
                       },
                     ),
@@ -835,9 +845,33 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded,
                       size: 16, color: Colors.grey),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(ctx);
-                    _navigateTo(LoyaltyCardPage(loyaltyCard: card));
+                    final deleted = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(builder: (_) => LoyaltyCardPage(loyaltyCard: card)),
+                    );
+                    if (deleted == true && mounted) {
+                      print('[PICKER] Carte ${card.id} supprimée, cartes restantes: ${_loyaltyCards.length - 1}');
+                      setState(() => _loyaltyCards.removeWhere((c) => c.id == card.id));
+                      if (_loyaltyCards.isEmpty) {
+                        _showNoCardDialog(wasDeleted: true);
+                      } else if (_loyaltyCards.length == 1) {
+                        // Une seule carte restante → ouvrir directement sans re-fetch
+                        final remaining = _loyaltyCards.first;
+                        final del = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(builder: (_) => LoyaltyCardPage(loyaltyCard: remaining)),
+                        );
+                        if (del == true && mounted) {
+                          setState(() => _loyaltyCards.clear());
+                          _showNoCardDialog(wasDeleted: true);
+                        }
+                      } else {
+                        // Plusieurs cartes restantes → réafficher le picker sans re-fetch
+                        _showCardPicker();
+                      }
+                    }
                   },
                 )),
             const SizedBox(height: 8),
@@ -1133,9 +1167,137 @@ class _DashboardScreenState extends State<DashboardScreen>
           if (_recentOrders.isEmpty)
             _buildEmptyOrdersState()
           else
-            ..._recentOrders.take(3).map(_buildRecentOrderCard),
+            ..._recentOrders
+                .take(3)
+                .map(_buildRecentOrderCard),
         ],
       ),
+    );
+  }
+
+  // ============================================================
+  // BOUTIQUES VISITEES
+  // ============================================================
+
+  Widget _buildVisitedShopsSection() {
+    // Extraire les boutiques uniques depuis les commandes
+    final Map<String, Map<String, dynamic>> uniqueShops = {};
+    for (final order in _recentOrders) {
+      final name = order.shopName;
+      if (name != null && name.isNotEmpty && !uniqueShops.containsKey(name)) {
+        uniqueShops[name] = {
+          'name': name,
+          'logo': order.shopLogo,
+          'shopId': order.shopId,
+        };
+      }
+    }
+
+    if (uniqueShops.isEmpty) return const SizedBox.shrink();
+
+    final shops = uniqueShops.values.toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Titre
+        Row(
+          children: [
+            Icon(Icons.storefront_rounded, color: accentColor, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Boutiques visitees',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E1E2E),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Liste horizontale
+        SizedBox(
+          height: 100,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: shops.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final shop = shops[index];
+              final shopId = shop['shopId'] as int;
+              final name = shop['name'] as String;
+              final logo = shop['logo'] as String?;
+
+              return GestureDetector(
+                onTap: shopId > 0
+                    ? () => _navigateTo(HomeScreen(shopId: shopId))
+                    : null,
+                child: Container(
+                  width: 100,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: logo != null && logo.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.network(
+                                  logo,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Icon(
+                                    Icons.store_rounded,
+                                    color: accentColor,
+                                    size: 26,
+                                  ),
+                                ),
+                              )
+                            : Icon(
+                                Icons.store_rounded,
+                                color: accentColor,
+                                size: 26,
+                              ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        name,
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF1E1E2E),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -1355,7 +1517,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: () =>
-                            _navigateTo(const FavoritesBoutiquesScreen()),
+                            _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false)),
                         child: Text(
                           'Voir tous les favoris',
                           style: GoogleFonts.inter(
@@ -1408,7 +1570,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => _navigateTo(const FavoritesBoutiquesScreen()),
+              onPressed: () => _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false)),
               icon: const Icon(Icons.search_rounded, size: 18),
               label: Text(
                 'Decouvrir',

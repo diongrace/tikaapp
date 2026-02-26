@@ -104,7 +104,7 @@ class SupportService {
           'Suggestion',
           'Autre',
         ],
-        priorities: ['normal', 'high', 'urgent'],
+        priorities: ['low', 'medium', 'high', 'urgent'],
       );
     } catch (e) {
       print('[Support] Erreur getOptions: $e');
@@ -117,7 +117,7 @@ class SupportService {
           'Suggestion',
           'Autre',
         ],
-        priorities: ['normal', 'high', 'urgent'],
+        priorities: ['low', 'medium', 'high', 'urgent'],
       );
     }
   }
@@ -130,7 +130,7 @@ class SupportService {
     required String subject,
     required String message,
     required String category,
-    String priority = 'normal',
+    String priority = 'low',
   }) async {
     try {
       print('[Support] POST /client/support');
@@ -143,7 +143,6 @@ class SupportService {
           'subject': subject,
           'message': message,
           'type': category,
-          'category': category,
           'priority': priority,
         }),
       );

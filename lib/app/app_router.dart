@@ -15,7 +15,6 @@ import '../features/boutique/notifications/notifications_list_screen.dart';
 import '../features/boutique/profile/profile_screen.dart';
 import '../features/boutique/profile/personal_info_screen.dart';
 import '../features/boutique/profile/addresses_screen.dart';
-import '../features/boutique/profile/payment_methods_screen.dart';
 import '../features/boutique/profile/notifications_screen.dart';
 import '../features/boutique/profile/security_screen.dart';
 import '../features/boutique/profile/help_support_screen.dart';
@@ -103,7 +102,6 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/profile': (context) => const ProfileScreen(),
   '/personal-info': (context) => const PersonalInfoScreen(),
   '/addresses': (context) => const AddressesScreen(),
-  '/payment-methods': (context) => const PaymentMethodsScreen(),
   '/profile-notifications': (context) => const NotificationsScreen(),
   '/security': (context) => const SecurityScreen(),
   '/help-support': (context) => const HelpSupportScreen(),

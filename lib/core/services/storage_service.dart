@@ -486,6 +486,30 @@ class StorageService {
     }
   }
 
+  // === MOYEN DE PAIEMENT PAR DEFAUT ===
+
+  static const String _defaultPaymentMethodKey = 'default_payment_method';
+
+  /// Sauvegarder le moyen de paiement par defaut (ex: "especes", "wave")
+  static Future<void> saveDefaultPaymentMethod(String type) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_defaultPaymentMethodKey, type);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  /// Recuperer le moyen de paiement par defaut
+  static Future<String?> getDefaultPaymentMethod() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_defaultPaymentMethodKey);
+    } catch (e) {
+      return null;
+    }
+  }
+
   // === NETTOYAGE ===
 
   /// Effacer toutes les données client (réinitialisation)

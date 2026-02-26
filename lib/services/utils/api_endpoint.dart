@@ -54,6 +54,7 @@ class Endpoints {
   static String loyaltyCardQrCode(int id) => '$baseUrl/client/loyalty/cards/$id/qr-code';
   static String loyaltyCardVerifyPin(int id) => '$baseUrl/client/loyalty/cards/$id/verify-pin';
   static String loyaltyCardByShop(int shopId) => '$baseUrl/client/loyalty/shops/$shopId';
+  static String loyaltyCardDelete(int id) => '$baseUrl/client/loyalty/cards/$id';
   static const String loyaltyCalculateDiscount = '$baseUrl/client/loyalty/calculate-discount';
 
   // Delivery Zones & Options

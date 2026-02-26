@@ -3,435 +3,426 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/utils/api_endpoint.dart';
 
-/// Carte de produit affichant les informations du produit
-class ProductCard extends StatelessWidget {
+/// Carte produit premium — image plein-bleed, overlay gradient,
+/// badge discount moderne, bouton add circulaire, animation de pression.
+class ProductCard extends StatefulWidget {
   final Map<String, dynamic> product;
   final VoidCallback onTap;
-  final bool isRestaurant; // Pour afficher le temps de préparation
+  final VoidCallback? onAddToCart;
+  final bool isRestaurant;
 
-  // Cache statique pour éviter de logger la même erreur plusieurs fois
   static final Set<String> _loggedErrors = {};
 
   const ProductCard({
     super.key,
     required this.product,
     required this.onTap,
+    this.onAddToCart,
     this.isRestaurant = false,
   });
 
-  // Construire l'URL complète de l'image
-  String? _getFullImageUrl(String? url) {
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard>
+    with SingleTickerProviderStateMixin {
+  bool _pressed = false;
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+
+  String? _fullImageUrl(String? url) {
     if (url == null || url.isEmpty) return null;
-
-    // Si l'URL commence déjà par http, la retourner telle quelle
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-
-    // Sinon, construire l'URL complète avec le domaine de base
-    final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return '${Endpoints.storageBaseUrl}/$cleanUrl';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    final clean = url.startsWith('/') ? url.substring(1) : url;
+    return '${Endpoints.storageBaseUrl}/$clean';
   }
 
-  // Obtenir le texte de stock approprié selon l'état du produit
-  String _getStockText(int stock, bool isAvailable) {
-    if (!isAvailable && stock > 0) {
-      return 'Non disponible';
-    } else if (stock == 0) {
-      return 'Rupture de stock';
-    } else {
-      return 'En stock: $stock';
-    }
+  /// Formate un nombre en "1 500" (espace millier)
+  String _fmt(dynamic price) {
+    if (price == null) return '0';
+    final n = price is num ? price : num.tryParse(price.toString()) ?? 0;
+    return n
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]} ',
+        );
   }
 
-  // Vérifie si le produit est un plat (pas boisson/pâtisserie)
-  bool _isDish() {
-    final category = (product['category']?.toString() ?? '').toLowerCase();
-    final nonDishCategories = [
-      'boisson', 'boissons', 'drink', 'drinks',
-      'patisserie', 'pâtisserie', 'patisseries', 'pâtisseries',
-      'dessert', 'desserts', 'jus', 'juice',
-      'cafe', 'café', 'coffee', 'the', 'thé', 'tea',
-      'glace', 'glaces', 'gateau', 'gâteau',
-    ];
-    for (final nonDish in nonDishCategories) {
-      if (category.contains(nonDish)) return false;
-    }
-    return true;
-  }
-
-  // Obtenir le temps de préparation formaté (uniquement pour les plats)
-  String? _getPreparationTime() {
-    // Ne pas afficher pour boissons/pâtisseries
-    if (!_isDish()) return null;
-
-    final prepTime = product['preparation_time'] ??
-        product['preparationTime'] ??
-        product['cooking_time'] ??
-        product['cookingTime'];
-    if (prepTime == null) return null;
-    return '$prepTime min';
-  }
+  // ── Build ───────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    // Obtenir le thème de la boutique pour les couleurs dynamiques
     final shopTheme = BoutiqueThemeProvider.of(context);
-    const double imageHeight = 180;
-    const double priceFontSize = 18;
-    const double nameFontSize = 14;
-    const double badgeFontSize = 11;
-    const double stockFontSize = 11;
-    const double oldPriceFontSize = 13;
+    final p = widget.product;
 
-    final int stock = product['stock'] ?? 0;
-    final bool isAvailable = product['isAvailable'] ?? true;
-    final bool isOutOfStock = stock == 0 || !isAvailable;
-    final int? discount = product['discount'];
-    final bool hasLowStock = stock > 0 && stock <= 10 && !isOutOfStock;
-    final String? fullImageUrl = _getFullImageUrl(product['image']?.toString());
+    final int stock      = p['stock'] ?? 0;
+    final bool available = p['isAvailable'] ?? true;
+    final bool outOfStock = stock == 0 || !available;
+    final int? discount  = p['discount'];
+    final bool lowStock  = stock > 0 && stock <= 10 && !outOfStock;
+    final String? imgUrl = _fullImageUrl(p['image']?.toString());
 
     return GestureDetector(
-      onTap: () {
-        print('👆 Clic détecté sur produit: ${product['name']}');
-        onTap();
-      },
-      child: Container(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp:   (_) => setState(() => _pressed = false),
+      onTapCancel: ()  => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.955 : 1.0,
+        duration: const Duration(milliseconds: 130),
+        curve: Curves.easeInOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 130),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_pressed ? 0.04 : 0.10),
+                blurRadius: _pressed ? 6 : 18,
+                spreadRadius: _pressed ? 0 : 0,
+                offset: Offset(0, _pressed ? 2 : 6),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ─── Zone image ───────────────────────────────────────────
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Image
+                    _image(imgUrl, outOfStock, shopTheme),
+
+
+                    // Badge réduction (haut gauche, rectangulaire moderne)
+                    if (discount != null && !outOfStock)
+                      Positioned(
+                        top: 10, left: 10,
+                        child: _discountBadge(discount),
+                      ),
+
+                    // Badge stock limité (haut gauche, sous le discount)
+                    if (lowStock)
+                      Positioned(
+                        top: discount != null ? 46 : 10,
+                        left: 10,
+                        child: _pill(
+                          label: '⚡ Stock limité',
+                          color: const Color(0xFFFF6D00),
+                        ),
+                      ),
+
+                    // Overlay rupture de stock
+                    if (outOfStock)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.45),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 10,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Rupture de stock',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF444444),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // Bouton "+" circulaire (bas droite, sur le gradient)
+                    if (!outOfStock)
+                      Positioned(
+                        bottom: 10, right: 10,
+                        child: GestureDetector(
+                          onTap: widget.onAddToCart ?? widget.onTap,
+                          child: Container(
+                            width: 34, height: 34,
+                            decoration: BoxDecoration(
+                              color: shopTheme.primary,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: shopTheme.primary.withOpacity(0.45),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.add_rounded,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // Alerte stock critique (bas gauche, sur gradient)
+                    if (!outOfStock && stock <= 5)
+                      Positioned(
+                        bottom: 16, left: 10,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6, height: 6,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFF5252),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Plus que $stock',
+                              style: GoogleFonts.poppins(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                shadows: const [
+                                  Shadow(color: Colors.black54, blurRadius: 4),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // ─── Zone info ────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Nom
+                    Text(
+                      p['name'] ?? '',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1C1C1E),
+                        height: 1.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    // Rating
+                    if ((p['average_rating'] ?? 0.0) > 0) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded, size: 12, color: Color(0xFFF59E0B)),
+                          const SizedBox(width: 2),
+                          Text(
+                            (p['average_rating'] as double).toStringAsFixed(1),
+                            style: GoogleFonts.poppins(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1C1C1E),
+                            ),
+                          ),
+                          if ((p['rating_count'] ?? 0) > 0) ...[
+                            const SizedBox(width: 2),
+                            Text(
+                              '(${p['rating_count']})',
+                              style: GoogleFonts.openSans(
+                                fontSize: 10,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+
+                    const SizedBox(height: 5),
+
+                    // Prix
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          '${_fmt(p['price'])} F',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: outOfStock
+                                ? Colors.grey.shade400
+                                : const Color(0xFF111827),
+                          ),
+                        ),
+                        if (p['oldPrice'] != null) ...[
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              '${_fmt(p['oldPrice'])} F',
+                              style: GoogleFonts.poppins(
+                                fontSize: 10.5,
+                                color: Colors.grey.shade400,
+                                decoration: TextDecoration.lineThrough,
+                                decorationColor: Colors.grey.shade400,
+                                decorationThickness: 1.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                        if (outOfStock) ...[
+                          const Spacer(),
+                          Text(
+                            'Indisponible',
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Sous-widgets ────────────────────────────────────────────────────────
+
+  Widget _image(String? url, bool outOfStock, shopTheme) {
+    final filter = outOfStock
+        ? const ColorFilter.mode(Colors.grey, BlendMode.saturation)
+        : const ColorFilter.mode(Colors.transparent, BlendMode.multiply);
+
+    return ColorFiltered(
+      colorFilter: filter,
+      child: url != null
+          ? Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) {
+                if (!ProductCard._loggedErrors.contains(url)) {
+                  ProductCard._loggedErrors.add(url);
+                }
+                return _placeholder();
+              },
+              loadingBuilder: (_, child, progress) {
+                if (progress == null) return child;
+                return _shimmer();
+              },
+            )
+          : _placeholder(),
+    );
+  }
+
+  Widget _placeholder() => Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [Colors.grey.shade100, Colors.grey.shade200],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.image_search_rounded,
+            size: 42,
+            color: Colors.grey.shade300,
+          ),
+        ),
+      );
+
+  Widget _shimmer() => Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.grey.shade100,
+              Colors.grey.shade200,
+              Colors.grey.shade100,
+            ],
+            stops: const [0.0, 0.5, 1.0],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      );
+
+  Widget _discountBadge(int discount) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: const Color(0xFFFF416C).withOpacity(0.45),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Text(
+          '-$discount%',
+          style: GoogleFonts.poppins(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            letterSpacing: 0.3,
+          ),
+        ),
+      );
+
+  Widget _pill({required String label, required Color color}) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.4),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        clipBehavior: Clip.hardEdge,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Image du produit (plus grande)
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: ColorFiltered(
-                    colorFilter: isOutOfStock
-                        ? const ColorFilter.mode(
-                            Colors.grey,
-                            BlendMode.saturation,
-                          )
-                        : const ColorFilter.mode(
-                            Colors.transparent,
-                            BlendMode.multiply,
-                          ),
-                    child: fullImageUrl != null
-                        ? Image.network(
-                            fullImageUrl,
-                            height: imageHeight,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              if (!_loggedErrors.contains(fullImageUrl)) {
-                                _loggedErrors.add(fullImageUrl);
-                                print(
-                                    '⚠️ Image produit non disponible: "${product['name']}"');
-                              }
-                              return Container(
-                                height: imageHeight,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.grey.shade200,
-                                      Colors.grey.shade300,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    Icons.image_outlined,
-                                    size: 50,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                ),
-                              );
-                            },
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                height: imageHeight,
-                                color: Colors.grey[100],
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: shopTheme.primary,
-                                    strokeWidth: 2,
-                                    value: loadingProgress
-                                                .expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress
-                                                .cumulativeBytesLoaded /
-                                            loadingProgress
-                                                .expectedTotalBytes!
-                                        : null,
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            height: imageHeight,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(16)),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.grey.shade200,
-                                  Colors.grey.shade300,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.image_outlined,
-                                size: 50,
-                                color: Colors.grey.shade400,
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-
-                // Badge "Stock limité" (en haut à gauche, uniquement si stock faible et pas en rupture)
-                if (hasLowStock && !isOutOfStock)
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF8C00),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFFF8C00).withOpacity(0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        'Stock limité',
-                        style: GoogleFonts.poppins(
-                          fontSize: badgeFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // Badge réduction (en haut à droite, sous le stock limité)
-                if (discount != null && !isOutOfStock)
-                  Positioned(
-                    top: hasLowStock ? 48 : 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFE91E63),
-                            Color(0xFFD81B60),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFE91E63).withOpacity(0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.local_offer,
-                              size: 12, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Text(
-                            '-$discount%',
-                            style: GoogleFonts.poppins(
-                              fontSize: badgeFontSize,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                // Bouton "+" en bas à droite (comme dans le design)
-                if (!isOutOfStock)
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.add, size: 20),
-                        color: Colors.black87,
-                        padding: EdgeInsets.zero,
-                        onPressed: onTap,
-                      ),
-                    ),
-                  ),
-
-                // Badge "Rupture de stock" (si rupture)
-                if (isOutOfStock)
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    right: 12,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          'Rupture de stock',
-                          style: GoogleFonts.poppins(
-                            fontSize: badgeFontSize,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF666666),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-
-            // Infos du produit (design épuré)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Prix en gros (comme dans le design)
-                  Row(
-                    children: [
-                      Text(
-                        '${product['price']}',
-                        style: GoogleFonts.poppins(
-                          fontSize: priceFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        'F',
-                        style: GoogleFonts.poppins(
-                          fontSize: priceFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      // Prix barré (compare_price) si disponible
-                      if (product['oldPrice'] != null)
-                        Flexible(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Text(
-                              '${product['oldPrice']}F',
-                              style: GoogleFonts.poppins(
-                                fontSize: oldPriceFontSize,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade500,
-                                decoration: TextDecoration.lineThrough,
-                                decorationColor: Colors.grey.shade500,
-                                decorationThickness: 2,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-
-                  // Nom du produit
-                  Text(
-                    product['name'],
-                    style: GoogleFonts.openSans(
-                      fontSize: nameFontSize,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF666666),
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  // Info stock (afficher pour tous les produits)
-                  if (!isOutOfStock)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        'Stock: $stock',
-                        style: GoogleFonts.openSans(
-                          fontSize: stockFontSize,
-                          color: stock <= 5
-                              ? const Color(0xFFFF8C00) // Orange pour stock critique
-                              : stock <= 10
-                                  ? const Color(0xFFFFA726) // Orange clair pour stock faible
-                                  : const Color(0xFF4CAF50), // Vert pour stock normal
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

@@ -119,7 +119,9 @@ class DashboardService {
         final data = jsonDecode(response.body);
         final responseData = data['data'] ?? data;
 
-        final orders = (responseData['orders'] as List? ??
+        // API Tika retourne 'commandes' (français) ou 'orders' (anglais)
+        final orders = (responseData['commandes'] as List? ??
+                responseData['orders'] as List? ??
                 responseData['data'] as List? ??
                 [])
             .map((e) => Order.fromJson(e))
@@ -134,8 +136,14 @@ class DashboardService {
 
         return DashboardPaginatedResponse<Order>(
           items: orders,
-          currentPage: pagination['current_page'] ?? page,
-          lastPage: pagination['last_page'] ?? 1,
+          // API Tika: page_actuelle / dernière_page (français)
+          currentPage: pagination['page_actuelle'] ??
+              pagination['current_page'] ??
+              page,
+          lastPage: pagination['dernière_page'] ??
+              pagination['derniere_page'] ??
+              pagination['last_page'] ??
+              1,
           total: pagination['total'] ?? orders.length,
         );
       } else if (response.statusCode == 401) {
@@ -408,8 +416,13 @@ class DashboardService {
 
         return DashboardPaginatedResponse<DashboardNotification>(
           items: notifications,
-          currentPage: pagination['current_page'] ?? page,
-          lastPage: pagination['last_page'] ?? 1,
+          currentPage: pagination['page_actuelle'] ??
+              pagination['current_page'] ??
+              page,
+          lastPage: pagination['dernière_page'] ??
+              pagination['derniere_page'] ??
+              pagination['last_page'] ??
+              1,
           total: pagination['total'] ?? notifications.length,
         );
       } else if (response.statusCode == 401) {

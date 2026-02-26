@@ -561,7 +561,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
       child: Column(
         children: [
           SizedBox(
-            height: 160,
+            height: 185,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: spentByMonth.entries.map((entry) {

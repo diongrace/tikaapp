@@ -648,13 +648,15 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
       ),
     );
 
+    Map<String, dynamic>? receiptData;
+
     try {
-      final url = Endpoints.orderReceipt(order.id);
       await AuthService.ensureToken();
       final token = AuthService.authToken;
 
-      final response = await Dio().get(
-        url,
+      // Étape 1 : essayer l'API du recu
+      final receiptResponse = await Dio().get(
+        Endpoints.orderReceipt(order.id),
         options: Options(
           followRedirects: true,
           validateStatus: (status) => true,
@@ -665,32 +667,140 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
         ),
       );
 
-      if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(); // fermer loader
-
-      if (response.statusCode != 200) {
-        throw Exception('Erreur ${response.statusCode}');
+      if (receiptResponse.statusCode == 200) {
+        final data = receiptResponse.data is String
+            ? jsonDecode(receiptResponse.data)
+            : receiptResponse.data;
+        if (data is Map<String, dynamic> && data['success'] == true) {
+          receiptData = data;
+        }
       }
 
-      final data = response.data is String ? jsonDecode(response.data) : response.data;
-      if (data is! Map<String, dynamic> || data['success'] != true) {
-        throw Exception('Recu non disponible');
-      }
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ReceiptViewPage(receiptData: data),
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        // Fermer le loader s'il est encore ouvert
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Impossible de charger le recu'), backgroundColor: Colors.red),
+      // Étape 2 : si le recu API a échoué, récupérer les détails complets de la commande
+      if (receiptData == null && token != null) {
+        final detailResponse = await Dio().get(
+          Endpoints.orderDetails(order.id),
+          options: Options(
+            followRedirects: true,
+            validateStatus: (status) => true,
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          ),
         );
+
+        if (detailResponse.statusCode == 200) {
+          final data = detailResponse.data is String
+              ? jsonDecode(detailResponse.data)
+              : detailResponse.data;
+          if (data is Map<String, dynamic> && data['success'] == true) {
+            final orderDetail = data['data']?['order'];
+            if (orderDetail != null) {
+              receiptData = _buildReceiptFromJson(orderDetail);
+            }
+          }
+        }
       }
-    }
+    } catch (_) {}
+
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop(); // fermer loader
+
+    // Étape 3 : fallback sur les données locales de la commande
+    receiptData ??= _buildReceiptFromOrder(order);
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ReceiptViewPage(receiptData: receiptData!),
+      ),
+    );
+  }
+
+  /// Construit le recu à partir de la réponse JSON de GET /client/orders/{id}
+  Map<String, dynamic> _buildReceiptFromJson(Map<String, dynamic> order) {
+    final items = (order['items'] as List? ?? []).map((item) {
+      final m = item as Map<String, dynamic>;
+      return {
+        'name': m['name'] ?? m['product_name'] ?? '-',
+        'quantity': m['quantity'] ?? 1,
+        'unit_price': (m['unit_price'] ?? m['price'] ?? 0).toString(),
+        'total': (m['total'] ?? 0).toString(),
+      };
+    }).toList();
+
+    final shop = order['shop'] as Map<String, dynamic>? ?? {};
+    final customer = order['customer'] as Map<String, dynamic>? ?? {};
+
+    return {
+      'success': true,
+      'data': {
+        'receipt': {
+          'shop': {
+            'name': shop['name'] ?? order['shop_name'] ?? 'Boutique',
+            'address': shop['address'] ?? '',
+            'phone': shop['phone'] ?? '',
+          },
+          'order': {
+            'order_number': order['order_number'] ?? '',
+            'status': order['status'] ?? '',
+            'created_at': order['created_at'] ?? '',
+            'total_amount': order['total_amount'] ?? 0,
+            'delivery_fee': order['delivery_fee'] ?? 0,
+            'discount_amount': order['discount_amount'] ?? 0,
+            'payment_method': order['payment_method'] ?? '',
+            'service_type': order['service_type'] ?? '',
+            'delivery_address': order['delivery_address'] ?? '',
+            'notes': order['notes'],
+          },
+          'customer': {
+            'name': customer['name'] ?? order['customer_name'] ?? '',
+            'phone': customer['phone'] ?? order['customer_phone'] ?? '',
+          },
+          'items': items,
+        },
+      },
+    };
+  }
+
+  /// Construit le recu à partir de l'objet Order local (fallback)
+  Map<String, dynamic> _buildReceiptFromOrder(Order order) {
+    final items = order.items.map((item) => {
+      'name': item.productName ?? '-',
+      'quantity': item.quantity,
+      'unit_price': item.price.toString(),
+      'total': (item.price * item.quantity).toString(),
+    }).toList();
+
+    return {
+      'success': true,
+      'data': {
+        'receipt': {
+          'shop': {
+            'name': order.shopName ?? 'Boutique',
+            'address': '',
+            'phone': '',
+          },
+          'order': {
+            'order_number': order.orderNumber,
+            'status': order.status,
+            'created_at': order.createdAt.toIso8601String(),
+            'total_amount': order.totalAmount,
+            'delivery_fee': order.deliveryFee,
+            'discount_amount': 0,
+            'payment_method': order.paymentMethod,
+            'service_type': order.serviceType,
+            'delivery_address': order.deliveryAddress ?? '',
+            'notes': order.notes,
+          },
+          'customer': {
+            'name': order.customerName,
+            'phone': '',
+          },
+          'items': items,
+        },
+      },
+    };
   }
 
   /// Afficher les détails de la commande

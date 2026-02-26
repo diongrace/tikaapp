@@ -17,6 +17,8 @@ import '../../../services/utils/api_endpoint.dart';
 import '../../../services/shop_service.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/profile_service.dart';
+import '../../../services/models/profile_model.dart';
 
 /// Écran de finalisation de commande
 /// LOGIQUE EXACTE DE L'API TIKA (docs-api-flutter/08-API-ORDERS.md)
@@ -29,8 +31,24 @@ import '../../../services/auth_service.dart';
 class CommandeScreen extends StatefulWidget {
   final int shopId;
   final Shop? shop;
+  final String? couponCode;
+  final double? couponDiscountAmount;
+  final int? loyaltyCardId;
+  final int? loyaltyPointsUsed;
+  final double? loyaltyDiscount;
+  final int? loyaltyPointValue;
 
-  const CommandeScreen({super.key, required this.shopId, this.shop});
+  const CommandeScreen({
+    super.key,
+    required this.shopId,
+    this.shop,
+    this.couponCode,
+    this.couponDiscountAmount,
+    this.loyaltyCardId,
+    this.loyaltyPointsUsed,
+    this.loyaltyDiscount,
+    this.loyaltyPointValue,
+  });
 
   @override
   State<CommandeScreen> createState() => _CommandeScreenState();
@@ -52,6 +70,10 @@ class _CommandeScreenState extends State<CommandeScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
 
+  // Adresses enregistrées
+  List<Map<String, dynamic>> _localAddresses = [];
+  List<ProfileAddress> _apiAddresses = [];
+
   // Étape 2 - Mode de livraison
   String? _selectedDeliveryMode; // "Livraison" ou "À emporter"
   DateTime? _selectedPickupDate; // Date de récupération (pour À emporter)
@@ -59,6 +81,117 @@ class _CommandeScreenState extends State<CommandeScreen> {
 
   // Étape 3 - Méthode de paiement
   String _selectedPaymentMethod = 'especes'; // "especes", "mobile_money", "carte"
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedData();
+  }
+
+  /// Charger les infos client et adresses enregistrées
+  Future<void> _loadSavedData() async {
+    // Charger le nom et téléphone sauvegardés
+    final savedName = await StorageService.getCustomerName();
+    final savedPhone = await StorageService.getCustomerPhone();
+    final savedEmail = await StorageService.getCustomerEmail();
+
+    if (AuthService.isAuthenticated) {
+      _apiAddresses = await ProfileService.getAddresses();
+      final defaultAddr = _apiAddresses.where((a) => a.isDefault).firstOrNull
+          ?? (_apiAddresses.isNotEmpty ? _apiAddresses.first : null);
+      if (mounted) {
+        setState(() {
+          if (savedName != null) _nomController.text = savedName;
+          if (savedPhone != null) _phoneController.text = savedPhone;
+          if (savedEmail != null) _emailController.text = savedEmail;
+          if (defaultAddr != null) _addressController.text = defaultAddr.fullAddress;
+        });
+      }
+    } else {
+      _localAddresses = await StorageService.getCustomerAddresses();
+      final defaultAddr = _localAddresses.where((a) => a['isDefault'] == true).firstOrNull
+          ?? (_localAddresses.isNotEmpty ? _localAddresses.first : null);
+      if (mounted) {
+        setState(() {
+          if (savedName != null) _nomController.text = savedName;
+          if (savedPhone != null) _phoneController.text = savedPhone;
+          if (savedEmail != null) _emailController.text = savedEmail;
+          if (defaultAddr != null) _addressController.text = defaultAddr['address'] ?? '';
+        });
+      }
+    }
+  }
+
+  /// Ouvrir le sélecteur d'adresses enregistrées
+  void _showAddressPicker() {
+    final addresses = AuthService.isAuthenticated
+        ? _apiAddresses.map((a) => {'name': a.label, 'address': a.fullAddress, 'isDefault': a.isDefault}).toList()
+        : _localAddresses;
+
+    if (addresses.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Choisir une adresse',
+              style: GoogleFonts.openSans(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ...addresses.map((addr) {
+              final name = addr['name'] as String? ?? '';
+              final address = addr['address'] as String? ?? '';
+              final isDefault = addr['isDefault'] as bool? ?? false;
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: _primaryColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.location_on, color: _primaryColor, size: 20),
+                ),
+                title: Row(
+                  children: [
+                    Text(name, style: GoogleFonts.openSans(fontWeight: FontWeight.w600)),
+                    if (isDefault) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _primaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text('Par défaut',
+                            style: GoogleFonts.openSans(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ],
+                ),
+                subtitle: Text(address, style: GoogleFonts.openSans(fontSize: 12, color: Colors.grey.shade600)),
+                onTap: () {
+                  setState(() {
+                    _addressController.text = address;
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -90,7 +223,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         return;
       }
 
-      // Si À emporter, vérifier date/heure et créer la commande directement
+      // Si À emporter, vérifier date/heure puis passer à l'étape paiement
       if (_selectedDeliveryMode == 'À emporter') {
         if (_selectedPickupDate == null) {
           showErrorModal(context, 'Veuillez sélectionner la date de récupération');
@@ -100,12 +233,9 @@ class _CommandeScreenState extends State<CommandeScreen> {
           showErrorModal(context, 'Veuillez sélectionner l\'heure de récupération');
           return;
         }
-        // Créer la commande directement (paiement en boutique)
-        _createOrder();
-        return;
       }
 
-      // Si Livraison, passer à l'étape 3 (paiement)
+      // Passer à l'étape 3 (paiement) — pour Livraison ET À emporter
       setState(() {
         _currentStep++;
       });
@@ -356,6 +486,17 @@ class _CommandeScreenState extends State<CommandeScreen> {
               customerEmail: _emailController.text.isNotEmpty ? _emailController.text : null,
               customerAddress: _addressController.text.isNotEmpty ? _addressController.text : null,
               deliveryAddress: deliveryAddress,
+              couponCode: widget.couponCode,
+              couponDiscountAmount: widget.couponDiscountAmount,
+              loyaltyCardId: widget.loyaltyCardId,
+              loyaltyPointsUsed: widget.loyaltyPointsUsed,
+              loyaltyDiscount: widget.loyaltyDiscount,
+              pickupDate: _selectedPickupDate != null
+                  ? '${_selectedPickupDate!.year}-${_selectedPickupDate!.month.toString().padLeft(2, '0')}-${_selectedPickupDate!.day.toString().padLeft(2, '0')}'
+                  : null,
+              pickupTime: _selectedPickupTime != null
+                  ? '${_selectedPickupTime!.hour.toString().padLeft(2, '0')}:${_selectedPickupTime!.minute.toString().padLeft(2, '0')}'
+                  : null,
               onPaymentSuccess: (waveResponse) {
                 print('✅ Wave: commande créée + preuve soumise');
               },
@@ -402,6 +543,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
             'phone': _phoneController.text,
             'address': _addressController.text,
           },
+          if (widget.loyaltyCardId != null) 'loyaltyCardId': widget.loyaltyCardId,
+          if (widget.loyaltyPointValue != null) 'loyaltyPointValue': widget.loyaltyPointValue,
         };
 
         await StorageService.saveOrder(orderData);
@@ -467,7 +610,22 @@ class _CommandeScreenState extends State<CommandeScreen> {
         print('📍 Adresse: $deliveryAddress');
       }
 
-      // Appeler l'API - AVEC payment_method
+      // Date/heure de récupération (si À emporter)
+      String? pickupDate;
+      String? pickupTime;
+      if (_selectedDeliveryMode == 'À emporter') {
+        if (_selectedPickupDate != null) {
+          final d = _selectedPickupDate!;
+          pickupDate = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+        }
+        if (_selectedPickupTime != null) {
+          final t = _selectedPickupTime!;
+          pickupTime = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+        }
+        print('📅 Pickup: $pickupDate à $pickupTime');
+      }
+
+      // Appeler l'API - AVEC payment_method, coupon et fidélité
       final response = await OrderService.createOrder(
         shopId: widget.shopId,
         customerName: _nomController.text,
@@ -475,10 +633,17 @@ class _CommandeScreenState extends State<CommandeScreen> {
         serviceType: serviceType,
         deviceFingerprint: deviceFingerprint,
         items: items,
-        paymentMethod: _selectedPaymentMethod, // ✅ AJOUTÉ
+        paymentMethod: _selectedPaymentMethod,
         customerEmail: _emailController.text.isNotEmpty ? _emailController.text : null,
         customerAddress: _addressController.text.isNotEmpty ? _addressController.text : null,
         deliveryAddress: deliveryAddress,
+        couponCode: widget.couponCode,
+        discountAmount: widget.couponDiscountAmount,
+        loyaltyCardId: widget.loyaltyCardId,
+        loyaltyPointsUsed: widget.loyaltyPointsUsed,
+        loyaltyDiscount: widget.loyaltyDiscount,
+        pickupDate: pickupDate,
+        pickupTime: pickupTime,
       );
 
       print('✅ Commande créée !');
@@ -525,6 +690,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
           'phone': _phoneController.text,
           'address': _addressController.text,
         },
+        if (widget.loyaltyCardId != null) 'loyaltyCardId': widget.loyaltyCardId,
+        if (widget.loyaltyPointValue != null) 'loyaltyPointValue': widget.loyaltyPointValue,
       };
 
       // Sauvegarder localement
@@ -608,28 +775,41 @@ class _CommandeScreenState extends State<CommandeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
                 children: [
-                  _buildStepIndicator(1, 'Info', _currentStep >= 0),
+                  _buildStepIndicator(1, 'Info', _currentStep >= 0, isPast: _currentStep > 0),
                   Expanded(
                     child: Container(
                       height: 2,
-                      color: _currentStep >= 1 ? _primaryColor : Colors.grey.shade300,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: _currentStep >= 1
+                              ? [_primaryColor, _primaryColor.withOpacity(0.6)]
+                              : [Colors.grey.shade300, Colors.grey.shade300],
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                   _buildStepIndicator(
                     2,
                     _selectedDeliveryMode == 'À emporter' ? 'Récupération' : 'Livraison',
                     _currentStep >= 1,
+                    isPast: _currentStep > 1,
                   ),
-                  // Afficher l'étape paiement seulement si Livraison
-                  if (_selectedDeliveryMode == 'Livraison') ...[
-                    Expanded(
-                      child: Container(
-                        height: 2,
-                        color: _currentStep >= 2 ? _primaryColor : Colors.grey.shade300,
+                  // Étape paiement — toujours affichée
+                  Expanded(
+                    child: Container(
+                      height: 2,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: _currentStep >= 2
+                              ? [_primaryColor, _primaryColor.withOpacity(0.6)]
+                              : [Colors.grey.shade300, Colors.grey.shade300],
+                        ),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    _buildStepIndicator(3, 'Paiement', _currentStep >= 2),
-                  ],
+                  ),
+                  _buildStepIndicator(3, 'Paiement', _currentStep >= 2, isPast: _currentStep > 2),
                 ],
               ),
             ),
@@ -663,21 +843,28 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 children: [
                   if (_currentStep > 0)
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: _previousStep,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: _primaryColor),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      child: GestureDetector(
+                        onTap: _previousStep,
+                        child: Container(
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                        ),
-                        child: Text(
-                          'Retour',
-                          style: GoogleFonts.openSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: _primaryColor,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.arrow_back_ios_rounded, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Retour',
+                                style: GoogleFonts.openSans(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -685,24 +872,32 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   if (_currentStep > 0) const SizedBox(width: 12),
                   Expanded(
                     flex: _currentStep == 0 ? 1 : 2,
-                    child: ElevatedButton(
-                      onPressed: _nextStep,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: _primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: GestureDetector(
+                      onTap: _nextStep,
+                      child: Container(
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: _primaryColor,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _primaryColor.withOpacity(0.40),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                         ),
-                      ),
-                      child: Text(
-                        (_currentStep == 2 && _selectedDeliveryMode == 'Livraison') ||
-                                (_currentStep == 1 && _selectedDeliveryMode == 'À emporter')
-                            ? 'Valider la commande'
-                            : 'Continuer',
-                        style: GoogleFonts.openSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        child: Center(
+                          child: Text(
+                            _currentStep == 2
+                                ? 'Valider la commande'
+                                : 'Continuer',
+                            style: GoogleFonts.openSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -716,33 +911,45 @@ class _CommandeScreenState extends State<CommandeScreen> {
     );
   }
 
-  Widget _buildStepIndicator(int step, String label, bool isActive) {
+  Widget _buildStepIndicator(int step, String label, bool isActive, {bool isPast = false}) {
     return Column(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: isActive ? _primaryColor : Colors.grey.shade300,
+            color: isActive ? _primaryColor : Colors.grey.shade200,
             shape: BoxShape.circle,
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: _primaryColor.withOpacity(0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : [],
           ),
           child: Center(
-            child: Text(
-              '$step',
-              style: GoogleFonts.openSans(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+            child: isPast
+                ? const Icon(Icons.check, color: Colors.white, size: 18)
+                : Text(
+                    '$step',
+                    style: GoogleFonts.openSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? Colors.white : Colors.grey.shade500,
+                    ),
+                  ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           label,
           style: GoogleFonts.openSans(
-            fontSize: 12,
-            color: isActive ? _primaryColor : Colors.grey.shade600,
+            fontSize: 11,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+            color: isActive ? _primaryColor : Colors.grey.shade500,
           ),
         ),
       ],
@@ -824,14 +1031,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           ),
           const SizedBox(height: 16),
 
-          FormFieldWidget(
-            label: 'Adresse (optionnel)',
-            hint: 'Votre adresse',
-            icon: Icons.location_on,
-            controller: _addressController,
-            maxLines: 2,
-            required: false,
-          ),
+          _buildAddressField(required: false),
         ],
       ),
     );
@@ -871,19 +1071,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         // Si Livraison sélectionnée, afficher champ adresse
         if (_selectedDeliveryMode == 'Livraison') ...[
           const SizedBox(height: 20),
-          FormFieldWidget(
-            label: 'Adresse de livraison',
-            hint: 'Entrez votre adresse complète',
-            icon: Icons.location_on,
-            controller: _addressController,
-            maxLines: 3,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'L\'adresse est requise pour la livraison';
-              }
-              return null;
-            },
-          ),
+          _buildAddressField(required: true),
         ],
 
         // Si À emporter sélectionné, afficher date/heure de récupération
@@ -1129,26 +1317,53 @@ class _CommandeScreenState extends State<CommandeScreen> {
           _selectedPaymentMethod = id;
         });
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.grey.shade50,
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    color.withOpacity(0.10),
+                    color.withOpacity(0.04),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.white,
           border: Border.all(
-            color: isSelected ? color : Colors.grey.shade300,
+            color: isSelected ? color : Colors.grey.shade200,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? color.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 52,
+              height: 52,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Image.asset(
                 imagePath,
@@ -1168,7 +1383,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                       Text(
                         title,
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: isSelected ? color : Colors.black87,
                         ),
@@ -1176,7 +1391,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                       if (badge != null) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: color,
                             borderRadius: BorderRadius.circular(10),
@@ -1193,19 +1408,23 @@ class _CommandeScreenState extends State<CommandeScreen> {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     description,
                     style: GoogleFonts.openSans(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check_circle, color: color, size: 24),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: isSelected
+                  ? Icon(Icons.check_circle_rounded, color: color, size: 26, key: const ValueKey('checked'))
+                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+            ),
           ],
         ),
       ),
@@ -1226,26 +1445,59 @@ class _CommandeScreenState extends State<CommandeScreen> {
           _selectedDeliveryMode = id;
         });
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? _primaryColor.withOpacity(0.1) : Colors.grey.shade50,
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    _primaryColor.withOpacity(0.10),
+                    _primaryColor.withOpacity(0.04),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.white,
           border: Border.all(
-            color: isSelected ? _primaryColor : Colors.grey.shade300,
+            color: isSelected ? _primaryColor : Colors.grey.shade200,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? _primaryColor.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: isSelected ? _primaryColor : Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(10),
+                color: isSelected ? _primaryColor : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: _primaryColor.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [],
               ),
-              child: Icon(icon, color: Colors.white, size: 28),
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.grey.shade400,
+                size: 26,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -1255,27 +1507,93 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: isSelected ? _primaryColor : Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     description,
                     style: GoogleFonts.openSans(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check_circle, color: _primaryColor, size: 24),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: isSelected
+                  ? Icon(Icons.check_circle_rounded, color: _primaryColor, size: 26, key: const ValueKey('checked'))
+                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Champ adresse avec sélecteur d'adresses enregistrées
+  Widget _buildAddressField({required bool required}) {
+    final hasAddresses = AuthService.isAuthenticated
+        ? _apiAddresses.isNotEmpty
+        : _localAddresses.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Bouton "Choisir une adresse enregistrée" si disponible
+        if (hasAddresses) ...[
+          GestureDetector(
+            onTap: _showAddressPicker,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: _primaryColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _primaryColor.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.location_on, color: _primaryColor, size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Utiliser une adresse enregistrée',
+                    style: GoogleFonts.openSans(
+                      fontSize: 13,
+                      color: _primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.arrow_drop_down, color: _primaryColor, size: 18),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+        // Champ texte
+        FormFieldWidget(
+          label: required ? 'Adresse de livraison' : 'Adresse (optionnel)',
+          hint: 'Votre adresse complète',
+          icon: Icons.location_on,
+          controller: _addressController,
+          maxLines: 2,
+          required: required,
+          validator: required
+              ? (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'L\'adresse est requise pour la livraison';
+                  }
+                  return null;
+                }
+              : null,
+        ),
+      ],
     );
   }
 
@@ -1293,26 +1611,59 @@ class _CommandeScreenState extends State<CommandeScreen> {
           _selectedPaymentMethod = id;
         });
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? _primaryColor.withOpacity(0.1) : Colors.grey.shade50,
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    _primaryColor.withOpacity(0.10),
+                    _primaryColor.withOpacity(0.04),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.white,
           border: Border.all(
-            color: isSelected ? _primaryColor : Colors.grey.shade300,
+            color: isSelected ? _primaryColor : Colors.grey.shade200,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? _primaryColor.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: isSelected ? _primaryColor : Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(10),
+                color: isSelected ? _primaryColor : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: _primaryColor.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [],
               ),
-              child: Icon(icon, color: Colors.white, size: 28),
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.grey.shade400,
+                size: 26,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -1322,24 +1673,28 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: isSelected ? _primaryColor : Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     description,
                     style: GoogleFonts.openSans(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check_circle, color: _primaryColor, size: 24),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: isSelected
+                  ? Icon(Icons.check_circle_rounded, color: _primaryColor, size: 26, key: const ValueKey('checked'))
+                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+            ),
           ],
         ),
       ),

@@ -350,10 +350,23 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
     try {
       final token = AuthService.authToken!;
-      final rateItems = order.items.map((item) => {
+
+      // Récupérer les items de la commande si la liste ne les contient pas
+      List<OrderItem> orderItems = order.items;
+      if (orderItems.isEmpty) {
+        try {
+          final fullOrder = await OrderService.getOrderDetails(order.id, token);
+          orderItems = fullOrder.items;
+        } catch (_) {}
+      }
+
+      final rateItems = orderItems.map((item) => {
         'order_item_id': item.id,
         'rating': result['rating'],
+        if (result['comment'] != null && (result['comment'] as String).isNotEmpty)
+          'comment': result['comment'],
       }).toList();
+
       final response = await OrderService.rateOrder(
         orderId: order.id,
         token: token,
@@ -409,13 +422,15 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
       ),
     );
 
+    Map<String, dynamic>? receiptData;
+
     try {
-      final url = Endpoints.orderReceipt(order.id);
       await AuthService.ensureToken();
       final token = AuthService.authToken;
 
-      final response = await Dio().get(
-        url,
+      // Étape 1 : essayer l'API du recu
+      final receiptResponse = await Dio().get(
+        Endpoints.orderReceipt(order.id),
         options: Options(
           followRedirects: true,
           validateStatus: (status) => true,
@@ -426,35 +441,161 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
         ),
       );
 
-      if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
-
-      if (response.statusCode != 200) {
-        throw Exception('Erreur ${response.statusCode}');
+      if (receiptResponse.statusCode == 200) {
+        final data = receiptResponse.data is String
+            ? jsonDecode(receiptResponse.data)
+            : receiptResponse.data;
+        if (data is Map<String, dynamic> && data['success'] == true) {
+          receiptData = data;
+        }
       }
 
-      final data = response.data is String ? jsonDecode(response.data) : response.data;
-      if (data is! Map<String, dynamic> || data['success'] != true) {
-        throw Exception('Recu non disponible');
-      }
-
-      final shop = BoutiqueThemeProvider.shopOf(context);
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => BoutiqueThemeProvider(
-            shop: shop,
-            child: ReceiptViewPage(receiptData: data),
+      // Étape 2 : si le recu API a échoué, récupérer les détails complets de la commande
+      if (receiptData == null && token != null) {
+        final detailResponse = await Dio().get(
+          Endpoints.orderDetails(order.id),
+          options: Options(
+            followRedirects: true,
+            validateStatus: (status) => true,
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
           ),
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Impossible de charger le recu'), backgroundColor: Colors.red),
         );
+
+        if (detailResponse.statusCode == 200) {
+          final data = detailResponse.data is String
+              ? jsonDecode(detailResponse.data)
+              : detailResponse.data;
+          if (data is Map<String, dynamic> && data['success'] == true) {
+            final orderDetail = data['data']?['order'];
+            if (orderDetail != null) {
+              receiptData = _buildReceiptFromJson(orderDetail);
+            }
+          }
+        }
       }
+    } catch (_) {}
+
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+
+    // Étape 3 : fallback sur les données locales de la commande
+    receiptData ??= _buildReceiptFromOrder(order);
+
+    final shop = BoutiqueThemeProvider.shopOf(context);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BoutiqueThemeProvider(
+          shop: shop,
+          child: ReceiptViewPage(receiptData: receiptData!),
+        ),
+      ),
+    );
+  }
+
+  /// Construit le recu à partir de la réponse JSON de GET /client/orders/{id}
+  Map<String, dynamic> _buildReceiptFromJson(Map<String, dynamic> order) {
+    final items = (order['items'] as List? ?? []).map((item) {
+      final m = item as Map<String, dynamic>;
+      return {
+        'name': m['name'] ?? m['product_name'] ?? '-',
+        'quantity': m['quantity'] ?? 1,
+        'unit_price': (m['unit_price'] ?? m['price'] ?? 0).toString(),
+        'total': (m['total'] ?? 0).toString(),
+      };
+    }).toList();
+
+    final shop = order['shop'] as Map<String, dynamic>? ?? {};
+    final customer = order['customer'] as Map<String, dynamic>? ?? {};
+
+    return {
+      'success': true,
+      'data': {
+        'receipt': {
+          'shop': {
+            'name': shop['name'] ?? order['shop_name'] ?? 'Boutique',
+            'address': shop['address'] ?? '',
+            'phone': shop['phone'] ?? '',
+          },
+          'customer': {
+            'name': customer['name'] ?? order['customer_name'] ?? '-',
+            'phone': customer['phone'] ?? order['customer_phone'] ?? '-',
+            'address': order['delivery_address'] ?? customer['address'] ?? '',
+          },
+          'items': items,
+          'order_number': order['order_number'] ?? '',
+          'date': order['created_at'] ?? DateTime.now().toString(),
+          'status': order['status_label'] ?? order['status'] ?? '',
+          'subtotal': (order['subtotal'] ?? 0).toString(),
+          'delivery_fee': (order['delivery_fee'] ?? 0).toString(),
+          'discount': (order['discount'] ?? 0).toString(),
+          'total': (order['total_amount'] ?? order['total'] ?? 0).toString(),
+          'payment_method': order['payment_method'] ?? 'especes',
+          'payment_status': order['payment_status'] ?? 'paid',
+          'service_type': order['service_type'] ?? '',
+        },
+      },
+    };
+  }
+
+  /// Fallback : construit le recu depuis l'objet Order local
+  Map<String, dynamic> _buildReceiptFromOrder(Order order) {
+    final items = order.items.map((item) {
+      return {
+        'name': item.productName ?? '-',
+        'quantity': item.quantity,
+        'unit_price': item.price.toStringAsFixed(0),
+        'total': (item.price * item.quantity).toStringAsFixed(0),
+      };
+    }).toList();
+
+    String statusLabel;
+    switch (order.status.toLowerCase()) {
+      case 'livree':
+      case 'delivered':
+        statusLabel = 'Livrée';
+        break;
+      case 'prete':
+      case 'ready':
+        statusLabel = 'Prête';
+        break;
+      case 'en_traitement':
+        statusLabel = 'En préparation';
+        break;
+      case 'recue':
+      case 'pending':
+        statusLabel = 'Reçue';
+        break;
+      default:
+        statusLabel = order.status;
     }
+
+    return {
+      'success': true,
+      'data': {
+        'receipt': {
+          'shop': {'name': order.shopName ?? 'Boutique'},
+          'customer': {
+            'name': order.customerName.isNotEmpty ? order.customerName : '-',
+            'phone': order.customerPhone.isNotEmpty ? order.customerPhone : '-',
+            'address': order.deliveryAddress ?? order.customerAddress ?? '',
+          },
+          'items': items,
+          'order_number': order.orderNumber,
+          'date': order.createdAt.toLocal().toString(),
+          'status': statusLabel,
+          'subtotal': order.subtotal.toStringAsFixed(0),
+          'delivery_fee': order.deliveryFee.toStringAsFixed(0),
+          'discount': (order.discountAmount ?? 0).toStringAsFixed(0),
+          'total': order.totalAmount.toStringAsFixed(0),
+          'payment_method': order.paymentMethod.isNotEmpty ? order.paymentMethod : 'especes',
+          'payment_status': 'paid',
+          'service_type': order.serviceType,
+        },
+      },
+    };
   }
 
   Future<void> _loadOrders({bool loadMore = false}) async {
@@ -501,8 +642,6 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = BoutiqueThemeProvider.of(context).primary;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       body: CustomScrollView(
@@ -538,13 +677,11 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [primaryColor.withOpacity(0.1), primaryColor.withOpacity(0.05)],
-                      ),
+                      color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: primaryColor.withOpacity(0.2)),
+                      border: Border.all(color: Colors.grey.shade200),
                     ),
-                    child: Icon(Icons.refresh_rounded, size: 20, color: primaryColor),
+                    child: Icon(Icons.refresh_rounded, size: 20, color: Colors.grey.shade600),
                   ),
                 ),
               ),
@@ -769,7 +906,6 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
   }
 
   Widget _buildLoadMoreButton() {
-    final primaryColor = BoutiqueThemeProvider.of(context).primary;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Center(
@@ -781,21 +917,21 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.08),
+                color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: primaryColor.withOpacity(0.15)),
+                border: Border.all(color: Colors.grey.shade200),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.expand_more_rounded, size: 20, color: primaryColor),
+                  Icon(Icons.expand_more_rounded, size: 20, color: Colors.grey.shade600),
                   const SizedBox(width: 8),
                   Text(
                     'Voir plus de commandes',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: primaryColor,
+                      color: Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -810,304 +946,253 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
   Widget _buildOrderCard(Order order, int index) {
     final statusInfo = _getStatusInfo(order.status);
     final statusColor = statusInfo['color'] as Color;
-    final primaryColor = BoutiqueThemeProvider.of(context).primary;
     final itemCount = order.itemsCount > 0 ? order.itemsCount : order.items.length;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: statusColor.withOpacity(0.08),
-            blurRadius: 20,
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: () => _navigateToTracking(order),
-          borderRadius: BorderRadius.circular(20),
-          child: Column(
-            children: [
-              // -- Bande de couleur en haut --
-              Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [statusColor, statusColor.withOpacity(0.3)],
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                child: Column(
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            child: Column(
+              children: [
+                // -- Header: icône + Numéro + Status badge --
+                Row(
                   children: [
-                    // -- Header: Numéro + Status badge --
-                    Row(
-                      children: [
-                        // Icône statut avec gradient
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                statusColor.withOpacity(0.15),
-                                statusColor.withOpacity(0.05),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(
-                            statusInfo['icon'],
-                            size: 22,
-                            color: statusColor,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '#${order.orderNumber}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF1E293B),
-                                  letterSpacing: -0.3,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  Icon(Icons.access_time_rounded, size: 12, color: Colors.grey.shade400),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _formatDate(order.createdAt),
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 11.5,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Badge statut premium
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                statusColor.withOpacity(0.12),
-                                statusColor.withOpacity(0.06),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  color: statusColor,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: statusColor.withOpacity(0.4),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                statusInfo['label'],
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: statusColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-
-                    // -- Ligne d'infos compacte --
+                    // Icône statut neutre
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FC),
-                        borderRadius: BorderRadius.circular(14),
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        statusInfo['icon'],
+                        size: 20,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '#${order.orderNumber}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1E293B),
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(Icons.access_time_rounded, size: 12, color: Colors.grey.shade400),
+                              const SizedBox(width: 4),
+                              Text(
+                                _formatDate(order.createdAt),
+                                style: GoogleFonts.openSans(
+                                  fontSize: 11.5,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Badge statut — seul élément coloré
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Total
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Icon(Icons.payments_outlined, size: 18, color: primaryColor),
-                                const SizedBox(width: 8),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Total',
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 10,
-                                        color: Colors.grey.shade500,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${_formatAmount(order.totalAmount)} F',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: primaryColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Divider vertical
                           Container(
-                            width: 1,
-                            height: 30,
-                            color: Colors.grey.shade200,
-                          ),
-                          // Articles
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.shopping_bag_outlined, size: 18, color: Colors.grey.shade600),
-                                const SizedBox(width: 8),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Articles',
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 10,
-                                        color: Colors.grey.shade500,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      '$itemCount produit${itemCount > 1 ? 's' : ''}',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF1E293B),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Bouton suivre
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            width: 6,
+                            height: 6,
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.grey.shade200),
+                              color: statusColor,
+                              shape: BoxShape.circle,
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Suivre',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF475569),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 11,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ],
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            statusInfo['label'],
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: statusColor,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // -- Actions rapides --
-                    Row(
-                      children: [
-                        _buildActionChip(
-                          icon: Icons.receipt_long_rounded,
-                          label: 'Recu',
-                          color: const Color(0xFF3B82F6),
-                          onTap: () => _viewReceipt(order),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildActionChip(
-                          icon: Icons.replay_rounded,
-                          label: 'Recommander',
-                          color: const Color(0xFF10B981),
-                          onTap: () => _reorder(order),
-                        ),
-                        if (order.status == 'livrée' || order.status == 'prete') ...[
-                          const SizedBox(width: 8),
-                          _buildActionChip(
-                            icon: Icons.star_rounded,
-                            label: 'Noter',
-                            color: const Color(0xFFF59E0B),
-                            onTap: () => _rateOrder(order),
-                          ),
-                        ],
-                        if (_canCancel(order)) ...[
-                          const SizedBox(width: 8),
-                          _buildActionChip(
-                            icon: Icons.cancel_outlined,
-                            label: _cancelMinutesLeft(order) > 0
-                                ? 'Annuler (${_cancelMinutesLeft(order)}m)'
-                                : 'Annuler',
-                            color: const Color(0xFFEF4444),
-                            onTap: () => _cancelOrder(order),
-                          ),
-                        ],
-                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+
+                // -- Ligne d'infos --
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FC),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      // Total
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.payments_outlined, size: 17, color: Colors.grey.shade500),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Total',
+                                  style: GoogleFonts.openSans(
+                                    fontSize: 10,
+                                    color: Colors.grey.shade500,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  '${_formatAmount(order.totalAmount)} F',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(width: 1, height: 28, color: Colors.grey.shade200),
+                      // Articles
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.shopping_bag_outlined, size: 17, color: Colors.grey.shade500),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Articles',
+                                  style: GoogleFonts.openSans(
+                                    fontSize: 10,
+                                    color: Colors.grey.shade500,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  '$itemCount produit${itemCount > 1 ? 's' : ''}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Bouton suivre
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Suivre',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.grey.shade500),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // -- Actions --
+                Row(
+                  children: [
+                    _buildActionChip(
+                      icon: Icons.receipt_long_rounded,
+                      label: 'Recu',
+                      isDestructive: false,
+                      onTap: () => _viewReceipt(order),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildActionChip(
+                      icon: Icons.replay_rounded,
+                      label: 'Recommander',
+                      isDestructive: false,
+                      onTap: () => _reorder(order),
+                    ),
+                    if (order.status == 'livrée' || order.status == 'prete') ...[
+                      const SizedBox(width: 8),
+                      _buildActionChip(
+                        icon: Icons.star_outline_rounded,
+                        label: 'Noter',
+                        isDestructive: false,
+                        onTap: () => _rateOrder(order),
+                      ),
+                    ],
+                    if (_canCancel(order)) ...[
+                      const SizedBox(width: 8),
+                      _buildActionChip(
+                        icon: Icons.cancel_outlined,
+                        label: _cancelMinutesLeft(order) > 0
+                            ? 'Annuler (${_cancelMinutesLeft(order)}m)'
+                            : 'Annuler',
+                        isDestructive: true,
+                        onTap: () => _cancelOrder(order),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1117,30 +1202,36 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
   Widget _buildActionChip({
     required IconData icon,
     required String label,
-    required Color color,
+    required bool isDestructive,
     required VoidCallback onTap,
   }) {
+    final Color fg = isDestructive
+        ? const Color(0xFFEF4444)
+        : Colors.grey.shade600;
+    final Color bg = isDestructive
+        ? const Color(0xFFFEF2F2)
+        : Colors.grey.shade50;
+    final Color border = isDestructive
+        ? const Color(0xFFFECACA)
+        : Colors.grey.shade200;
+
     return Expanded(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 9),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [color.withOpacity(0.1), color.withOpacity(0.04)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.15)),
+              color: bg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: border),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 15, color: color),
+                Icon(icon, size: 14, color: fg),
                 const SizedBox(width: 5),
                 Flexible(
                   child: Text(
@@ -1148,7 +1239,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                     style: GoogleFonts.poppins(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w600,
-                      color: color,
+                      color: fg,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

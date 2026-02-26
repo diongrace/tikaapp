@@ -158,8 +158,10 @@ class FavoritesService {
           print('📋 ${favoritesList.length} favoris depuis l\'API');
 
           if (favoritesList.isEmpty) {
-            print('ℹ️ API retourne 0 favoris');
-            return _fallbackToCache();
+            print('ℹ️ API retourne 0 favoris — synchronisation cache');
+            _localCache.clear();
+            _saveCacheToDisk();
+            return [];
           }
 
           // Parser les favoris — format API: objets directs avec id, name, logo, etc.
@@ -406,7 +408,6 @@ class FavoritesService {
   static Future<Map<String, dynamic>> removeFavorite(int shopId) async {
     try {
       await _ensureAuth();
-      removeFromLocalCache(shopId);
 
       print('📤 DELETE /client/favorites/$shopId');
       final response = await http.delete(
@@ -417,10 +418,12 @@ class FavoritesService {
       print('📄 Body: ${response.body}');
 
       if (response.statusCode == 200) {
+        removeFromLocalCache(shopId); // ← seulement après succès API
         final data = jsonDecode(response.body);
         print('✅ Favori retiré');
         return data;
       } else if (response.statusCode == 404) {
+        removeFromLocalCache(shopId);
         return {'success': true, 'message': 'Favori déjà retiré'};
       } else {
         throw Exception('Erreur ${response.statusCode}');

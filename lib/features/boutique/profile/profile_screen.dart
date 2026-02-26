@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'personal_info_screen.dart';
 import 'addresses_screen.dart';
-import 'security_screen.dart';
-import 'payment_methods_screen.dart';
 import 'notifications_screen.dart';
 import 'help_support_screen.dart';
 import '../../../core/services/storage_service.dart';
@@ -20,6 +18,7 @@ import '../../auth/auth_choice_screen.dart';
 import '../history/global_history_screen.dart';
 import '../favorites/favorites_boutiques_screen.dart';
 import '../loyalty/loyalty_card_page.dart';
+import '../home/components/home_bottom_navigation.dart';
 
 /// Ecran de profil client - Conforme a l'API TIKA
 /// Affiche le profil connecte ou les infos locales
@@ -219,9 +218,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await AuthService.logout();
       if (mounted) {
         showSuccessModal(context, 'Deconnexion reussie');
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 800));
         if (mounted) {
-          Navigator.pop(context);
+          Navigator.of(context).pop(); // ferme le modal de succès
+          Navigator.of(context).pop(); // ferme le ProfileScreen → retour accueil
         }
       }
     }
@@ -281,60 +281,184 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showLoyaltyCardPicker(List cards) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.75,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Mes cartes de fidelite',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+            // Handle bar
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
-            ...cards.map((card) => ListTile(
-                  leading: Container(
+            const SizedBox(height: 20),
+
+            // Header avec icone et titre
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8936A8).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.card_giftcard_rounded,
-                        color: Color(0xFF8936A8), size: 22),
-                  ),
-                  title: Text(
-                    card.shopName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${card.points} points',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                      size: 16, color: Colors.grey),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoyaltyCardPage(loyaltyCard: card),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFD48EFC), Color(0xFF8936A8)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    );
-                  },
-                )),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.loyalty_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mes cartes de fidelite',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        '${cards.length} carte${cards.length > 1 ? 's' : ''}',
+                        style: GoogleFonts.openSans(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            Divider(color: Colors.grey.shade100, thickness: 1),
             const SizedBox(height: 8),
+
+            // Liste des cartes
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                itemCount: cards.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final card = cards[index];
+                  final hasPoints = card.points > 0;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoyaltyCardPage(loyaltyCard: card),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F4FF),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF8936A8).withOpacity(0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // Logo ou initiale de la boutique
+                          _buildShopAvatar(card),
+                          const SizedBox(width: 14),
+
+                          // Infos
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  card.shopName,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.stars_rounded,
+                                      size: 15,
+                                      color: hasPoints
+                                          ? const Color(0xFF8936A8)
+                                          : Colors.grey.shade400,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      hasPoints
+                                          ? '${card.points} points'
+                                          : 'Aucun point',
+                                      style: GoogleFonts.openSans(
+                                        fontSize: 13,
+                                        fontWeight: hasPoints
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                        color: hasPoints
+                                            ? const Color(0xFF8936A8)
+                                            : Colors.grey.shade400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Fleche
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF8936A8).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 14,
+                              color: Color(0xFF8936A8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -367,6 +491,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+      bottomNavigationBar: const HomeBottomNavigation(
+        selectedIndex: 5,
+        currentShop: null,
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -447,7 +575,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       child: Column(
                         children: [
-                          // Avatar avec initiales
+                          // Avatar
                           Container(
                             width: 100,
                             height: 100,
@@ -467,14 +595,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ],
                             ),
                             child: Center(
-                              child: Text(
-                                _getInitials(_customerName),
-                                style: GoogleFonts.openSans(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              child: _isAuthenticated
+                                  ? Text(
+                                      _getInitials(_customerName),
+                                      style: GoogleFonts.openSans(
+                                        fontSize: 36,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.person_outline,
+                                      size: 48,
+                                      color: Colors.white,
+                                    ),
                             ),
                           ),
 
@@ -482,7 +616,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // Nom
                           Text(
-                            _customerName.isEmpty ? 'Bienvenue' : _customerName,
+                            _isAuthenticated
+                                ? (_customerName.isEmpty ? 'Mon profil' : _customerName)
+                                : 'Bienvenue',
                             style: GoogleFonts.openSans(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -490,41 +626,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
 
-                          if (_customerEmail.isNotEmpty)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.email_outlined, size: 18, color: Colors.grey),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _customerEmail,
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade700,
+                          if (_isAuthenticated) ...[
+                            if (_customerEmail.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.email_outlined, size: 18, color: Colors.grey),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _customerEmail,
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade700,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-
-                          if (_customerEmail.isNotEmpty) const SizedBox(height: 8),
-
-                          if (_customerPhone.isNotEmpty)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.phone_outlined, size: 18, color: Colors.grey),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _customerPhone,
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade700,
+                                ],
+                              ),
+                            ],
+                            if (_customerPhone.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.phone_outlined, size: 18, color: Colors.grey),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _customerPhone,
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade700,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                            ],
+                          ] else ...[
+                            Text(
+                              'Connectez-vous pour acceder a votre profil',
+                              style: GoogleFonts.openSans(
+                                fontSize: 13,
+                                color: Colors.grey.shade500,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
+                          ],
                         ],
                       ),
                     ),
@@ -556,7 +704,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: _buildStatCard(
                             _favoritesCount.toString(),
                             'Favoris',
+                            locked: !_isAuthenticated,
                             onTap: () {
+                              if (!_isAuthenticated) {
+                                _goToAuth();
+                                return;
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -571,7 +724,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: _buildStatCard(
                             _loyaltyPoints.toString(),
                             'Points',
-                            onTap: () => _navigateToLoyalty(),
+                            locked: !_isAuthenticated,
+                            onTap: () {
+                              if (!_isAuthenticated) {
+                                _goToAuth();
+                                return;
+                              }
+                              _navigateToLoyalty();
+                            },
                           ),
                         ),
                       ],
@@ -583,89 +743,117 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Carte de fidelite
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFFD48EFC),
-                            Color(0xFF8936A8),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF8936A8).withOpacity(0.4),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.credit_card, color: Colors.white, size: 24),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Programme de fidelite',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
+                    child: GestureDetector(
+                      onTap: !_isAuthenticated ? _goToAuth : null,
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFFD48EFC),
+                              Color(0xFF8936A8),
                             ],
                           ),
-
-                          const SizedBox(height: 16),
-
-                          Text(
-                            '$_loyaltyPoints points',
-                            style: GoogleFonts.openSans(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8936A8).withOpacity(0.4),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
                             ),
-                          ),
-
-                          const SizedBox(height: 8),
-
-                          Text(
-                            _loyaltyPoints > 0
-                                ? 'Valeur: ${(_loyaltyPoints * 5).toStringAsFixed(0)} FCFA'
-                                : 'Creez une carte pour gagner des points',
-                            style: GoogleFonts.openSans(
-                              fontSize: 14,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          ElevatedButton(
-                            onPressed: () => _navigateToLoyalty(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.3),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                          ],
+                        ),
+                        child: _isAuthenticated
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.credit_card, color: Colors.white, size: 24),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Programme de fidelite',
+                                        style: GoogleFonts.openSans(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '$_loyaltyPoints points',
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _loyaltyPoints > 0
+                                        ? 'Valeur: ${(_loyaltyPoints * 5).toStringAsFixed(0)} FCFA'
+                                        : 'Creez une carte pour gagner des points',
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 14,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  ElevatedButton(
+                                    onPressed: () => _navigateToLoyalty(),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white.withOpacity(0.3),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    child: Text(
+                                      'Voir mes cartes',
+                                      style: GoogleFonts.openSans(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                children: [
+                                  const Icon(Icons.lock_outline, color: Colors.white, size: 28),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Programme de fidelite',
+                                          style: GoogleFonts.openSans(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          'Connectez-vous pour gagner des points et des recompenses',
+                                          style: GoogleFonts.openSans(
+                                            fontSize: 13,
+                                            color: Colors.white.withOpacity(0.85),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(Icons.chevron_right, color: Colors.white, size: 22),
+                                ],
                               ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              'Voir mes cartes',
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ),
@@ -679,9 +867,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         _buildMenuOption(
                           icon: Icons.person_outline,
-                          title: 'Informations personnelles',
-                          subtitle: 'Prenom, nom, telephone, email',
+                          title: 'Mon profil',
+                          subtitle: 'Informations personnelles et mot de passe',
+                          locked: !_isAuthenticated,
                           onTap: () async {
+                            if (!_isAuthenticated) {
+                              _goToAuth();
+                              return;
+                            }
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -698,41 +891,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           icon: Icons.location_on_outlined,
                           title: 'Adresses de livraison',
                           subtitle: 'Gerer vos adresses',
+                          locked: !_isAuthenticated,
                           onTap: () {
+                            if (!_isAuthenticated) {
+                              _goToAuth();
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const AddressesScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        if (_isAuthenticated) ...[
-                          const SizedBox(height: 12),
-                          _buildMenuOption(
-                            icon: Icons.shield_outlined,
-                            title: 'Securite',
-                            subtitle: 'Mot de passe, confidentialite',
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SecurityScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                        const SizedBox(height: 12),
-                        _buildMenuOption(
-                          icon: Icons.credit_card_outlined,
-                          title: 'Moyens de paiement',
-                          subtitle: 'Cartes et Mobile Money',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const PaymentMethodsScreen(),
                               ),
                             );
                           },
@@ -742,7 +910,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           icon: Icons.notifications_outlined,
                           title: 'Notifications',
                           subtitle: 'Gerer vos alertes',
+                          locked: !_isAuthenticated,
                           onTap: () {
+                            if (!_isAuthenticated) {
+                              _goToAuth();
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -754,8 +927,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 12),
                         _buildMenuOption(
                           icon: Icons.help_outline,
-                          title: 'Aide et support',
-                          subtitle: 'FAQ, contact',
+                          title: 'Support / Aide',
+                          subtitle: 'Contactez-nous, suivez vos demandes',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -808,7 +981,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatCard(String value, String label, {VoidCallback? onTap}) {
+  /// Avatar boutique : logo si disponible, initiale sinon
+  Widget _buildShopAvatar(dynamic card) {
+    final hasLogo = card.shopLogo != null && card.shopLogo!.isNotEmpty;
+    final logoUrl = hasLogo
+        ? (card.shopLogo!.startsWith('http')
+            ? card.shopLogo!
+            : 'https://prepro.tika-ci.com/storage/${card.shopLogo!}')
+        : null;
+    final initial = card.shopName.isNotEmpty ? card.shopName[0].toUpperCase() : '?';
+
+    if (hasLogo) {
+      // Fond blanc pour ne pas colorer les PNG transparents
+      return Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(13),
+          child: Image.network(
+            logoUrl!,
+            fit: BoxFit.contain,
+            width: 52,
+            height: 52,
+            errorBuilder: (_, __, ___) => _buildInitialAvatar(initial),
+            loadingBuilder: (_, child, progress) =>
+                progress == null ? child : _buildInitialAvatar(initial),
+          ),
+        ),
+      );
+    }
+
+    return _buildInitialAvatar(initial);
+  }
+
+  Widget _buildInitialAvatar(String initial) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFD48EFC), Color(0xFF8936A8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Center(
+        child: Text(
+          initial,
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String value, String label, {VoidCallback? onTap, bool locked = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -826,20 +1062,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Column(
           children: [
-            Text(
-              value,
-              style: GoogleFonts.openSans(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF8936A8),
-              ),
-            ),
+            locked
+                ? Icon(Icons.lock_outline, size: 28, color: Colors.grey.shade400)
+                : Text(
+                    value,
+                    style: GoogleFonts.openSans(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF8936A8),
+                    ),
+                  ),
             const SizedBox(height: 4),
             Text(
               label,
               style: GoogleFonts.openSans(
                 fontSize: 13,
-                color: Colors.grey.shade700,
+                color: locked ? Colors.grey.shade400 : Colors.grey.shade700,
               ),
             ),
           ],
@@ -853,6 +1091,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    bool locked = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -876,12 +1115,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF8936A8).withOpacity(0.1),
+                color: locked
+                    ? Colors.grey.withOpacity(0.08)
+                    : const Color(0xFF8936A8).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFF8936A8),
+                color: locked ? Colors.grey.shade400 : const Color(0xFF8936A8),
                 size: 24,
               ),
             ),
@@ -895,7 +1136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: GoogleFonts.openSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: locked ? Colors.grey.shade400 : Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -903,16 +1144,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     subtitle,
                     style: GoogleFonts.openSans(
                       fontSize: 13,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade500,
                     ),
                   ),
                 ],
               ),
             ),
             Icon(
-              Icons.chevron_right,
+              locked ? Icons.lock_outline : Icons.chevron_right,
               color: Colors.grey.shade400,
-              size: 24,
+              size: 22,
             ),
           ],
         ),

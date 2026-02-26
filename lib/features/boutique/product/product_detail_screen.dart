@@ -5,6 +5,7 @@ import '../panier/cart_manager.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/utils/api_endpoint.dart';
 import 'widgets/product_details_section.dart';
+import '../home/components/home_bottom_navigation.dart';
 
 /// Écran de détails d'un produit
 class ProductDetailScreen extends StatefulWidget {
@@ -24,8 +25,8 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
   bool _isPressed = false;
-  bool _isFavorite = false;
   String? _selectedSize;
+  int? _selectedPortionId;
 
   // Thème de la boutique
   ShopTheme get _theme => widget.shop?.theme ?? ShopTheme.defaultTheme();
@@ -361,6 +362,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: HomeBottomNavigation(
+        selectedIndex: 0,
+        currentShop: widget.shop,
+      ),
       body: Stack(
         children: [
           // Contenu scrollable
@@ -374,6 +379,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Container(
                   height: 380,
                   width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        _primaryColor.withOpacity(0.07),
+                        Colors.white,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
                   padding: const EdgeInsets.fromLTRB(30, 70, 30, 30),
                   child: ColorFiltered(
                     colorFilter: isOutOfStock
@@ -437,109 +452,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
 
-                      // Boutons favori et partage
-                      Row(
-                        children: [
-                          // Bouton favori
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                _isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: _isFavorite ? Colors.red : Colors.black87,
-                                size: 22,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isFavorite = !_isFavorite;
-                                });
-                                HapticFeedback.lightImpact();
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // Bouton partage
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.share_outlined, color: Colors.black87, size: 22),
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                // TODO: Implémenter le partage
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                      const SizedBox.shrink(),
                     ],
                   ),
                 ),
 
-                // Badge réduction
-                if (discount != null && !isOutOfStock)
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 80,
-                    right: 20,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFE91E63), Color(0xFFD81B60)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFE91E63).withOpacity(0.35),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.local_offer_rounded, size: 16, color: Colors.white),
-                          const SizedBox(width: 6),
-                          Text(
-                            '-$discount%',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
               ],
             ),
 
@@ -652,7 +569,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ],
                           if (oldPrice != null && price != null) ...[
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: Text(
@@ -663,6 +580,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   decoration: TextDecoration.lineThrough,
                                   decorationColor: Colors.grey.shade400,
                                   decorationThickness: 2,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE91E63),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '-${(((oldPrice! - price!) / oldPrice!) * 100).round()}%',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -709,41 +645,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Badge stock
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: isOutOfStock
-                              ? const Color(0xFFFFEBEE)
-                              : const Color(0xFFE8F8F0),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              isOutOfStock ? Icons.cancel_rounded : Icons.check_circle_rounded,
-                              color: isOutOfStock
-                                  ? const Color(0xFFE91E63)
-                                  : const Color(0xFF4CAF50),
-                              size: 22,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              isOutOfStock
-                                  ? 'Rupture de stock'
-                                  : '$stock en stock',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                      // Badge stock — inline
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isOutOfStock
+                                    ? [const Color(0xFFFFEBEE), const Color(0xFFFFD6D8)]
+                                    : [const Color(0xFFE8F8F0), const Color(0xFFD0F2E1)],
+                              ),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
                                 color: isOutOfStock
-                                    ? const Color(0xFFE91E63)
-                                    : const Color(0xFF4CAF50),
-                                letterSpacing: 0.3,
+                                    ? const Color(0xFFE91E63).withOpacity(0.25)
+                                    : const Color(0xFF4CAF50).withOpacity(0.25),
+                                width: 1,
                               ),
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isOutOfStock ? Icons.cancel_rounded : Icons.check_circle_rounded,
+                                  color: isOutOfStock
+                                      ? const Color(0xFFE91E63)
+                                      : const Color(0xFF4CAF50),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isOutOfStock ? 'Rupture de stock' : '$stock en stock',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: isOutOfStock
+                                        ? const Color(0xFFE91E63)
+                                        : const Color(0xFF2E7D32),
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
 
                       // Quantité - Design simplifié
@@ -760,70 +706,88 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 color: const Color(0xFF2D2D2D),
                               ),
                             ),
-                            // Sélecteur compact
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Bouton -
-                                  InkWell(
-                                    onTap: _decrementQuantity,
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
+                            // Sélecteur premium
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Bouton −
+                                GestureDetector(
+                                  onTap: _decrementQuantity,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _quantity > 1
+                                          ? _primaryColor.withOpacity(0.10)
+                                          : Colors.grey.shade100,
+                                      border: Border.all(
                                         color: _quantity > 1
-                                            ? _primaryColor
+                                            ? _primaryColor.withOpacity(0.50)
                                             : Colors.grey.shade300,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(
-                                        Icons.remove,
-                                        color: Colors.white,
-                                        size: 20,
+                                        width: 1.5,
                                       ),
                                     ),
-                                  ),
-                                  // Quantité
-                                  Container(
-                                    width: 60,
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      '$_quantity',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF2D2D2D),
-                                      ),
+                                    child: Icon(
+                                      Icons.remove_rounded,
+                                      size: 18,
+                                      color: _quantity > 1
+                                          ? _primaryColor
+                                          : Colors.grey.shade400,
                                     ),
                                   ),
-                                  // Bouton +
-                                  InkWell(
-                                    onTap: _incrementQuantity,
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color: _quantity < stock
-                                            ? _primaryColor
-                                            : Colors.grey.shade300,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(
-                                        Icons.add,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
+                                ),
+                                // Quantité
+                                Container(
+                                  width: 54,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '$_quantity',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF1A1A2E),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                // Bouton +
+                                GestureDetector(
+                                  onTap: _incrementQuantity,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: _quantity < stock
+                                          ? LinearGradient(
+                                              colors: [_primaryColor, _theme.gradientEnd],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            )
+                                          : null,
+                                      color: _quantity < stock ? null : Colors.grey.shade100,
+                                      boxShadow: _quantity < stock
+                                          ? [
+                                              BoxShadow(
+                                                color: _primaryColor.withOpacity(0.38),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Icon(
+                                      Icons.add_rounded,
+                                      size: 18,
+                                      color: _quantity < stock
+                                          ? Colors.white
+                                          : Colors.grey.shade400,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -836,17 +800,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ProductDetailsSection(
                           product: widget.product,
                           boutiqueType: widget.shop!.boutiqueType,
+                          onPortionSelected: (portionId) {
+                            setState(() { _selectedPortionId = portionId; });
+                          },
                         ),
                         const SizedBox(height: 24),
                       ],
 
                       // Description
-                      Text(
-                        'Description',
-                        style: GoogleFonts.poppins(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2D2D2D),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 4,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [_primaryColor, _theme.gradientEnd],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Description',
+                              style: GoogleFonts.poppins(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -866,9 +853,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           product: widget.product,
                           boutiqueType: widget.shop!.boutiqueType,
                           onSizeSelected: (size) {
-                            setState(() {
-                              _selectedSize = size;
-                            });
+                            setState(() { _selectedSize = size; });
+                          },
+                          onPortionSelected: (portionId) {
+                            setState(() { _selectedPortionId = portionId; });
                           },
                         ),
                       ],
@@ -1026,6 +1014,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               _quantity,
                               shopId: widget.product['shopId'] as int?,
                               selectedSize: _selectedSize,
+                              portionId: _selectedPortionId,
                             );
 
                             if (error != null) {

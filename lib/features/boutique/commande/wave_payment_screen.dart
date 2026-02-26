@@ -34,6 +34,13 @@ class WavePaymentScreen extends StatefulWidget {
   final String? customerEmail;
   final String? customerAddress;
   final String? deliveryAddress;
+  final String? couponCode;
+  final double? couponDiscountAmount;
+  final int? loyaltyCardId;
+  final int? loyaltyPointsUsed;
+  final double? loyaltyDiscount;
+  final String? pickupDate;
+  final String? pickupTime;
 
   const WavePaymentScreen({
     super.key,
@@ -52,6 +59,13 @@ class WavePaymentScreen extends StatefulWidget {
     this.customerEmail,
     this.customerAddress,
     this.deliveryAddress,
+    this.couponCode,
+    this.couponDiscountAmount,
+    this.loyaltyCardId,
+    this.loyaltyPointsUsed,
+    this.loyaltyDiscount,
+    this.pickupDate,
+    this.pickupTime,
   });
 
   @override
@@ -225,6 +239,13 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
           customerEmail: widget.customerEmail,
           customerAddress: widget.customerAddress,
           deliveryAddress: widget.deliveryAddress,
+          couponCode: widget.couponCode,
+          discountAmount: widget.couponDiscountAmount,
+          loyaltyCardId: widget.loyaltyCardId,
+          loyaltyPointsUsed: widget.loyaltyPointsUsed,
+          loyaltyDiscount: widget.loyaltyDiscount,
+          pickupDate: widget.pickupDate,
+          pickupTime: widget.pickupTime,
         );
 
         final orderIdRaw = orderResponse['order_id'];

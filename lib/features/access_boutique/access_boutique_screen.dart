@@ -40,6 +40,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
       final Shop shop = await ShopService.getShopByLink(url);
 
       if (mounted) {
+        _linkController.clear();
         // Naviguer vers l'écran d'accueil de la boutique avec les données
         Navigator.push(
           context,
@@ -150,12 +151,16 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
         _showCreateCardDialog();
         return;
       } else if (cards.length == 1) {
-        Navigator.push(
+        final card = cards.first;
+        final deleted = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
-            builder: (context) => LoyaltyCardPage(loyaltyCard: cards.first),
+            builder: (context) => LoyaltyCardPage(loyaltyCard: card),
           ),
         );
+        if (deleted == true && mounted) {
+          _showCreateCardDialog();
+        }
       } else {
         // Plusieurs cartes: bottom sheet pour choisir
         _showLoyaltyCardPicker(cards);
@@ -224,14 +229,17 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                     style: GoogleFonts.openSans(fontSize: 12, color: Colors.grey),
                   ),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(ctx);
-                    Navigator.push(
+                    final deleted = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
                         builder: (context) => LoyaltyCardPage(loyaltyCard: card),
                       ),
                     );
+                    if (deleted == true && mounted) {
+                      _showCreateCardDialog();
+                    }
                   },
                 )),
             const SizedBox(height: 8),
@@ -468,7 +476,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const FavoritesBoutiquesScreen(),
+                            builder: (context) => const FavoritesBoutiquesScreen(showBottomNav: false),
                           ),
                         );
                       },

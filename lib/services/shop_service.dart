@@ -454,7 +454,33 @@ class ShopService {
     }
   }
 
-  // 12. Récupérer le lien Wave depuis l'API payment-methods
+  // 12. Valider un code promo
+  static Future<Coupon> validateCoupon({
+    required String code,
+    required int shopId,
+    required int amount,
+  }) async {
+    final response = await http.post(
+      Uri.parse(Endpoints.couponsValidate),
+      headers: _authHeaders,
+      body: jsonEncode({
+        'code': code,
+        'shop_id': shopId,
+        'amount': amount,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      final couponData = data['data']['coupon'] ?? data['data'];
+      return Coupon.fromJson(couponData as Map<String, dynamic>);
+    } else {
+      throw Exception(data['message'] ?? 'Code promo invalide');
+    }
+  }
+
+  // 13. Récupérer le lien Wave depuis l'API payment-methods
   // Essaie plusieurs endpoints pour trouver le wave_payment_link
   static Future<String?> getWavePaymentLink(int shopId) async {
     print('🌊 ━━━ RECHERCHE WAVE PAYMENT LINK (shop $shopId) ━━━');

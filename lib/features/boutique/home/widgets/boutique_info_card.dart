@@ -11,13 +11,15 @@ import '../../../../services/auth_service.dart';
 import '../../../../services/models/shop_model.dart';
 import '../../../../services/utils/api_endpoint.dart';
 
-/// Carte d'informations de la boutique avec actions rapides
 class BoutiqueInfoCard extends StatelessWidget {
+
   final int shopId;
   final String boutiqueName;
   final String boutiqueDescription;
   final String boutiqueLogoPath;
   final String phoneNumber;
+  final double averageRating;
+  final int totalReviews;
 
   const BoutiqueInfoCard({
     super.key,
@@ -26,302 +28,334 @@ class BoutiqueInfoCard extends StatelessWidget {
     required this.boutiqueDescription,
     required this.boutiqueLogoPath,
     required this.phoneNumber,
+    this.averageRating = 0.0,
+    this.totalReviews = 0,
   });
 
-  // Construire l'URL complète de l'image
-  String? _getFullImageUrl(String? url) {
+  String? _logoUrl(String? url) {
     if (url == null || url.isEmpty) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    final c = url.startsWith('/') ? url.substring(1) : url;
+    return '${Endpoints.storageBaseUrl}/$c';
+  }
 
-    // Si l'URL commence déjà par http, la retourner telle quelle
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
+  Future<void> _call() async {
+    final uri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  Future<void> _whatsapp() async {
+    final uri = Uri.parse('https://wa.me/$phoneNumber');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
 
-    // Sinon, construire l'URL complète avec le domaine de base
-    final cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return '${Endpoints.storageBaseUrl}/$cleanUrl';
+  void _orders(BuildContext ctx) => Navigator.of(ctx).push(
+        MaterialPageRoute(builder: (_) => const OrdersListApiPage()),
+      );
+
+  Future<void> _loyalty(BuildContext ctx) async {
+    try {
+      await AuthService.ensureToken();
+
+      // LoyaltyService.getCardForShop() filtre déjà les cartes supprimées localement.
+      // Si null → pas de carte (ou supprimée) → formulaire de création.
+      final card = await LoyaltyService.getCardForShop(shopId);
+      if (!ctx.mounted) return;
+
+      if (card != null) {
+        print('[LOYALTY] Carte trouvée id=${card.id}, ouverture LoyaltyCardPage');
+        final deleted = await Navigator.of(ctx).push<bool>(
+          MaterialPageRoute(builder: (_) => LoyaltyCardPage(loyaltyCard: card)),
+        );
+        print('[LOYALTY] Retour LoyaltyCardPage → deleted=$deleted');
+        // Après suppression → ouvrir le formulaire de création
+        if (deleted == true && ctx.mounted) {
+          await Navigator.of(ctx).push(MaterialPageRoute(
+            builder: (_) => CreateLoyaltyCardPage(
+              shopId: shopId,
+              boutiqueName: boutiqueName,
+              shop: BoutiqueThemeProvider.shopOf(ctx),
+              cardWasDeleted: true,
+            ),
+          ));
+        }
+      } else {
+        await Navigator.of(ctx).push(MaterialPageRoute(
+          builder: (_) => CreateLoyaltyCardPage(
+            shopId: shopId,
+            boutiqueName: boutiqueName,
+            shop: BoutiqueThemeProvider.shopOf(ctx),
+          ),
+        ));
+      }
+    } catch (_) {
+      if (!ctx.mounted) return;
+      await Navigator.of(ctx).push(MaterialPageRoute(
+        builder: (_) => CreateLoyaltyCardPage(
+          shopId: shopId,
+          boutiqueName: boutiqueName,
+          shop: BoutiqueThemeProvider.shopOf(ctx),
+        ),
+      ));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Obtenir le thème de la boutique pour les couleurs dynamiques
-    final shopTheme = BoutiqueThemeProvider.of(context);
-    final String? fullLogoUrl = _getFullImageUrl(boutiqueLogoPath);
+    final t = BoutiqueThemeProvider.of(context);
+    final logo = _logoUrl(boutiqueLogoPath);
 
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.13),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: t.primary.withOpacity(0.08),
+            blurRadius: 14,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Logo et nom de la boutique avec icônes d'actions
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: fullLogoUrl != null
-                      ? Image.network(
-                          fullLogoUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.store, size: 35, color: Colors.grey),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: shopTheme.primary,
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            );
-                          },
-                        )
-                      : Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.store, size: 35, color: Colors.grey),
-                        ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      boutiqueName,
-                      style: GoogleFonts.openSans(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      boutiqueDescription,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.openSans(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Afficher le bottom sheet avec toutes les actions
-  void _showActionsBottomSheet(BuildContext context, ShopTheme shopTheme) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-
-        
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Poignée de glissement
+            // ── Barre gradient boutique ───────────────────────────
             Container(
-              width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+                gradient: LinearGradient(
+                  colors: [t.primary, t.gradientEnd],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
               ),
             ),
-            const SizedBox(height: 20),
 
-            // Titre
-            Text(
-              'Actions rapides',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Bouton Appeler
-            _buildBottomSheetButton(
-              Icons.phone,
-              'Appeler',
-              shopTheme.primary,
-              () async {
-                Navigator.pop(context);
-                final Uri telUri = Uri(scheme: 'tel', path: phoneNumber);
-                if (await canLaunchUrl(telUri)) {
-                  await launchUrl(telUri);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-
-            // Bouton WhatsApp
-            _buildBottomSheetButton(
-              FontAwesomeIcons.whatsapp,
-              'WhatsApp',
-              shopTheme.primary,
-              () async {
-                Navigator.pop(context);
-                final Uri whatsappUri = Uri.parse('https://wa.me/$phoneNumber');
-                if (await canLaunchUrl(whatsappUri)) {
-                  await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-
-            // Bouton Mes commandes
-            _buildBottomSheetButton(
-              Icons.inventory_2_outlined,
-              'Mes commandes',
-              shopTheme.primary,
-              () {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const OrdersListApiPage(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-
-            // Bouton Carte de fidélité
-            _buildBottomSheetButton(
-              Icons.credit_card,
-              'Carte de fidélité',
-              shopTheme.primary,
-              () async {
-                Navigator.pop(context);
-
-                try {
-                  await AuthService.ensureToken();
-                  final loyaltyCard = await LoyaltyService.getCardForShop(shopId);
-
-                  if (!context.mounted) return;
-
-                  if (loyaltyCard != null) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => LoyaltyCardPage(loyaltyCard: loyaltyCard),
-                      ),
-                    );
-                  } else {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => CreateLoyaltyCardPage(
-                          shopId: shopId,
-                          boutiqueName: boutiqueName,
-                          shop: BoutiqueThemeProvider.shopOf(context),
+            // ── Logo + Nom + Description ──────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Logo avec badge vérifié
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 68,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.13),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: logo != null
+                              ? Image.network(
+                                  logo,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => _logoFallback(t),
+                                  loadingBuilder: (_, child, p) =>
+                                      p == null ? child : _logoFallback(t),
+                                )
+                              : _logoFallback(t),
                         ),
                       ),
-                    );
-                  }
-                } catch (e) {
-                  if (!context.mounted) return;
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => CreateLoyaltyCardPage(
-                        shopId: shopId,
-                        boutiqueName: boutiqueName,
-                        shop: BoutiqueThemeProvider.shopOf(context),
-                      ),
+                    ],
+                  ),
+
+                  const SizedBox(width: 14),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Nom de la boutique
+                        Text(
+                          boutiqueName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0D0D26),
+                            letterSpacing: -0.3,
+                            height: 1.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 5),
+                        // Description
+                        Text(
+                          boutiqueDescription,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.openSans(
+                            fontSize: 11.5,
+                            color: const Color(0xFF6C7489),
+                            height: 1.45,
+                          ),
+                        ),
+                        if (averageRating > 0) ...[
+                          const SizedBox(height: 5),
+                          Row(
+                            children: [
+                              const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                              const SizedBox(width: 3),
+                              Text(
+                                averageRating.toStringAsFixed(1),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1C1C1E),
+                                ),
+                              ),
+                              if (totalReviews > 0) ...[
+                                const SizedBox(width: 4),
+                                Text(
+                                  '($totalReviews avis)',
+                                  style: GoogleFonts.openSans(
+                                    fontSize: 11,
+                                    color: const Color(0xFF6C7489),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
-                  );
-                }
-              },
+                  ),
+                ],
+              ),
             ),
 
-            const SizedBox(height: 10),
+            // ── Boutons contact gradient ──────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+              child: Row(
+                children: [
+                  _actionBtn(
+                    icon: Icons.phone_in_talk_rounded,
+                    label: 'Appeler',
+                    colors: [t.primary, t.gradientEnd],
+                    onTap: _call,
+                  ),
+                  const SizedBox(width: 8),
+                  _actionBtn(
+                    iconWidget: const FaIcon(
+                      FontAwesomeIcons.whatsapp,
+                      size: 15,
+                      color: Colors.white,
+                    ),
+                    label: 'WhatsApp',
+                    colors: const [Color(0xFF25D366), Color(0xFF128C7E)],
+                    onTap: _whatsapp,
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Séparateur ────────────────────────────────────────
+            Container(height: 1, color: const Color(0xFFF0F2F6)),
+
+            // ── Boutons action gradient ───────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 11, 14, 13),
+              child: Row(
+                children: [
+                  // Commandes
+                  _actionBtn(
+                    icon: Icons.receipt_long_rounded,
+                    label: 'Commandes',
+                    colors: [t.primary, t.primary.withOpacity(0.78)],
+                    onTap: () => _orders(context),
+                  ),
+                  const SizedBox(width: 10),
+                  // Fidélité
+                  _actionBtn(
+                    icon: Icons.workspace_premium_rounded,
+                    label: 'Fidélité',
+                    colors: const [Color(0xFFFF6B35), Color(0xFFFF9A5C)],
+                    onTap: () => _loyalty(context),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Widget pour un bouton dans le bottom sheet
-  Widget _buildBottomSheetButton(
-    IconData icon,
-    String label,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          border: Border.all(color: color.withOpacity(0.3)),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  Widget _logoFallback(ShopTheme t) => Container(
+        color: t.primary.withOpacity(0.07),
+        child: Icon(Icons.storefront_rounded, size: 28, color: t.primary),
+      );
+
+  Widget _actionBtn({
+    IconData? icon,
+    Widget? iconWidget,
+    required String label,
+    required List<Color> colors,
+    required VoidCallback onTap,
+  }) =>
+      Expanded(
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 36,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: colors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Icon(icon, color: color, size: 20),
+              borderRadius: BorderRadius.circular(11),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.first.withOpacity(0.36),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            const SizedBox(width: 14),
-            Text(
-              label,
-              style: GoogleFonts.openSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                iconWidget ?? Icon(icon!, size: 15, color: Colors.white),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ],
             ),
-            const Spacer(),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
-          ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

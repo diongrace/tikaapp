@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/favorites_service.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/utils/api_endpoint.dart';
 import '../home/home_online_screen.dart';
+import '../home/components/home_bottom_navigation.dart';
 import '../loading_screens/loading_screens.dart';
+import '../../auth/auth_choice_screen.dart';
 
 /// Écran des boutiques favorites
 /// Affiche la liste des boutiques mises en favoris par l'utilisateur
 /// UTILISE LA LOGIQUE EXACTE DE L'API TIKA
 class FavoritesBoutiquesScreen extends StatefulWidget {
-  const FavoritesBoutiquesScreen({super.key});
+  /// [showBottomNav] : true quand ouvert depuis la nav d'une boutique,
+  /// false quand ouvert directement depuis AccessBoutiqueScreen
+  final bool showBottomNav;
+
+  const FavoritesBoutiquesScreen({super.key, this.showBottomNav = true});
 
   @override
   State<FavoritesBoutiquesScreen> createState() => _FavoritesBoutiquesScreenState();
@@ -21,6 +28,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
   List<Shop> _favoriteBoutiques = [];
   bool _isLoading = true;
   bool _hasError = false;
+  bool _isNotAuthenticated = false;
   String? _errorMessage;
 
   @override
@@ -37,6 +45,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
     setState(() {
       _isLoading = true;
       _hasError = false;
+      _isNotAuthenticated = false;
       _errorMessage = null;
     });
 
@@ -60,24 +69,17 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = e.toString();
-      });
-
       print('❌ Erreur chargement favoris: $e');
 
-      // Afficher un snackbar avec l'erreur
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erreur: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      final isAuthError = e.toString().contains('Authentification') ||
+          e.toString().contains('401');
+
+      setState(() {
+        _isLoading = false;
+        _isNotAuthenticated = isAuthError;
+        _hasError = !isAuthError;
+        _errorMessage = isAuthError ? null : e.toString();
+      });
     }
   }
 
@@ -122,12 +124,18 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
 
       print('❌ Erreur lors du retrait: $e');
 
-      // En cas d'erreur, recharger les favoris pour synchroniser
-      _loadFavorites();
+      // Rollback: remettre la boutique dans la liste
+      setState(() {
+        if (!_favoriteBoutiques.any((b) => b.id == shop.id)) {
+          _favoriteBoutiques.add(shop);
+        }
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erreur: ${e.toString()}'),
+          content: Text(e.toString().contains('401')
+              ? 'Session expirée, reconnectez-vous'
+              : 'Impossible de retirer ce favori'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -164,6 +172,12 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
+      bottomNavigationBar: widget.showBottomNav
+          ? const HomeBottomNavigation(
+              selectedIndex: 3,
+              currentShop: null,
+            )
+          : null,
       body: Stack(
         children: [
           // Fond avec gradient subtil
@@ -259,7 +273,9 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 Expanded(
                   child: _isLoading
                       ? const FavoritesLoadingScreen()
-                      : _hasError
+                      : _isNotAuthenticated
+                          ? _buildNotAuthenticatedState()
+                          : _hasError
                           ? _buildErrorState()
                           : _favoriteBoutiques.isEmpty
                               ? _buildEmptyState()
@@ -286,6 +302,81 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// État non connecté
+  Widget _buildNotAuthenticatedState() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8936A8).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.lock_outline_rounded,
+                size: 60,
+                color: Color(0xFF8936A8),
+              ),
+            ),
+            const SizedBox(height: 28),
+            Text(
+              'Connexion requise',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF2D2D2D),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Connectez-vous pour accéder\nà vos boutiques favorites',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.openSans(
+                fontSize: 14,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AuthChoiceScreen(),
+                  ),
+                );
+                if (mounted && AuthService.isAuthenticated) {
+                  _loadFavorites();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                backgroundColor: const Color(0xFF8936A8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'Se connecter',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

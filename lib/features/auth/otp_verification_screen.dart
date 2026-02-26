@@ -114,6 +114,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       return;
     }
 
+    // Pour reset_password : ne pas appeler verifyOtp ici.
+    // L'OTP sera vérifié directement dans POST /client/reset-password.
+    // Appeler verifyOtp consommerait l'OTP et empêcherait resetPassword de fonctionner.
+    if (widget.type == 'reset_password') {
+      if (widget.onVerified != null) {
+        widget.onVerified!(_otpCode);
+      }
+      Navigator.pop(context, true);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -174,6 +185,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Pour la réinitialisation du mot de passe, utiliser l'endpoint dédié
+      // POST /client/forgot-password (pas POST /client/send-otp)
+      if (widget.type == 'reset_password') {
+        final response = await AuthService.forgotPassword(phone: widget.phone);
+        if (!mounted) return;
+        if (response.success) {
+          showSuccessModal(context, response.message ?? 'Code renvoyé');
+          _startResendTimer();
+        } else {
+          showErrorModal(context, response.message ?? 'Erreur lors du renvoi');
+        }
+        return;
+      }
+
       final response = await AuthService.sendOtp(
         phone: widget.phone,
         type: widget.type,

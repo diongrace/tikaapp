@@ -5,293 +5,320 @@ import '../../panier/cart_manager.dart';
 import '../../panier/panier_screen.dart';
 import '../../profile/profile_screen.dart';
 import '../../favorites/favorites_boutiques_screen.dart';
-import '../../commande/orders_list_api_page.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 
-/// Barre de navigation inférieure pour l'écran d'accueil
-class HomeBottomNavigation extends StatelessWidget {
+/// Navbar flottante pill — panier central gradient, icônes outlined/filled
+/// StatefulWidget : gère CartManager et animation badge en interne.
+class HomeBottomNavigation extends StatefulWidget {
   final int selectedIndex;
   final Shop? currentShop;
-  final CartManager cartManager;
-  final Animation<double> cartBadgeAnimation;
-  final Function(int) onIndexChanged;
-  final VoidCallback onSearchTap;
-  final VoidCallback onActionsTap;
-  final Function() onProductsReload;
+  final Function(int)? onIndexChanged;
+  final VoidCallback? onSearchTap;
+  final VoidCallback? onActionsTap;
+  final Function()? onProductsReload;
 
   const HomeBottomNavigation({
     super.key,
     required this.selectedIndex,
     required this.currentShop,
-    required this.cartManager,
-    required this.cartBadgeAnimation,
-    required this.onIndexChanged,
-    required this.onSearchTap,
-    required this.onActionsTap,
-    required this.onProductsReload,
+    this.onIndexChanged,
+    this.onSearchTap,
+    this.onActionsTap,
+    this.onProductsReload,
   });
 
   @override
+  State<HomeBottomNavigation> createState() => _HomeBottomNavigationState();
+}
+
+class _HomeBottomNavigationState extends State<HomeBottomNavigation>
+    with SingleTickerProviderStateMixin {
+  final CartManager _cartManager = CartManager();
+  late AnimationController _badgeController;
+  late Animation<double> _badgeAnimation;
+  int _prevCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _prevCount = _cartManager.itemCount;
+    _badgeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _badgeAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _badgeController, curve: Curves.easeInOut),
+    );
+    _cartManager.addListener(_onCartChanged);
+  }
+
+  @override
+  void dispose() {
+    _cartManager.removeListener(_onCartChanged);
+    _badgeController.dispose();
+    super.dispose();
+  }
+
+  void _onCartChanged() {
+    final newCount = _cartManager.itemCount;
+    if (newCount > _prevCount) {
+      _badgeController
+          .forward()
+          .then((_) => _badgeController.reverse());
+    }
+    _prevCount = newCount;
+    if (mounted) setState(() {});
+  }
+
+  ShopTheme get _shopTheme =>
+      widget.currentShop?.theme ?? ShopTheme.defaultTheme();
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 65,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItemWithImage(context, 'lib/core/assets/lhome.png', 'Accueil', 0),
-          _buildNavItemWithImage(context, 'lib/core/assets/cart.png', 'Panier', 1),
-          _buildNavItemWithIcon(context, Icons.search, 'Rechercher', 2),
-          _buildNavItemWithImage(context, 'lib/core/assets/favory.png', 'Favoris', 3),
-          _buildNavItemWithIcon(context, Icons.apps, 'Services', 4),
-          _buildNavItemWithImage(context, 'lib/core/assets/user.png', 'Profil', 5),
-        ],
+    final shopTheme = _shopTheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
+      child: Container(
+        height: 66,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(34),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.14),
+              blurRadius: 30,
+              spreadRadius: 0,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: shopTheme.primary.withOpacity(0.07),
+              blurRadius: 16,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _navItem(context, shopTheme: shopTheme,
+              icon: Icons.home_outlined, iconActive: Icons.home_rounded,
+              label: 'Accueil', index: 0),
+            _navItem(context, shopTheme: shopTheme,
+              icon: Icons.search_outlined, iconActive: Icons.search_rounded,
+              label: 'Chercher', index: 2),
+
+            // ── Bouton panier central ──────────────────────────────
+            _cartButton(context, shopTheme),
+
+            _navItem(context, shopTheme: shopTheme,
+              icon: Icons.favorite_outline_rounded, iconActive: Icons.favorite_rounded,
+              label: 'Favoris', index: 3),
+            _navItem(context, shopTheme: shopTheme,
+              icon: Icons.person_outline_rounded, iconActive: Icons.person_rounded,
+              label: 'Profil', index: 5),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildNavItemWithIcon(BuildContext context, IconData icon, String label, int index) {
-    final shopTheme = currentShop?.theme ?? ShopTheme.defaultTheme();
-    final isSelected = selectedIndex == index;
-
-    // Couleurs spécifiques pour chaque icône quand non sélectionnée
-    Color iconColor;
-    if (isSelected) {
-      iconColor = shopTheme.primary;
-    } else {
-      if (index == 2) {
-        iconColor = const Color.fromARGB(255, 21, 21, 21);
-      } else if (index == 4) {
-        iconColor = const Color.fromARGB(255, 10, 148, 77);
-      } else {
-        iconColor = Colors.grey.shade600;
-      }
-    }
+  // ── Bouton panier gradient central ────────────────────────────────────────
+  Widget _cartButton(BuildContext context, ShopTheme shopTheme) {
+    final count = _cartManager.itemCount;
 
     return GestureDetector(
-      onTap: () {
-        if (index == 2) {
-          onSearchTap();
-        } else if (index == 4) {
-          onActionsTap();
-        } else {
-          onIndexChanged(index);
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
+      onTap: () => _handleCartNavigation(context),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
         children: [
+          // Halo externe pulsant
           Container(
-            width: 28,
-            height: 28,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
-              color: isSelected ? shopTheme.primary.withOpacity(0.1) : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              size: 24,
-              color: iconColor,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.openSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: iconColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItemWithImage(BuildContext context, String imagePath, String label, int index) {
-    final shopTheme = currentShop?.theme ?? ShopTheme.defaultTheme();
-    final isSelected = selectedIndex == index;
-    final isCartIcon = index == 1;
-    final cartItemCount = cartManager.itemCount;
-
-    // Couleurs spécifiques pour chaque icône
-    Color iconColor;
-    if (isSelected) {
-      iconColor = shopTheme.primary;
-    } else {
-      if (index == 0) {
-        iconColor = const Color.fromARGB(255, 79, 3, 92);
-      } else if (index == 1) {
-        iconColor = const Color.fromARGB(255, 10, 9, 10);
-      } else if (index == 3) {
-        iconColor = const Color(0xFFE91E63);
-      } else if (index == 5) {
-        iconColor = const Color.fromARGB(255, 113, 2, 121);
-      } else {
-        iconColor = Colors.grey.shade600;
-      }
-    }
-
-    return GestureDetector(
-      onTap: () async {
-        if (index == 1) {
-          await _handleCartNavigation(context);
-        } else if (index == 5) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfileScreen()),
-          );
-        } else if (index == 4) {
-          onActionsTap();
-        } else if (index == 3) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const FavoritesBoutiquesScreen()),
-          );
-        } else if (index == 2) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const OrdersListApiPage(),
-            ),
-          );
-        } else {
-          onIndexChanged(index);
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Image.asset(
-                imagePath,
-                width: 24,
-                height: 24,
-                color: iconColor,
-                fit: BoxFit.contain,
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  shopTheme.primary.withOpacity(0.18),
+                  shopTheme.primary.withOpacity(0.00),
+                ],
               ),
-              // Badge pour le panier
-              if (isCartIcon && cartItemCount > 0)
-                Positioned(
-                  right: -8,
-                  top: -8,
-                  child: ScaleTransition(
-                    scale: cartBadgeAnimation,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
+            ),
+          ),
+
+          // Bouton principal
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [shopTheme.primary, shopTheme.gradientEnd],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: shopTheme.primary.withOpacity(0.45),
+                  blurRadius: 18,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.shopping_cart_rounded,
+              color: Colors.white,
+              size: 26,
+            ),
+          ),
+
+          // Badge quantité
+          if (count > 0)
+            Positioned(
+              right: 3,
+              top: 3,
+              child: ScaleTransition(
+                scale: _badgeAnimation,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF3B30),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.4),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
-                      ),
-                      child: Text(
-                        '$cartItemCount',
-                        style: GoogleFonts.openSans(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                    ],
+                  ),
+                  constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.openSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: iconColor,
+              ),
             ),
-          ),
         ],
       ),
     );
+  }
+
+  // ── Item de navigation standard ───────────────────────────────────────────
+  Widget _navItem(
+    BuildContext context, {
+    required ShopTheme shopTheme,
+    required IconData icon,
+    required IconData iconActive,
+    required String label,
+    required int index,
+  }) {
+    final isSelected = widget.selectedIndex == index;
+    final color = isSelected ? shopTheme.primary : const Color(0xFFB0BAC8);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _handleTap(context, index),
+      child: SizedBox(
+        width: 58,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              transitionBuilder: (child, anim) =>
+                  ScaleTransition(scale: anim, child: child),
+              child: Icon(
+                isSelected ? iconActive : icon,
+                key: ValueKey(isSelected),
+                size: 24,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 3),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: isSelected ? 18 : 0,
+              height: 3,
+              decoration: BoxDecoration(
+                color: shopTheme.primary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 2),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 220),
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
+              child: Text(label),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Gestion des taps ──────────────────────────────────────────────────────
+  void _handleTap(BuildContext context, int index) {
+    switch (index) {
+      case 0: // Accueil
+        if (widget.selectedIndex != 0) {
+          Navigator.of(context).pop();
+        } else {
+          widget.onIndexChanged?.call(0);
+        }
+        break;
+      case 2: // Chercher
+        widget.onSearchTap?.call();
+        break;
+      case 3: // Favoris
+        if (widget.selectedIndex != 3) {
+          Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const FavoritesBoutiquesScreen()));
+        }
+        break;
+      case 5: // Profil
+        if (widget.selectedIndex != 5) {
+          Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const ProfileScreen()));
+        }
+        break;
+      default:
+        widget.onIndexChanged?.call(index);
+    }
   }
 
   Future<void> _handleCartNavigation(BuildContext context) async {
-    print('🛒 [HomeBottomNav] Clic sur le panier');
-
-    final shopId = currentShop?.id;
-    print('🛒 [HomeBottomNav] shopId: $shopId, shop: ${currentShop?.name}');
-
-    if (shopId == null || shopId == 0) {
-      print('❌ [HomeBottomNav] shopId invalide');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Impossible d\'accéder au panier: boutique non chargée'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return;
-    }
-
-    if (currentShop == null) {
-      print('❌ [HomeBottomNav] currentShop est null');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Boutique non chargée, veuillez patienter'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-      return;
-    }
-
-    print('✅ [HomeBottomNav] Navigation vers PanierScreen...');
+    final shop = widget.currentShop;
+    if (shop == null || shop.id == 0) return;
 
     try {
       final orderCompleted = await Navigator.push<bool>(
         context,
         MaterialPageRoute(
           builder: (context) => BoutiqueThemeProvider(
-            shop: currentShop,
-            child: PanierScreen(
-              shopId: shopId,
-              shop: currentShop,
-            ),
+            shop: shop,
+            child: PanierScreen(shopId: shop.id, shop: shop),
           ),
         ),
       );
-
-      print('🛒 [HomeBottomNav] Retour du panier, orderCompleted: $orderCompleted');
-
-      if (orderCompleted == true && context.mounted) {
-        print('🔄 Commande réussie - Rechargement des produits...');
-        onProductsReload();
+      if (orderCompleted == true) {
+        widget.onProductsReload?.call();
       }
-    } catch (e) {
-      print('❌ [HomeBottomNav] Erreur: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erreur lors de l\'ouverture du panier'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    } catch (_) {}
   }
 }

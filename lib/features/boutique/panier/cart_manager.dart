@@ -21,7 +21,7 @@ class CartManager extends ChangeNotifier {
 
   /// Ajoute un produit au panier
   /// Retourne un message d'erreur si l'ajout échoue, null si succès
-  String? addItem(Map<String, dynamic> product, int quantity, {int? shopId, String? selectedSize}) {
+  String? addItem(Map<String, dynamic> product, int quantity, {int? shopId, String? selectedSize, int? portionId}) {
     // Validation 1: Vérifier la disponibilité du produit
     final int stock = product['stock'] ?? 0;
     final bool isAvailable = product['isAvailable'] ?? true;
@@ -47,9 +47,11 @@ class CartManager extends ChangeNotifier {
       _shopId = shopId;
     }
 
-    // Vérifier si le produit existe déjà dans le panier (même ID + même taille)
+    // Vérifier si le produit existe déjà dans le panier (même ID + même taille + même portion)
     final existingIndex = _items.indexWhere(
-      (item) => item['id'] == product['id'] && item['size'] == selectedSize,
+      (item) => item['id'] == product['id'] &&
+                item['size'] == selectedSize &&
+                item['portion_id'] == portionId,
     );
 
     if (existingIndex >= 0) {
@@ -75,7 +77,8 @@ class CartManager extends ChangeNotifier {
         'quantity': quantity,          // Quantité pour l'API
         'stock': stock,                // Pour validation continue
         'isAvailable': isAvailable,    // Pour validation continue
-        'size': selectedSize,          // Taille sélectionnée (null si pas de taille)
+        'size': selectedSize,          // Taille sélectionnée (pour affichage)
+        'portion_id': portionId,       // ✅ ID de portion requis par l'API
       });
     }
 
@@ -121,9 +124,9 @@ class CartManager extends ChangeNotifier {
   }
 
   /// Prépare les items au format requis par l'API TIKA pour créer une commande
-  /// Format API: [{"product_id": 15, "quantity": 2, "price": 2500, "size": "L"}]
-  /// Endpoint: POST /orders-simple
-  /// Documentation: 08-API-ORDERS.md lignes 47-63
+  /// Format API: [{"product_id": 15, "quantity": 2, "price": 2500, "portion_id": 3}]
+  /// Endpoint: POST /client/orders
+  /// Documentation: 08-API-ORDERS.md
   List<Map<String, dynamic>> getItemsForOrder() {
     return _items.map((item) {
       final orderItem = {
@@ -131,8 +134,8 @@ class CartManager extends ChangeNotifier {
         'quantity': item['quantity'],   // ✅ Quantité (requis par l'API)
         'price': item['price'],         // ✅ Prix unitaire (requis par l'API)
       };
-      if (item['size'] != null) {
-        orderItem['size'] = item['size']; // ✅ Taille (si applicable)
+      if (item['portion_id'] != null) {
+        orderItem['portion_id'] = item['portion_id']; // ✅ ID de portion (si applicable)
       }
       return orderItem;
     }).toList();

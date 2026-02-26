@@ -6,12 +6,14 @@ import '../../../../core/utils/responsive.dart';
 class ProductGrid extends StatelessWidget {
   final List<Map<String, dynamic>> products;
   final Function(Map<String, dynamic>) onProductTap;
+  final Function(Map<String, dynamic>)? onProductAddToCart;
   final bool isRestaurant;
 
   const ProductGrid({
     super.key,
     required this.products,
     required this.onProductTap,
+    this.onProductAddToCart,
     this.isRestaurant = false,
   });
 
@@ -24,9 +26,9 @@ class ProductGrid extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: 12),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
-        childAspectRatio: isRestaurant ? 0.52 : 0.55,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 16,
+        childAspectRatio: isRestaurant ? 0.50 : 0.65,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
@@ -37,6 +39,9 @@ class ProductGrid extends StatelessWidget {
           child: ProductCard(
             product: product,
             onTap: () => onProductTap(product),
+            onAddToCart: onProductAddToCart != null
+                ? () => onProductAddToCart!(product)
+                : null,
             isRestaurant: isRestaurant,
           ),
         );

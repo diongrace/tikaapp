@@ -31,6 +31,10 @@ class Shop {
   final bool wavePartialPaymentEnabled;
   final int wavePartialPaymentPercentage;
 
+  // Ratings
+  final double averageRating;
+  final int totalReviews;
+
   Shop({
     required this.id,
     required this.name,
@@ -58,6 +62,8 @@ class Shop {
     this.wavePhone,
     this.wavePartialPaymentEnabled = false,
     this.wavePartialPaymentPercentage = 0,
+    this.averageRating = 0.0,
+    this.totalReviews = 0,
   });
 
   // URL de base pour les fichiers de stockage
@@ -157,6 +163,8 @@ class Shop {
       wavePhone: wavePhoneRaw?.toString(),
       wavePartialPaymentEnabled: parsedPartialEnabled,
       wavePartialPaymentPercentage: parsedPartialPercentage,
+      averageRating: _parseDouble(json['average_rating']) ?? 0.0,
+      totalReviews: _parseInt(json['total_reviews']) ?? _parseInt(json['reviews_count']) ?? 0,
     );
   }
 
@@ -209,6 +217,8 @@ class Shop {
       wavePhone: wavePhone,
       wavePartialPaymentEnabled: wavePartialPaymentEnabled,
       wavePartialPaymentPercentage: wavePartialPaymentPercentage,
+      averageRating: averageRating,
+      totalReviews: totalReviews,
     );
   }
 
@@ -258,6 +268,8 @@ class Shop {
         'partial_payment_enabled': wavePartialPaymentEnabled,
         'partial_payment_percentage': wavePartialPaymentPercentage,
       },
+      'average_rating': averageRating,
+      'total_reviews': totalReviews,
     };
   }
 }
@@ -393,6 +405,21 @@ class ShopTheme {
 
   /// Obtient la couleur secondaire comme Color Flutter
   Color get secondary => hexToColor(secondaryColor);
+
+  /// Couleur de fin de dégradé — dérive automatiquement du primary si le
+  /// secondary n'est pas configuré par la boutique (valeur par défaut violette).
+  /// Utiliser ce getter dans tous les LinearGradient au lieu de [secondary].
+  Color get gradientEnd {
+    if (secondaryColor == '#CE93D8') {
+      // secondary non configuré → teinte plus sombre du primary
+      final hsl = HSLColor.fromColor(primary);
+      return hsl
+          .withLightness((hsl.lightness - 0.12).clamp(0.0, 1.0))
+          .withSaturation((hsl.saturation + 0.05).clamp(0.0, 1.0))
+          .toColor();
+    }
+    return secondary;
+  }
 
   /// Obtient la couleur d'accent comme Color Flutter
   Color get accent => hexToColor(accentColor);

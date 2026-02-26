@@ -9,6 +9,32 @@ import './auth_service.dart';
 ///
 /// IMPORTANT: Necessite une authentification Bearer Token
 class ProfileService {
+  /// Dernier message d'erreur pour les adresses
+  static String? lastAddressError;
+
+  /// Dernier message d'erreur pour la mise a jour du profil
+  static String? lastUpdateError;
+
+  /// Extraire les donnees d'une adresse depuis la reponse API
+  /// Gere les structures: {data: {address: {...}}}, {data: {...}}, {address: {...}}, {...}
+  static Map<String, dynamic> _extractAddressData(Map<String, dynamic> raw) {
+    // Cas: { data: { address: { id, label, ... } } }
+    if (raw['data'] is Map) {
+      final data = raw['data'] as Map<String, dynamic>;
+      if (data['address'] is Map) {
+        return data['address'] as Map<String, dynamic>;
+      }
+      // Cas: { data: { id, label, ... } }
+      if (data.containsKey('id')) return data;
+    }
+    // Cas: { address: { id, label, ... } }
+    if (raw['address'] is Map) {
+      return raw['address'] as Map<String, dynamic>;
+    }
+    // Fallback: la reponse est directement l'adresse
+    return raw;
+  }
+
   /// Headers avec authentification Bearer
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
@@ -62,6 +88,7 @@ class ProfileService {
   }) async {
     if (!_isAuthenticated) return null;
 
+    lastUpdateError = null;
     print('UPDATE PROFILE (ProfileService)');
 
     try {
@@ -70,6 +97,8 @@ class ProfileService {
       if (lastName != null) body['last_name'] = lastName;
       if (email != null) body['email'] = email;
       if (birthDate != null) body['birth_date'] = birthDate;
+
+      print('UPDATE PROFILE body: ${jsonEncode(body)}');
 
       final response = await http.put(
         Uri.parse(Endpoints.clientProfile),
@@ -84,10 +113,28 @@ class ProfileService {
         final profileData = data['data'] is Map && data['data']['profile'] != null
             ? data['data']['profile']
             : data['data'] ?? data['client'] ?? data['user'] ?? data;
-        return Client.fromJson(profileData);
+        final updatedClient = Client.fromJson(profileData);
+        // Synchroniser le cache local pour que le profil s'actualise immediatement
+        await AuthService.updateCurrentClient(updatedClient);
+        return updatedClient;
+      } else {
+        print('UPDATE PROFILE error body: ${response.body}');
+        try {
+          final errorData = jsonDecode(response.body);
+          if (errorData['errors'] != null) {
+            final errors = errorData['errors'] as Map<String, dynamic>;
+            final firstError = errors.values.first;
+            lastUpdateError = firstError is List ? firstError.first.toString() : firstError.toString();
+          } else {
+            lastUpdateError = errorData['message']?.toString() ?? 'Erreur ${response.statusCode}';
+          }
+        } catch (_) {
+          lastUpdateError = 'Erreur ${response.statusCode}';
+        }
       }
     } catch (e) {
       print('Exception ProfileService.updateProfile: $e');
+      lastUpdateError = 'Erreur de connexion';
     }
     return null;
   }
@@ -114,21 +161,29 @@ class ProfileService {
         headers: _headers,
         body: jsonEncode({
           'current_password': currentPassword,
-          'password': newPassword,
-          'password_confirmation': newPasswordConfirmation,
+          'new_password': newPassword,
+          'new_password_confirmation': newPasswordConfirmation,
         }),
       );
 
       print('Response Status: ${response.statusCode}');
+      print('CHANGE PASSWORD response body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
         return {'success': true, 'message': data['message'] ?? 'Mot de passe modifie'};
       } else {
+        // Extraire le premier message d'erreur de validation
+        String errorMessage = data['message'] ?? 'Erreur lors du changement de mot de passe';
+        if (data['errors'] != null) {
+          final errors = data['errors'] as Map<String, dynamic>;
+          final firstError = errors.values.first;
+          errorMessage = firstError is List ? firstError.first.toString() : firstError.toString();
+        }
         return {
           'success': false,
-          'message': data['message'] ?? 'Erreur lors du changement de mot de passe',
+          'message': errorMessage,
           'errors': data['errors'],
         };
       }
@@ -212,6 +267,7 @@ class ProfileService {
   }) async {
     if (!_isAuthenticated) return null;
 
+    lastAddressError = null;
     print('ADD ADDRESS (ProfileService)');
 
     try {
@@ -222,6 +278,8 @@ class ProfileService {
       if (city != null) body['city'] = city;
       if (region != null) body['region'] = region;
 
+      print('ADD ADDRESS body: ${jsonEncode(body)}');
+
       final response = await http.post(
         Uri.parse(Endpoints.clientProfileAddresses),
         headers: _headers,
@@ -231,12 +289,28 @@ class ProfileService {
       print('Response Status: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        print('ADD ADDRESS success body: ${response.body}');
         final data = jsonDecode(response.body);
-        final addressData = data['data'] ?? data['address'] ?? data;
+        final addressData = _extractAddressData(data);
         return ProfileAddress.fromJson(addressData);
+      } else {
+        print('ADD ADDRESS error body: ${response.body}');
+        try {
+          final errorData = jsonDecode(response.body);
+          if (errorData['errors'] != null) {
+            final errors = errorData['errors'] as Map<String, dynamic>;
+            final firstError = errors.values.first;
+            lastAddressError = firstError is List ? firstError.first.toString() : firstError.toString();
+          } else {
+            lastAddressError = errorData['message']?.toString() ?? 'Erreur ${response.statusCode}';
+          }
+        } catch (_) {
+          lastAddressError = 'Erreur ${response.statusCode}';
+        }
       }
     } catch (e) {
       print('Exception ProfileService.addAddress: $e');
+      lastAddressError = 'Erreur de connexion';
     }
     return null;
   }

@@ -302,8 +302,10 @@ class AuthService {
   // ============================================================
 
   /// Demander la reinitialisation du mot de passe
+  /// POST /client/forgot-password
   static Future<OtpResponse> forgotPassword({required String phone}) async {
     print('FORGOT PASSWORD');
+    print('Phone: $phone');
 
     try {
       final response = await http.post(
@@ -313,6 +315,7 @@ class AuthService {
       );
 
       print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
@@ -320,7 +323,7 @@ class AuthService {
         print('Code de reinitialisation envoye');
         return OtpResponse.fromJson(data);
       } else {
-        print('Erreur: ${response.statusCode}');
+        print('Erreur forgot-password: ${response.statusCode}');
         return OtpResponse(
           success: false,
           message: data['message'] ?? 'Erreur lors de l\'envoi du code',
@@ -378,6 +381,18 @@ class AuthService {
   // ============================================================
   // PROFIL
   // ============================================================
+
+  /// Mettre a jour le client en cache local (apres modification du profil)
+  static Future<void> updateCurrentClient(Client updatedClient) async {
+    _currentClient = updatedClient;
+    await StorageService.saveAuthClient(updatedClient.toJson());
+    await StorageService.saveCustomerInfo(
+      name: updatedClient.name,
+      phone: updatedClient.phone,
+      email: updatedClient.email,
+    );
+    print('[AuthService] Client mis a jour en cache: ${updatedClient.name}');
+  }
 
   /// Recuperer le profil du client connecte
   static Future<Client?> getProfile() async {

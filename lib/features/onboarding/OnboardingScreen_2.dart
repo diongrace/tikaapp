@@ -23,6 +23,7 @@ class OnboardingScreen2 extends StatelessWidget {
                     child: Image.asset(
                       'lib/core/assets/img.jpeg',
                       fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
                     ),
                   ),
                 ),

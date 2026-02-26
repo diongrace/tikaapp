@@ -19,6 +19,10 @@ class Product {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  // Ratings
+  final double averageRating;
+  final int ratingCount;
+
   Product({
     required this.id,
     required this.name,
@@ -39,35 +43,13 @@ class Product {
     this.material,
     this.createdAt,
     this.updatedAt,
+    this.averageRating = 0.0,
+    this.ratingCount = 0,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     final parsedPrice = _parseInt(json['price']);
     final parsedComparePrice = _parseInt(json['compare_price']);
-
-    // Debug: Vérifier si l'API renvoie les tailles
-    final allKeys = json.keys.toList();
-    final hasSizesKey = allKeys.contains('sizes');
-    final hasColorsKey = allKeys.contains('colors');
-    final hasMaterialKey = allKeys.contains('material');
-    print('══════════════════════════════════════');
-    print('👕 Produit: "${json['name']}" (ID: ${json['id']})');
-    print('   📋 Toutes les clés API: $allKeys');
-    print('   📏 Champ sizes présent: $hasSizesKey → valeur: ${json['sizes']}');
-    print('   🎨 Champ colors présent: $hasColorsKey → valeur: ${json['colors']}');
-    print('   📦 Champ material présent: $hasMaterialKey → valeur: ${json['material']}');
-    if (!hasSizesKey) {
-      print('   ⚠️ L\'API NE RENVOIE PAS le champ sizes ! Le backend doit l\'ajouter dans ProductResource');
-    }
-    print('══════════════════════════════════════');
-
-    // Debug: Afficher les valeurs brutes de l'API pour détecter les incohérences
-    if (parsedComparePrice != null) {
-      print('🔍 Produit "${json['name']}": price=${parsedPrice}, compare_price=${parsedComparePrice} (brut: ${json['compare_price']})');
-      if (parsedPrice != null && parsedComparePrice <= parsedPrice) {
-        print('⚠️ Incohérence: compare_price (${parsedComparePrice}) <= price (${parsedPrice}) - compare_price ignoré');
-      }
-    }
 
     return Product(
       id: _parseInt(json['id']) ?? 0,
@@ -110,7 +92,17 @@ class Product {
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'].toString())
           : null,
+      averageRating: _parseDouble(json['average_rating']) ?? 0.0,
+      ratingCount: _parseInt(json['rating_count']) ?? _parseInt(json['ratings_count']) ?? 0,
     );
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 
   // Helper pour convertir les valeurs en int de manière sécurisée
@@ -147,6 +139,8 @@ class Product {
       'material': material,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'average_rating': averageRating,
+      'rating_count': ratingCount,
     };
   }
 

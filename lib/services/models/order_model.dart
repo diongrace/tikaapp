@@ -80,12 +80,15 @@ class Order {
         ?? _parseInt(json['nb_items'])
         ?? (totalQty > 0 ? totalQty : items.length);
 
-    // Parser le shop_name (peut être dans shop.name ou directement shop_name)
+    // Parser le shop_name (peut être dans shop.name, boutique.name ou directement shop_name)
+    // API Tika dashboard retourne "boutique" (français) au lieu de "shop"
+    final boutiqueObj = json['boutique'] as Map<String, dynamic>? ??
+        json['shop'] as Map<String, dynamic>?;
     String? shopName;
     if (json['shop_name'] != null) {
       shopName = json['shop_name'].toString();
-    } else if (json['shop'] != null && json['shop']['name'] != null) {
-      shopName = json['shop']['name'].toString();
+    } else if (boutiqueObj?['name'] != null) {
+      shopName = boutiqueObj!['name'].toString();
     }
 
     // Parser le shop_logo (peut être dans plusieurs champs)
@@ -94,13 +97,12 @@ class Order {
       shopLogo = json['shop_logo'].toString();
     } else if (json['shop_logo_url'] != null && json['shop_logo_url'].toString().isNotEmpty) {
       shopLogo = json['shop_logo_url'].toString();
-    } else if (json['shop'] != null) {
-      // Chercher dans l'objet shop imbriqué
-      final shop = json['shop'];
-      if (shop['logo_url'] != null && shop['logo_url'].toString().isNotEmpty) {
-        shopLogo = shop['logo_url'].toString();
-      } else if (shop['logo'] != null && shop['logo'].toString().isNotEmpty) {
-        shopLogo = shop['logo'].toString();
+    } else if (boutiqueObj != null) {
+      // Chercher dans l'objet shop/boutique imbriqué
+      if (boutiqueObj['logo_url'] != null && boutiqueObj['logo_url'].toString().isNotEmpty) {
+        shopLogo = boutiqueObj['logo_url'].toString();
+      } else if (boutiqueObj['logo'] != null && boutiqueObj['logo'].toString().isNotEmpty) {
+        shopLogo = boutiqueObj['logo'].toString();
       }
     }
 
@@ -116,9 +118,9 @@ class Order {
                            json['address']?.toString() ??
                            json['customer_address']?.toString();
 
-    // Parser le shopId avec logs
+    // Parser le shopId avec logs (boutique = clé française de l'API dashboard)
     final shopIdFromDirect = _parseInt(json['shop_id']);
-    final shopIdFromNested = _parseInt(json['shop']?['id']);
+    final shopIdFromNested = _parseInt(boutiqueObj?['id']);
     final finalShopId = shopIdFromDirect ?? shopIdFromNested ?? 0;
 
     print('🔍 [Order] shop_id direct: $shopIdFromDirect');
@@ -127,7 +129,8 @@ class Order {
 
     return Order(
       id: _parseInt(json['id']) ?? 0,
-      orderNumber: json['order_number']?.toString() ?? '',
+      orderNumber: json['numéro_de_commande']?.toString() ??
+          json['order_number']?.toString() ?? '',
       shopId: finalShopId,
       shopName: shopName,
       shopLogo: shopLogo,
@@ -136,7 +139,8 @@ class Order {
       customerEmail: json['customer_email']?.toString() ?? json['email']?.toString(),
       customerAddress: json['customer_address']?.toString(),
       deliveryAddress: deliveryAddress,
-      serviceType: json['service_type']?.toString() ?? '',
+      serviceType: json['type_de_service']?.toString() ??
+          json['service_type']?.toString() ?? '',
       deliveryZoneId: _parseInt(json['delivery_zone_id']),
       deliveryFee: _parseDouble(json['delivery_fee']) ?? 0.0,
       paymentMethod: json['payment_method']?.toString() ?? 'especes',
@@ -148,8 +152,9 @@ class Order {
       loyaltyPointsUsed: _parseInt(json['loyalty_points_used']),
       loyaltyDiscount: _parseDouble(json['loyalty_discount']),
       subtotal: _parseDouble(json['subtotal']) ?? 0.0,
-      totalAmount: _parseDouble(json['total_amount']) ?? 0.0,
-      status: json['status']?.toString() ?? 'pending',
+      totalAmount: _parseDouble(json['montant_total']) ??
+          _parseDouble(json['total_amount']) ?? 0.0,
+      status: json['statut']?.toString() ?? json['status']?.toString() ?? 'pending',
       items: items,
       itemsCount: itemsCount,
       receiptUrl: json['receipt_url']?.toString(),

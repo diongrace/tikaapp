@@ -3,9 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'loyalty_card_page.dart';
 import '../../../services/loyalty_service.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/models/loyalty_card_model.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/shop_service.dart';
 import '../home/home_online_screen.dart';
+import '../../auth/login_screen.dart';
+
 
 /// Page de creation de carte de fidelite
 /// L'API n'a besoin que du shop_id (le PIN est auto-genere)
@@ -13,12 +16,18 @@ class CreateLoyaltyCardPage extends StatefulWidget {
   final int shopId;
   final String boutiqueName;
   final Shop? shop;
+  /// true = on arrive ici après une suppression.
+  /// On saute la vérification de carte existante pour éviter
+  /// que getMyCards() (plus lent à refléter la suppression) redirige
+  /// vers la carte supprimée.
+  final bool cardWasDeleted;
 
   const CreateLoyaltyCardPage({
     super.key,
     required this.shopId,
     required this.boutiqueName,
     this.shop,
+    this.cardWasDeleted = false,
   });
 
   @override
@@ -37,19 +46,49 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
   }
 
   Future<void> _initialize() async {
+    // Verifier la connexion
+    await AuthService.ensureToken();
+    if (!AuthService.isAuthenticated) {
+      if (mounted) _showLoginRequired();
+      return;
+    }
+
     // Charger la boutique si pas fournie
     if (widget.shop == null) {
       _loadShop();
     }
 
-    // Verifier si une carte existe deja
+    // Si on arrive après une suppression, afficher le formulaire directement.
+    // getMyCards() peut être plus lent à refléter la suppression que getCardForShop(),
+    // ce qui causerait une redirection vers la carte supprimée.
+    print('[CREATE] cardWasDeleted=${widget.cardWasDeleted}');
+    if (widget.cardWasDeleted) {
+      print('[CREATE] Suppression récente → formulaire direct, skip vérification');
+      if (mounted) setState(() => _isCheckingExisting = false);
+      return;
+    }
+
+    // Verifier si une carte existe deja (primary: getCardForShop, fallback: getMyCards)
     try {
-      final existingCard = await LoyaltyService.getCardForShop(widget.shopId);
+      LoyaltyCard? existingCard = await LoyaltyService.getCardForShop(widget.shopId);
+      print('[CREATE] getCardForShop(${widget.shopId}) → ${existingCard?.id ?? 'null'}');
+
+      // Fallback: si null (ex: 422 sur cet endpoint), chercher via getMyCards
+      if (existingCard == null) {
+        try {
+          final allCards = await LoyaltyService.getMyCards();
+          existingCard = allCards.firstWhere((c) => c.shopId == widget.shopId);
+          print('[CREATE] fallback getMyCards → trouvé id=${existingCard.id}');
+        } catch (_) {
+          print('[CREATE] fallback getMyCards → aucune carte trouvée');
+        }
+      }
+
       if (existingCard != null && mounted) {
         // Carte deja existante: naviguer directement
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => LoyaltyCardPage(loyaltyCard: existingCard),
+            builder: (context) => LoyaltyCardPage(loyaltyCard: existingCard!),
           ),
         );
         return;
@@ -59,6 +98,86 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
     if (mounted) {
       setState(() => _isCheckingExisting = false);
     }
+  }
+
+  void _showLoginRequired() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E5F5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.lock_outline_rounded,
+                size: 36,
+                color: Color(0xFF670C88),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Connexion requise',
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Vous devez être connecté pour créer une carte de fidélité.',
+              style: GoogleFonts.openSans(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.poppins(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF670C88),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Se connecter',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadShop() async {
@@ -378,7 +497,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                           ),
                         ),
                         Text(
-                          'Votre PIN sera les 4 derniers chiffres de votre telephone',
+                          'Votre PIN sera les 4 derniers chiffres du numéro de téléphone de votre compte',
                           style: GoogleFonts.openSans(
                             fontSize: 11,
                             color: const Color(0xFF1E40AF).withOpacity(0.8),

@@ -26,18 +26,31 @@ class DashboardOverview {
   });
 
   factory DashboardOverview.fromJson(Map<String, dynamic> json) {
-    // L'API peut retourner les stats sous différentes structures:
-    // 1. Directement: {total_orders: X, ...}
-    // 2. Sous "stats": {stats: {total_orders: X, ...}}
-    // 3. Sous "overview": {overview: {total_orders: X, ...}}
-    // 4. Avec des noms alternatifs: orders_count, favorites_total, etc.
+    // Structure API Tika (GET /client/dashboard):
+    // data.commandes.{total, en_attente, terminé, total_dépensé, récent}
+    // data.loyauté.{total_points, cards_count}
+    // data.favoris.{compte, magasins}
+    // data.profil.{id, nom, email, téléphone, avatar}
+    // API retourne 'orders' (anglais) ou 'commandes' (français)
+    final commandes = json['commandes'] as Map<String, dynamic>? ??
+        json['orders'] as Map<String, dynamic>? ?? {};
+    final loyaute = json['loyauté'] as Map<String, dynamic>? ??
+        json['loyaute'] as Map<String, dynamic>? ??
+        json['loyalty'] as Map<String, dynamic>? ?? {};
+    final favoris = json['favoris'] as Map<String, dynamic>? ??
+        json['favorites'] as Map<String, dynamic>? ?? {};
+
+    // Fallback structures alternatives
     final stats = json['stats'] as Map<String, dynamic>? ??
         json['overview'] as Map<String, dynamic>? ??
         json;
 
-    // Chercher recent_orders dans plusieurs endroits possibles
+    // Commandes récentes: chercher dans commandes.récent puis fallbacks
     List<Order> recentOrders = [];
-    final ordersRaw = json['recent_orders'] ??
+    final ordersRaw = commandes['récent'] ??
+        commandes['recent'] ??
+        commandes['orders'] ??
+        json['recent_orders'] ??
         stats['recent_orders'] ??
         json['orders'] ??
         json['last_orders'] ??
@@ -46,43 +59,73 @@ class DashboardOverview {
       recentOrders = ordersRaw.map((e) => Order.fromJson(e)).toList();
     }
 
-    // Chercher le client dans plusieurs endroits possibles
+    // Profil client: chercher dans profil puis fallbacks
     Client? client;
-    final clientRaw = json['client'] ?? json['user'] ?? json['customer'];
-    if (clientRaw is Map<String, dynamic>) {
-      client = Client.fromJson(clientRaw);
+    final profilRaw = json['profil'] as Map<String, dynamic>? ??
+        json['profile'] as Map<String, dynamic>?;
+    final clientRaw = profilRaw ??
+        json['client'] as Map<String, dynamic>? ??
+        json['user'] as Map<String, dynamic>? ??
+        json['customer'] as Map<String, dynamic>?;
+    if (clientRaw != null) {
+      // Normaliser les clés françaises de la section profil
+      final normalized = <String, dynamic>{
+        'id': clientRaw['id'] ?? 0,
+        'full_name': clientRaw['nom'] ?? clientRaw['name'] ?? clientRaw['full_name'],
+        'email': clientRaw['email'],
+        'phone': clientRaw['téléphone'] ?? clientRaw['telephone'] ?? clientRaw['phone'] ?? '',
+        'profile_photo': clientRaw['avatar'] ?? clientRaw['profile_photo'],
+        ...clientRaw,
+      };
+      client = Client.fromJson(normalized);
     }
 
-    // Chercher favorites dans plusieurs endroits
-    final favoritesRaw = json['favorites'] ?? stats['favorites'];
-    int favoritesCount = _parseInt(stats['favorites_count']) ??
+    // Favoris count: chercher dans favoris.compte puis fallbacks
+    final favoritesRaw = favoris['magasins'] ??
+        favoris['shops'] ??
+        json['favorites'] ??
+        stats['favorites'];
+    int favoritesCount = _parseInt(favoris['compte']) ??
+        _parseInt(favoris['count']) ??
+        _parseInt(stats['favorites_count']) ??
         _parseInt(json['favorites_count']) ??
         _parseInt(stats['favorites_total']) ??
         _parseInt(json['favorites_total']) ??
         0;
-    // Si favorites est une liste, prendre son length
     if (favoritesCount == 0 && favoritesRaw is List) {
-      favoritesCount = favoritesRaw.length;
+      favoritesCount = (favoritesRaw as List).length;
     }
 
     return DashboardOverview(
-      totalOrders: _parseInt(stats['total_orders']) ??
+      totalOrders: _parseInt(commandes['total']) ??
+          _parseInt(stats['total_orders']) ??
           _parseInt(json['total_orders']) ??
           _parseInt(stats['orders_count']) ??
           _parseInt(json['orders_count']) ??
           0,
-      pendingOrders: _parseInt(stats['pending_orders']) ??
+      pendingOrders: _parseInt(commandes['en_attente']) ??
+          _parseInt(commandes['en attente']) ??
+          _parseInt(commandes['pending']) ??
+          _parseInt(stats['pending_orders']) ??
           _parseInt(json['pending_orders']) ??
           0,
-      completedOrders: _parseInt(stats['completed_orders']) ??
+      completedOrders: _parseInt(commandes['terminé']) ??
+          _parseInt(commandes['termine']) ??
+          _parseInt(commandes['completed']) ??
+          _parseInt(stats['completed_orders']) ??
           _parseInt(json['completed_orders']) ??
           0,
-      totalSpent: _parseDouble(stats['total_spent']) ??
+      totalSpent: _parseDouble(commandes['total_dépensé']) ??
+          _parseDouble(commandes['total_depense']) ??
+          _parseDouble(commandes['total_spent']) ??
+          _parseDouble(stats['total_spent']) ??
           _parseDouble(json['total_spent']) ??
           _parseDouble(stats['total_amount']) ??
           _parseDouble(json['total_amount']) ??
           0.0,
-      loyaltyPoints: _parseInt(stats['loyalty_points']) ??
+      loyaltyPoints: _parseInt(loyaute['total_points']) ??
+          _parseInt(loyaute['points']) ??
+          _parseInt(stats['loyalty_points']) ??
           _parseInt(json['loyalty_points']) ??
           _parseInt(stats['total_loyalty_points']) ??
           0,
@@ -140,10 +183,18 @@ class DashboardStats {
   });
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) {
-    // L'API peut retourner les stats sous differentes structures:
-    // 1. Directement: {total_orders: X, ...}
-    // 2. Sous "stats": {stats: {total_orders: X, ...}}
-    // 3. Sous "overview": {overview: {total_orders: X, ...}}
+    // Structure API Tika (GET /client/dashboard/stats):
+    // data.résumé.{total_commandes, total_dépensé, valeur_moyenne_commande}
+    // data.ce_mois.{commandes, dépensé, orders_growth}
+    // data.top_shops[{shop_id, shop_name, ...}]
+    // data.tendance_mensuelle[{month, orders, spent}]
+    final resume = json['résumé'] as Map<String, dynamic>? ??
+        json['resume'] as Map<String, dynamic>? ??
+        json['summary'] as Map<String, dynamic>? ?? {};
+    final ceMois = json['ce_mois'] as Map<String, dynamic>? ??
+        json['this_month'] as Map<String, dynamic>? ?? {};
+
+    // Fallback structures alternatives
     final stats = json['stats'] as Map<String, dynamic>? ??
         json['overview'] as Map<String, dynamic>? ??
         json;
@@ -154,31 +205,53 @@ class DashboardStats {
         stats['commandes_par_statut'] ??
         json['commandes_par_statut'];
 
-    // Chercher spent_by_month dans plusieurs endroits
+    // Chercher spent_by_month: peut venir de tendance_mensuelle
+    final tendanceMensuelle = json['tendance_mensuelle'] as List? ??
+        json['monthly_trend'] as List?;
     final spentByMonthRaw = stats['spent_by_month'] ??
         json['spent_by_month'] ??
         stats['depenses_par_mois'] ??
         json['depenses_par_mois'];
 
+    Map<String, double> spentByMonth = {};
+    if (spentByMonthRaw != null && spentByMonthRaw is Map) {
+      spentByMonth = Map<String, double>.from(
+        spentByMonthRaw.map(
+          (key, value) => MapEntry(key.toString(), _parseDouble(value) ?? 0.0),
+        ),
+      );
+    } else if (tendanceMensuelle != null) {
+      // Construire depuis tendance_mensuelle: [{month_short, spent}]
+      for (final item in tendanceMensuelle) {
+        if (item is Map) {
+          final key = item['month_short']?.toString() ?? item['month']?.toString() ?? '';
+          final value = _parseDouble(item['spent']) ?? _parseDouble(item['dépensé']) ?? 0.0;
+          if (key.isNotEmpty) spentByMonth[key] = value;
+        }
+      }
+    }
+
     return DashboardStats(
-      totalSpent: _parseDouble(stats['total_spent']) ??
+      totalSpent: _parseDouble(resume['total_dépensé']) ??
+          _parseDouble(resume['total_depense']) ??
+          _parseDouble(resume['total_spent']) ??
+          _parseDouble(stats['total_spent']) ??
           _parseDouble(json['total_spent']) ??
           _parseDouble(stats['total_amount']) ??
           _parseDouble(json['total_amount']) ??
-          _parseDouble(stats['total_depense']) ??
-          _parseDouble(json['total_depense']) ??
           0.0,
-      totalOrders: _parseInt(stats['total_orders']) ??
+      totalOrders: _parseInt(resume['total_commandes']) ??
+          _parseInt(resume['total_orders']) ??
+          _parseInt(stats['total_orders']) ??
           _parseInt(json['total_orders']) ??
           _parseInt(stats['orders_count']) ??
           _parseInt(json['orders_count']) ??
-          _parseInt(stats['total_commandes']) ??
-          _parseInt(json['total_commandes']) ??
           0,
-      averageOrderAmount: _parseDouble(stats['average_order_amount']) ??
+      averageOrderAmount: _parseDouble(resume['valeur_moyenne_commande']) ??
+          _parseDouble(resume['average_order_value']) ??
+          _parseDouble(resume['average_order_amount']) ??
+          _parseDouble(stats['average_order_amount']) ??
           _parseDouble(json['average_order_amount']) ??
-          _parseDouble(stats['average_amount']) ??
-          _parseDouble(json['average_amount']) ??
           _parseDouble(stats['panier_moyen']) ??
           _parseDouble(json['panier_moyen']) ??
           0.0,
@@ -186,18 +259,17 @@ class DashboardStats {
           _parseInt(json['total_loyalty_points']) ??
           _parseInt(stats['loyalty_points']) ??
           _parseInt(json['loyalty_points']) ??
-          _parseInt(stats['points_fidelite']) ??
-          _parseInt(json['points_fidelite']) ??
           0,
-      ordersThisMonth: _parseInt(stats['orders_this_month']) ??
+      ordersThisMonth: _parseInt(ceMois['commandes']) ??
+          _parseInt(ceMois['orders']) ??
+          _parseInt(stats['orders_this_month']) ??
           _parseInt(json['orders_this_month']) ??
-          _parseInt(stats['commandes_ce_mois']) ??
-          _parseInt(json['commandes_ce_mois']) ??
           0,
-      spentThisMonth: _parseDouble(stats['spent_this_month']) ??
+      spentThisMonth: _parseDouble(ceMois['dépensé']) ??
+          _parseDouble(ceMois['depense']) ??
+          _parseDouble(ceMois['spent']) ??
+          _parseDouble(stats['spent_this_month']) ??
           _parseDouble(json['spent_this_month']) ??
-          _parseDouble(stats['depense_ce_mois']) ??
-          _parseDouble(json['depense_ce_mois']) ??
           0.0,
       favoriteShop: stats['favorite_shop']?.toString() ??
           json['favorite_shop']?.toString() ??
@@ -214,14 +286,7 @@ class DashboardStats {
               ),
             )
           : {},
-      spentByMonth: spentByMonthRaw != null && spentByMonthRaw is Map
-          ? Map<String, double>.from(
-              spentByMonthRaw.map(
-                (key, value) =>
-                    MapEntry(key.toString(), _parseDouble(value) ?? 0.0),
-              ),
-            )
-          : {},
+      spentByMonth: spentByMonth,
     );
   }
 
@@ -310,9 +375,10 @@ class DashboardNotification {
       type: json['type']?.toString() ?? 'system',
       title: json['title']?.toString() ?? '',
       message: json['message']?.toString() ?? '',
-      isRead: json['is_read'] == true,
+      isRead: json['lire'] == true || json['is_read'] == true,
       actionUrl: json['action_url']?.toString(),
-      data: json['data'] as Map<String, dynamic>?,
+      data: json['données'] as Map<String, dynamic>? ??
+          json['data'] as Map<String, dynamic>?,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ??
           DateTime.now(),
       createdAtHuman: json['created_at_human']?.toString(),

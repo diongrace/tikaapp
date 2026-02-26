@@ -20,6 +20,7 @@ class OnboardingScreen3 extends StatelessWidget {
                     'lib/core/assets/livreur.jpg',
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
                   ),
                 ),
 

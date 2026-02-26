@@ -4,7 +4,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../services/loyalty_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/models/loyalty_card_model.dart';
-import '../home/home_online_screen.dart';
 
 /// Page d'affichage de la carte de fidelite
 class LoyaltyCardPage extends StatefulWidget {
@@ -25,6 +24,8 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
   List<LoyaltyTransaction> _recentTransactions = [];
   String? _qrData;
   bool _isLoadingDetail = true;
+  bool _isDeleting = false;
+  Map<String, dynamic> _stats = {};
 
   static const Color _primaryColor = Color(0xFF8936A8);
 
@@ -39,10 +40,16 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
   Future<void> _loadCardDetail() async {
     try {
       final detail = await LoyaltyService.getCardDetail(_card.id);
-      // Charger le QR data en parallele
+      // Charger le QR data et les stats globales en parallele
       Map<String, String> qrInfo = {};
+      Map<String, dynamic> stats = {};
       try {
-        qrInfo = await LoyaltyService.getCardQrCode(_card.id);
+        final results = await Future.wait([
+          LoyaltyService.getCardQrCode(_card.id),
+          LoyaltyService.getStats(),
+        ]);
+        qrInfo = results[0] as Map<String, String>;
+        stats = results[1] as Map<String, dynamic>;
       } catch (_) {}
 
       if (mounted) {
@@ -53,6 +60,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
           _qrData = qrInfo['qr_data']?.isNotEmpty == true
               ? qrInfo['qr_data']
               : _card.qrCode ?? _card.cardNumber;
+          _stats = stats;
           _isLoadingDetail = false;
         });
       }
@@ -70,6 +78,112 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
   Future<void> _refreshCard() async {
     setState(() => _isLoadingDetail = true);
     await _loadCardDetail();
+  }
+
+  /// Supprimer la carte avec confirmation
+  Future<void> _deleteCard() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 24),
+            const SizedBox(width: 10),
+            Text(
+              'Supprimer la carte ?',
+              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Vous allez supprimer votre carte de fidélité pour ${_card.shopName}.',
+              style: GoogleFonts.openSans(fontSize: 14, color: Colors.black87),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Color(0xFFEF4444), size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Vos ${_card.points} points seront perdus définitivement.',
+                      style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFFEF4444)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.grey.shade600)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('Supprimer', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    print('[DELETE] Confirmation reçue pour carte id=${_card.id} shop=${_card.shopName}');
+    setState(() => _isDeleting = true);
+
+    try {
+      await LoyaltyService.deleteCard(_card.id);
+      print('[DELETE] API suppression OK → pop(true)');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Carte supprimée avec succès',
+              style: GoogleFonts.openSans(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        Navigator.of(context).pop(true); // retour avec signal de suppression
+      }
+    } catch (e) {
+      print('[DELETE] Erreur API: $e');
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceAll('Exception: ', ''),
+              style: GoogleFonts.openSans(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    }
   }
 
   Color get _tierColor {
@@ -97,34 +211,56 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
+            // Header premium
             Container(
-              color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: _primaryColor.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                          colors: _cardGradient,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _cardGradient.first.withOpacity(0.38),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.arrow_back_ios_rounded, color: _primaryColor, size: 18),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 17),
                     ),
-                    onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Ma carte de fidelite',
+                          'Ma carte de fidélité',
                           style: GoogleFonts.poppins(
                             fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1E1E2E),
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0D0D26),
+                            letterSpacing: -0.4,
                           ),
                         ),
                         Text(
@@ -137,24 +273,35 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                       ],
                     ),
                   ),
-                  // Badge tier
+                  // Badge tier gradient
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _tierColor.withOpacity(0.15),
+                      gradient: LinearGradient(
+                        colors: _cardGradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _cardGradient.first.withOpacity(0.30),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.workspace_premium, color: _tierColor, size: 14),
+                        const Icon(Icons.workspace_premium, color: Colors.white, size: 13),
                         const SizedBox(width: 4),
                         Text(
                           _card.tierLabel,
                           style: GoogleFonts.poppins(
                             fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: _tierColor,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -199,35 +346,99 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                         const SizedBox(height: 20),
                       ],
 
+                      // Stats globales (toutes cartes confondues)
+                      if (_stats.isNotEmpty) ...[
+                        _buildGlobalStats(),
+                        const SizedBox(height: 20),
+                      ],
+
                       // Infos de la carte
                       _buildCardInfo(),
                       const SizedBox(height: 20),
 
-                      // Bouton retour boutique
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => HomeScreen(shopId: _card.shopId),
+                      // Bouton retour boutique (gradient)
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: double.infinity,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: _cardGradient,
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _cardGradient.first.withOpacity(0.38),
+                                blurRadius: 14,
+                                offset: const Offset(0, 5),
                               ),
-                            );
-                          },
-                          icon: const Icon(Icons.storefront_rounded, size: 18),
-                          label: Text(
-                            'Retour a la boutique',
-                            style: GoogleFonts.openSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.storefront_rounded, size: 18, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Retour à la boutique',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Bouton supprimer la carte
+                      const SizedBox(height: 4),
+                      GestureDetector(
+                        onTap: _isDeleting ? null : _deleteCard,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFFEF4444).withOpacity(0.28),
+                              width: 1,
                             ),
                           ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _isDeleting
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        color: Color(0xFFEF4444),
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.delete_outline_rounded,
+                                      size: 18,
+                                      color: Color(0xFFEF4444),
+                                    ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Supprimer la carte',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFEF4444),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -250,158 +461,211 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
   Widget _buildCardVisual() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: _cardGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: _cardGradient.first.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: _cardGradient.first.withOpacity(0.48),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tika',
-                    style: GoogleFonts.poppins(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'Carte de fidelite',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.85),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            // Cercles décoratifs (arrière-plan)
+            Positioned(
+              right: -50,
+              top: -50,
+              child: Container(
+                width: 200,
+                height: 200,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.workspace_premium, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      _card.tierLabel,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.07),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Boutique
-          Text(
-            'Boutique',
-            style: GoogleFonts.openSans(
-              fontSize: 11,
-              color: Colors.white.withOpacity(0.7),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            _card.shopName,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+            Positioned(
+              right: 20,
+              bottom: -65,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.05),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
+            Positioned(
+              left: -35,
+              bottom: -25,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.04),
+                ),
+              ),
+            ),
 
-          // Numero et Points
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
+            // Contenu
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Numero de carte',
-                    style: GoogleFonts.openSans(
-                      fontSize: 10,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tika',
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          Text(
+                            'Carte de fidélité',
+                            style: GoogleFonts.openSans(
+                              fontSize: 11,
+                              color: Colors.white.withOpacity(0.78),
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withOpacity(0.35), width: 1),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 14),
+                            const SizedBox(width: 5),
+                            Text(
+                              _card.tierLabel,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _card.cardNumber,
-                    style: GoogleFonts.robotoMono(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Points',
-                    style: GoogleFonts.openSans(
-                      fontSize: 10,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${_card.points}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  const SizedBox(height: 28),
 
-          if (_card.pointsValue > 0) ...[
-            const SizedBox(height: 4),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                '= ${_card.pointsValue} FCFA',
-                style: GoogleFonts.openSans(
-                  fontSize: 11,
-                  color: Colors.white.withOpacity(0.8),
-                ),
+                  // Boutique
+                  Text(
+                    'BOUTIQUE',
+                    style: GoogleFonts.openSans(
+                      fontSize: 9,
+                      color: Colors.white.withOpacity(0.60),
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    _card.shopName,
+                    style: GoogleFonts.poppins(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+
+                  // Séparateur
+                  Divider(color: Colors.white.withOpacity(0.18), height: 1),
+                  const SizedBox(height: 18),
+
+                  // Numéro et Points
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'NUMÉRO DE CARTE',
+                            style: GoogleFonts.openSans(
+                              fontSize: 9,
+                              color: Colors.white.withOpacity(0.60),
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _card.cardNumber,
+                            style: GoogleFonts.robotoMono(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'POINTS',
+                            style: GoogleFonts.openSans(
+                              fontSize: 9,
+                              color: Colors.white.withOpacity(0.60),
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          Text(
+                            '${_card.points}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 40,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.0,
+                            ),
+                          ),
+                          if (_card.pointsValue > 0)
+                            Text(
+                              '= ${_card.pointsValue} FCFA',
+                              style: GoogleFonts.openSans(
+                                fontSize: 11,
+                                color: Colors.white.withOpacity(0.72),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -450,28 +714,47 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: color.withOpacity(0.14),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 8),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color, color.withOpacity(0.68)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.34),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+          const SizedBox(height: 10),
           Text(
             value,
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E1E2E),
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF0D0D26),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -499,37 +782,64 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: _primaryColor.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
+          // Header avec accent bar
           Row(
             children: [
-              Icon(Icons.qr_code_rounded, color: _primaryColor, size: 20),
+              Container(
+                width: 4,
+                height: 22,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _cardGradient,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Icon(Icons.qr_code_2_rounded, color: _primaryColor, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Mon QR Code',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E1E2E),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+
+          // QR container avec glow
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _primaryColor.withOpacity(0.18),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _primaryColor.withOpacity(0.12),
+                  blurRadius: 24,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
             child: QrImageView(
               data: qrContent,
@@ -538,7 +848,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               backgroundColor: Colors.white,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
             'Scannez ce code en boutique pour cumuler vos points',
             textAlign: TextAlign.center,
@@ -548,23 +858,25 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             ),
           ),
           if (_card.pinCodeHint != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFFFFF8F0),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFF9800).withOpacity(0.28), width: 1),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock_outline, size: 14, color: Color(0xFFFF9800)),
-                  const SizedBox(width: 6),
+                  const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFFFF9800)),
+                  const SizedBox(width: 8),
                   Flexible(
                     child: Text(
                       _card.pinCodeHint!,
                       style: GoogleFonts.openSans(
-                        fontSize: 11,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFFE65100),
                       ),
                     ),
@@ -601,14 +913,27 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.card_giftcard_rounded, color: Color(0xFFFF9800), size: 20),
+              Container(
+                width: 4,
+                height: 22,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF9800), Color(0xFFFF6D00)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(Icons.card_giftcard_rounded, color: Color(0xFFFF9800), size: 18),
               const SizedBox(width: 8),
               Text(
-                'Recompenses',
+                'Récompenses',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E1E2E),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
                 ),
               ),
             ],
@@ -755,14 +1080,27 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.history_rounded, color: Color(0xFF2196F3), size: 20),
+              Container(
+                width: 4,
+                height: 22,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2196F3), Color(0xFF1565C0)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(Icons.history_rounded, color: Color(0xFF2196F3), size: 18),
               const SizedBox(width: 8),
               Text(
-                'Historique recent',
+                'Historique récent',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E1E2E),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
                 ),
               ),
             ],
@@ -854,6 +1192,99 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 tx.createdAtHuman.isNotEmpty ? tx.createdAtHuman : tx.createdAt,
                 style: GoogleFonts.openSans(fontSize: 10, color: Colors.grey[400]),
               ),
+              if (tx.balanceAfter > 0)
+                Text(
+                  'Solde: ${tx.balanceAfter} pts',
+                  style: GoogleFonts.openSans(fontSize: 10, color: Colors.grey[400]),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // STATS GLOBALES
+  // ============================================================
+
+  Widget _buildGlobalStats() {
+    final totalPoints = _stats['total_points'] ?? _stats['total_points_earned'] ?? 0;
+    final totalValue  = _stats['total_value']  ?? _stats['points_value']         ?? 0;
+    final cardsCount  = _stats['cards_count']  ?? _stats['total_cards']          ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 22,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _cardGradient,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(Icons.bar_chart_rounded, color: _primaryColor, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'Statistiques globales',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.star_rounded,
+                  value: '$totalPoints',
+                  label: 'Pts totaux',
+                  color: _primaryColor,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.monetization_on_rounded,
+                  value: '$totalValue F',
+                  label: 'Valeur totale',
+                  color: const Color(0xFF4CAF50),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.credit_card_rounded,
+                  value: '$cardsCount',
+                  label: 'Cartes',
+                  color: const Color(0xFF2196F3),
+                ),
+              ),
             ],
           ),
         ],
@@ -887,14 +1318,27 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.info_outline_rounded, color: _primaryColor, size: 20),
+              Container(
+                width: 4,
+                height: 22,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _cardGradient,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(Icons.info_outline_rounded, color: _primaryColor, size: 18),
               const SizedBox(width: 8),
               Text(
                 'Informations',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E1E2E),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
                 ),
               ),
             ],

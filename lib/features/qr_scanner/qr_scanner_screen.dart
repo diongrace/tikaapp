@@ -36,163 +36,335 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     final String? code = barcodes.first.rawValue;
     if (code == null) return;
 
-    setState(() {
-      _isProcessing = true;
-    });
-
+    setState(() => _isProcessing = true);
     await _openShopFromSlug(code);
   }
 
   Future<void> _openShopFromSlug(String input) async {
     try {
-      // Utiliser getShopByLink qui accepte un ID ou une URL
       final Shop shop = await ShopService.getShopByLink(input);
 
       if (!mounted) return;
 
-      // Naviguer vers l'écran d'accueil de la boutique avec les données
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(shop: shop),
-        ),
+        MaterialPageRoute(builder: (context) => HomeScreen(shop: shop)),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: ${e.toString()}')),
       );
-      setState(() {
-        _isProcessing = false;
-      });
+      setState(() => _isProcessing = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final size   = MediaQuery.of(context).size;
+    final frame  = size.width * 0.80; // taille du cadre de scan
+    final corner = 28.0;              // longueur des coins
+    const stroke = 4.0;              // épaisseur des coins
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 40),
-            Text(
-              'Scanner le QR code',
-              style: GoogleFonts.openSans(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ── Caméra plein écran ────────────────────────────────
+          MobileScanner(
+            controller: _controller,
+            onDetect: _onBarcodeDetect,
+            fit: BoxFit.cover,
+          ),
+
+          // ── Overlay sombre autour du cadre ───────────────────
+          Positioned.fill(
+            child: _ScanOverlay(frameSize: frame, verticalOffset: -40),
+          ),
+
+          // ── Coins du cadre ───────────────────────────────────
+          Positioned.fill(
+            child: Transform.translate(
+              offset: const Offset(0, -40),
+              child: Center(child: SizedBox(
+              width: frame,
+              height: frame,
+              child: Stack(
+                children: [
+                  // Coin haut-gauche
+                  Positioned(top: 0, left: 0,
+                    child: _Corner(corner: corner, stroke: stroke,
+                        top: true, left: true)),
+                  // Coin haut-droite
+                  Positioned(top: 0, right: 0,
+                    child: _Corner(corner: corner, stroke: stroke,
+                        top: true, left: false)),
+                  // Coin bas-gauche
+                  Positioned(bottom: 0, left: 0,
+                    child: _Corner(corner: corner, stroke: stroke,
+                        top: false, left: true)),
+                  // Coin bas-droite
+                  Positioned(bottom: 0, right: 0,
+                    child: _Corner(corner: corner, stroke: stroke,
+                        top: false, left: false)),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Positionnez le QR code dans le cadre',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 40),
-            Expanded(
-              child: Center(
-                child: Container(
-                  width: 280,
-                  height: 280,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: MobileScanner(
-                      controller: _controller,
-                      onDetect: _onBarcodeDetect,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: ValueListenableBuilder(
-                      valueListenable: _controller,
-                      builder: (context, value, child) {
-                        final torchState = value.torchState;
-                        switch (torchState) {
-                          case TorchState.off:
-                          case TorchState.unavailable:
-                          case TorchState.auto:
-                            return const Icon(
-                              Icons.flash_off,
-                              color: Colors.white,
-                              size: 24,
-                            );
-                          case TorchState.on:
-                            return const Icon(
-                              Icons.flash_on,
-                              color: Colors.amber,
-                              size: 24,
-                            );
-                        }
-                      },
-                    ),
-                    onPressed: () => _controller.toggleTorch(),
-                  ),
-                ),
-                const SizedBox(width: 24),
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.cameraswitch,
+            )))),
+
+          // ── Zone haut : titre + sous-titre ───────────────────
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 32),
+                  Text(
+                    'Scanner le QR code',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
-                      size: 24,
                     ),
-                    onPressed: () => _controller.switchCamera(),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Positionnez le QR code dans le cadre',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.openSans(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40.0),
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: double.infinity,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8936A8),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Retour',
-                      style: GoogleFonts.openSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+          ),
+
+          // ── Zone bas : boutons + retour ───────────────────────
+          Positioned(
+            bottom: 0, left: 0, right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(32, 0, 32, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Flash + retournement caméra
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _CamBtn(
+                          icon: ValueListenableBuilder(
+                            valueListenable: _controller,
+                            builder: (_, value, __) {
+                              final on = value.torchState == TorchState.on;
+                              return Icon(
+                                on ? Icons.flash_on : Icons.flash_off,
+                                color: on ? Colors.amber : Colors.white,
+                                size: 24,
+                              );
+                            },
+                          ),
+                          onTap: () => _controller.toggleTorch(),
+                        ),
+                        const SizedBox(width: 24),
+                        _CamBtn(
+                          icon: const Icon(Icons.cameraswitch,
+                              color: Colors.white, size: 24),
+                          onTap: () => _controller.switchCamera(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Bouton Retour
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: double.infinity,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8936A8),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8936A8).withOpacity(0.45),
+                              blurRadius: 18,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Retour',
+                            style: GoogleFonts.poppins(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 40),
-          ],
+          ),
+
+          // ── Loader quand traitement en cours ─────────────────
+          if (_isProcessing)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black54,
+                child: const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF8936A8)),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Overlay sombre avec découpe centrale ──────────────────────────────────
+class _ScanOverlay extends StatelessWidget {
+  final double frameSize;
+  final double verticalOffset;
+  const _ScanOverlay({required this.frameSize, this.verticalOffset = 0});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _OverlayPainter(
+          frameSize: frameSize, verticalOffset: verticalOffset));
+  }
+}
+
+class _OverlayPainter extends CustomPainter {
+  final double frameSize;
+  final double verticalOffset;
+  const _OverlayPainter({required this.frameSize, this.verticalOffset = 0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.black.withOpacity(0.55);
+
+    final cx = size.width  / 2;
+    final cy = size.height / 2 + verticalOffset;
+    final half = frameSize / 2;
+    final r = 16.0;
+
+    final full = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    final hole = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTRB(cx - half, cy - half, cx + half, cy + half),
+        Radius.circular(r),
+      ));
+
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, full, hole),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OverlayPainter old) =>
+      old.frameSize != frameSize || old.verticalOffset != verticalOffset;
+}
+
+// ── Coin du cadre de scan ─────────────────────────────────────────────────
+class _Corner extends StatelessWidget {
+  final double corner;
+  final double stroke;
+  final bool top;
+  final bool left;
+
+  const _Corner({
+    required this.corner,
+    required this.stroke,
+    required this.top,
+    required this.left,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: corner,
+      height: corner,
+      child: CustomPaint(
+        painter: _CornerPainter(
+          stroke: stroke, top: top, left: left,
         ),
+      ),
+    );
+  }
+}
+
+class _CornerPainter extends CustomPainter {
+  final double stroke;
+  final bool top;
+  final bool left;
+
+  const _CornerPainter({
+    required this.stroke,
+    required this.top,
+    required this.left,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Branche horizontale
+    canvas.drawLine(
+      Offset(left ? 0 : w, top ? 0 : h),
+      Offset(left ? w : 0, top ? 0 : h),
+      paint,
+    );
+    // Branche verticale
+    canvas.drawLine(
+      Offset(left ? 0 : w, top ? 0 : h),
+      Offset(left ? 0 : w, top ? h : 0),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CornerPainter old) => false;
+}
+
+// ── Bouton caméra circulaire ──────────────────────────────────────────────
+class _CamBtn extends StatelessWidget {
+  final Widget icon;
+  final VoidCallback onTap;
+  const _CamBtn({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.18),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white24, width: 1),
+        ),
+        child: Center(child: icon),
       ),
     );
   }

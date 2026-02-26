@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './utils/api_endpoint.dart';
 import './models/order_model.dart';
+import './auth_service.dart';
 
 /// Service de gestion des commandes
 /// LOGIQUE EXACTE DE L'API TIKA
@@ -16,6 +17,14 @@ class OrderService {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
+
+  /// Headers incluant le token auth si l'utilisateur est connecté
+  static Map<String, String> get _authHeaders => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (AuthService.authToken != null)
+          'Authorization': 'Bearer ${AuthService.authToken}',
+      };
 
   /// Créer une commande
   /// POST /orders-simple (ou /client/orders)
@@ -62,6 +71,8 @@ class OrderService {
     int? loyaltyCardId,
     int? loyaltyPointsUsed,
     double? loyaltyDiscount,
+    String? pickupDate,
+    String? pickupTime,
   }) async {
     // Construire le body selon la spec API EXACTE (docs-api-flutter)
     final body = {
@@ -86,7 +97,9 @@ class OrderService {
       if (loyaltyCardId != null) 'loyalty_card_id': loyaltyCardId,
       if (loyaltyPointsUsed != null && loyaltyPointsUsed > 0)
         'loyalty_points_used': loyaltyPointsUsed,
-      if (loyaltyDiscount != null) 'loyalty_discount': loyaltyDiscount, // ✅ AJOUTÉ
+      if (loyaltyDiscount != null) 'loyalty_discount': loyaltyDiscount,
+      if (pickupDate != null && pickupDate.isNotEmpty) 'pickup_date': pickupDate,
+      if (pickupTime != null && pickupTime.isNotEmpty) 'pickup_time': pickupTime,
     };
 
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -110,9 +123,12 @@ class OrderService {
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     try {
+      // Charger le token depuis le stockage si absent en mémoire
+      await AuthService.ensureToken();
+
       final response = await http.post(
         Uri.parse(Endpoints.orders),
-        headers: _headers,
+        headers: _authHeaders, // ✅ Token inclus si utilisateur connecté
         body: jsonEncode(body),
       );
 

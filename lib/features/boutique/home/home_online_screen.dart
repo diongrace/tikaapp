@@ -30,7 +30,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _selectedNavIndex = 0;
   String _selectedCategory = "Toutes catégories";
   String _sortOrder = "Trier par";
@@ -48,63 +48,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   List<ProductCategory> _categories = [];
   int? _selectedCategoryId;
 
-  // Animation pour le badge du panier
-  late AnimationController _cartBadgeAnimationController;
-  late Animation<double> _cartBadgeAnimation;
-  int _previousCartCount = 0;
-  bool _cartListenerAdded = false;
-
   @override
   void initState() {
     super.initState();
     print('🏠 [HomeScreen] initState démarré');
-
-    // Ajouter le listener après un microtask pour éviter les problèmes de synchronisation
-    Future.microtask(() {
-      if (mounted) {
-        _cartManager.addListener(_onCartChanged);
-        _cartListenerAdded = true;
-        print('🏠 [HomeScreen] Listener du panier ajouté');
-      }
-    });
-
     WidgetsBinding.instance.addObserver(this);
-
-    // Initialiser l'animation pour le badge du panier (simplifiée)
-    _cartBadgeAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    // Animation simplifiée pour éviter les blocages
-    _cartBadgeAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.3,
-    ).animate(CurvedAnimation(
-      parent: _cartBadgeAnimationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _previousCartCount = _cartManager.itemCount;
-
     _loadShopData();
   }
 
   @override
   void dispose() {
-    print('🏠 [HomeScreen] dispose appelé - _cartListenerAdded: $_cartListenerAdded');
-    try {
-      // Seulement enlever le listener s'il a été ajouté
-      if (_cartListenerAdded) {
-        _cartManager.removeListener(_onCartChanged);
-        print('🏠 [HomeScreen] Listener du panier enlevé');
-      }
-      WidgetsBinding.instance.removeObserver(this);
-      _searchController.dispose();
-      _cartBadgeAnimationController.dispose();
-    } catch (e) {
-      print('❌ [HomeScreen] Erreur dans dispose: $e');
-    }
+    WidgetsBinding.instance.removeObserver(this);
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -340,41 +295,68 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   }
 
 
-  void _onCartChanged() {
-    print('🔔 [HomeScreen] _onCartChanged appelé');
+  void _handleAddToCart(Product product) {
+    final shopTheme = _currentShop?.theme ?? ShopTheme.defaultTheme();
 
-    // Utiliser microtask pour éviter setState pendant le build
-    Future.microtask(() {
-      if (!mounted) {
-        print('⚠️ [HomeScreen] Widget non monté, abandon');
-        return;
-      }
+    // Produit avec variants → ouvrir le détail pour sélectionner
+    final hasVariants = (product.sizes?.isNotEmpty ?? false) ||
+        (product.colors?.isNotEmpty ?? false);
+    if (hasVariants) {
+      _navigateToProduct(product);
+      return;
+    }
 
-      final currentCount = _cartManager.itemCount;
-      print('🔔 [HomeScreen] Nombre d\'articles: $currentCount (précédent: $_previousCartCount)');
+    // Produit simple → ajout direct au panier
+    final productMap = {
+      'id': product.id,
+      'name': product.name,
+      'price': product.price,
+      'stock': product.stockQuantity,
+      'isAvailable': product.isAvailable,
+      'image': product.primaryImageUrl ?? '',
+    };
 
-      // Si un produit a été ajouté, déclencher l'animation
-      if (currentCount > _previousCartCount) {
-        print('✨ [HomeScreen] Déclenchement de l\'animation du badge');
-        try {
-          // Animation aller-retour simplifiée
-          _cartBadgeAnimationController.forward(from: 0.0).then((_) {
-            if (mounted) {
-              _cartBadgeAnimationController.reverse();
-            }
-          });
-        } catch (e) {
-          print('❌ [HomeScreen] Erreur animation: $e');
-        }
-      }
+    final error = _cartManager.addItem(
+      productMap,
+      1,
+      shopId: _currentShop?.id,
+    );
 
-      _previousCartCount = currentCount;
+    if (!mounted) return;
 
-      // setState protégé
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error, style: GoogleFonts.openSans()),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${product.name} ajouté au panier',
+                  style: GoogleFonts.openSans(color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: shopTheme.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _navigateToProduct(Product product) {
@@ -395,16 +377,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
               'name': product.name,
               'price': product.price,
               'oldPrice': product.comparePrice,
+              'discount': product.discountPercentage,
+              'average_rating': product.averageRating,
+              'rating_count': product.ratingCount,
               'stock': product.stockQuantity,
               'isAvailable': product.isAvailable,
               'image': product.primaryImageUrl ?? '',
               'description': product.description,
               'category': product.category?.name,
-              'shopId': _currentShop?.id, // Pour validation du panier
-              // Champs spécifiques selon le type de boutique
+              'shopId': _currentShop?.id,
               'preparation_time': product.cookingTime,
               'portions': product.portions?.map((p) => p.toJson()).toList(),
-              // Champs boutique en ligne (tailles, couleurs, matière)
               'sizes': product.sizes,
               'colors': product.colors,
               'material': product.material,
@@ -440,22 +423,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
     return BoutiqueThemeProvider(
       shop: _currentShop,
       child: Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFEEEFF6),
       body: Stack(
         children: [
           // Contenu scrollable
           Column(
             children: [
-              // Espace pour le header et la carte
-              const SizedBox(height: 220),
+              // Espace pour le header et la carte boutique
+              const SizedBox(height: 326),
 
-              // Espacement entre la carte et les filtres
-              const SizedBox(height: 17),
-
-              // Filtres uniquement
+              // Zone filtres — fond blanc avec bord supérieur arrondi
               Container(
-                color: const Color(0xFFF5F5F5),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEEEFF6),
+                ),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child: Column(
                   children: [
                     CategoryFilterWidget(
@@ -510,14 +492,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                                   'image': p.primaryImageUrl,
                                   'category': p.category?.name,
                                   'cooking_time': p.cookingTime,
+                                  'sizes': p.sizes,
+                                  'colors': p.colors,
+                                  'average_rating': p.averageRating,
+                                  'rating_count': p.ratingCount,
                                 })
                             .toList(),
                         onProductTap: (productMap) {
-                          // Trouver le Product complet
                           final product = _products.firstWhere(
                             (p) => p.id == productMap['id'],
                           );
                           _navigateToProduct(product);
+                        },
+                        onProductAddToCart: (productMap) {
+                          final product = _products.firstWhere(
+                            (p) => p.id == productMap['id'],
+                          );
+                          _handleAddToCart(product);
                         },
                         isRestaurant: _currentShop?.isRestaurant ?? false,
                       ),
@@ -547,7 +538,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
 
           // Carte d'informations boutique - Chevauche l'image
           Positioned(
-            top: 140,
+            top: 110,
             left: 16,
             right: 16,
             child: BoutiqueInfoCard(
@@ -556,6 +547,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
               boutiqueDescription: _currentShop?.description ?? 'Bienvenue dans notre boutique',
               boutiqueLogoPath: _currentShop?.logoUrl ?? 'lib/core/assets/lop.jpeg',
               phoneNumber: _currentShop?.phone ?? '',
+              averageRating: _currentShop?.averageRating ?? 0.0,
+              totalReviews: _currentShop?.totalReviews ?? 0,
             ),
           ),
 
@@ -566,8 +559,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       bottomNavigationBar: HomeBottomNavigation(
         selectedIndex: _selectedNavIndex,
         currentShop: _currentShop,
-        cartManager: _cartManager,
-        cartBadgeAnimation: _cartBadgeAnimation,
         onIndexChanged: (index) => setState(() => _selectedNavIndex = index),
         onSearchTap: _showSearchDialog,
         onActionsTap: _showActionsBottomSheet,

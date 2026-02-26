@@ -9,6 +9,7 @@ class ProductDetailsSection extends StatefulWidget {
   final BoutiqueType boutiqueType;
   final Function(List<String>)? onPreferencesChanged;
   final Function(String?)? onSizeSelected;
+  final Function(int?)? onPortionSelected;
 
   const ProductDetailsSection({
     super.key,
@@ -16,6 +17,7 @@ class ProductDetailsSection extends StatefulWidget {
     required this.boutiqueType,
     this.onPreferencesChanged,
     this.onSizeSelected,
+    this.onPortionSelected,
   });
 
   @override
@@ -235,6 +237,114 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
     );
   }
 
+  /// Chips compactes pour tailles/portions dans la boutique en ligne
+  Widget _buildPortionChips() {
+    final portions = _getPortions()
+        .where((p) => p['is_active'] != false && p['is_active'] != 0)
+        .toList();
+    if (portions.isEmpty) return const SizedBox.shrink();
+
+    final primary = BoutiqueThemeProvider.of(context).primary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: portions.map((portion) {
+            final isSelected = _selectedPortionId == portion['id'];
+            final stock = portion['stock'];
+            final outOfStock = stock != null && stock is int && stock <= 0;
+            final name = portion['name']?.toString() ?? '';
+
+            return GestureDetector(
+              onTap: outOfStock
+                  ? null
+                  : () {
+                      final newPortionId = isSelected ? null : portion['id'] as int?;
+                      setState(() {
+                        _selectedPortionId = newPortionId;
+                        _notifyPreferencesChanged();
+                      });
+                      widget.onPortionSelected?.call(newPortionId);
+                    },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                constraints: const BoxConstraints(minWidth: 52),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                decoration: BoxDecoration(
+                  color: isSelected ? primary : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected
+                        ? primary
+                        : outOfStock
+                            ? Colors.grey.shade200
+                            : Colors.grey.shade200,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: primary.withOpacity(0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                ),
+                child: Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: outOfStock
+                        ? Colors.grey.shade400
+                        : isSelected
+                            ? Colors.white
+                            : Colors.grey.shade700,
+                    decoration: outOfStock
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        // Prix de la portion sélectionnée
+        if (_selectedPortionId != null) ...[
+          const SizedBox(height: 10),
+          Builder(builder: (context) {
+            final selected = portions.firstWhere(
+              (p) => p['id'] == _selectedPortionId,
+              orElse: () => {},
+            );
+            final price = selected['price'];
+            if (price == null) return const SizedBox.shrink();
+            return Text(
+              '$price FCFA',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: primary,
+              ),
+            );
+          }),
+        ],
+      ],
+    );
+  }
+
   /// Sélecteur de portions
   Widget _buildPortionSelector() {
     final portions = _getPortions()
@@ -252,10 +362,12 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
 
         return GestureDetector(
           onTap: outOfStock ? null : () {
+            final newPortionId = isSelected ? null : portion['id'] as int?;
             setState(() {
-              _selectedPortionId = isSelected ? null : portion['id'] as int?;
+              _selectedPortionId = newPortionId;
               _notifyPreferencesChanged();
             });
+            widget.onPortionSelected?.call(newPortionId);
           },
           child: Opacity(
             opacity: outOfStock ? 0.4 : 1.0,
@@ -413,43 +525,22 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
       children: [
         // Sélecteur de taille depuis sizes
         if (hasSizes) ...[
-          Text(
-            'Taille',
-            style: GoogleFonts.openSans(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF2D2D2D),
-            ),
-          ),
+          _buildSectionTitle('Taille', context),
           const SizedBox(height: 12),
           _buildSizeSelector(List<String>.from(sizes.map((s) => s.toString()))),
           const SizedBox(height: 20),
         ]
         // Sinon, utiliser les portions comme tailles/variantes
         else if (hasPortionsForShop) ...[
-          Text(
-            'Taille',
-            style: GoogleFonts.openSans(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF2D2D2D),
-            ),
-          ),
+          _buildSectionTitle('Taille', context),
           const SizedBox(height: 12),
-          _buildPortionSelector(),
+          _buildPortionChips(),
           const SizedBox(height: 20),
         ],
 
         // Autres caractéristiques (couleurs, matière)
         if (otherDetails.isNotEmpty) ...[
-          Text(
-            'Caractéristiques',
-            style: GoogleFonts.openSans(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF2D2D2D),
-            ),
-          ),
+          _buildSectionTitle('Caractéristiques', context),
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
@@ -462,6 +553,36 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             child: Column(children: otherDetails),
           ),
         ],
+      ],
+    );
+  }
+
+  /// Titre de section avec accent gradient à gauche
+  Widget _buildSectionTitle(String title, BuildContext context) {
+    final t = BoutiqueThemeProvider.of(context);
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 22,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [t.primary, t.gradientEnd],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF1A1A2E),
+          ),
+        ),
       ],
     );
   }
@@ -483,19 +604,44 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            constraints: const BoxConstraints(minWidth: 52),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            constraints: const BoxConstraints(minWidth: 56),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? BoutiqueThemeProvider.of(context).primary.withOpacity(0.1)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        BoutiqueThemeProvider.of(context).primary,
+                        BoutiqueThemeProvider.of(context).gradientEnd,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isSelected ? null : Colors.white,
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isSelected
                     ? BoutiqueThemeProvider.of(context).primary
-                    : Colors.grey.shade300,
-                width: isSelected ? 2 : 1,
+                    : Colors.grey.shade200,
+                width: isSelected ? 0 : 1,
               ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: BoutiqueThemeProvider.of(context)
+                            .primary
+                            .withOpacity(0.40),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: Text(
               size,
@@ -503,9 +649,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected
-                    ? BoutiqueThemeProvider.of(context).primary
-                    : Colors.grey.shade700,
+                color: isSelected ? Colors.white : Colors.grey.shade700,
               ),
             ),
           ),
