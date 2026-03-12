@@ -210,8 +210,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Center(
                   child: Text(
                     _otpSent ? 'Nouveau mot de passe' : 'Mot de passe oublié',
-                    style: GoogleFonts.openSans(
-                      fontSize: 26,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -226,8 +226,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     _otpSent
                         ? 'Créez votre nouveau mot de passe'
                         : 'Entrez votre numéro de téléphone pour recevoir un code de vérification',
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       color: Colors.grey.shade600,
                     ),
                     textAlign: TextAlign.center,
@@ -270,8 +270,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             )
                           : Text(
                               'Envoyer le code',
-                              style: GoogleFonts.openSans(
-                                fontSize: 16,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -298,16 +298,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             children: [
                               Text(
                                 'Numéro vérifié',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 14,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.green.shade700,
                                 ),
                               ),
                               Text(
                                 '+225 ${_phoneController.text}',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 13,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 15,
                                   color: Colors.green.shade700,
                                 ),
                               ),
@@ -389,8 +389,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             )
                           : Text(
                               'Réinitialiser le mot de passe',
-                              style: GoogleFonts.openSans(
-                                fontSize: 16,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -420,8 +420,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       children: [
         Text(
           '$label *',
-          style: GoogleFonts.openSans(
-            fontSize: 14,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -444,8 +444,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             validator: validator,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: GoogleFonts.openSans(
-                fontSize: 14,
+              hintStyle: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade400,
               ),
               prefixIcon: Icon(

@@ -141,8 +141,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   child: Text(
                     'Pincez pour zoomer',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
                       color: Colors.white70,
                     ),
                   ),
@@ -242,8 +242,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           children: [
             Text(
               'Produits similaires',
-              style: GoogleFonts.poppins(
-                fontSize: 17,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 19,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -254,8 +254,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               },
               child: Text(
                 'Voir tout',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: _primaryColor,
                 ),
@@ -319,8 +319,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               children: [
                 Text(
                   'Produit ${index + 1}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF2D2D2D),
                   ),
@@ -330,8 +330,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   '0 FCFA',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: _primaryColor,
                   ),
@@ -480,8 +480,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       // Nom du produit
                       Text(
                         widget.product['name'],
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF2D2D2D),
                           height: 1.3,
@@ -518,8 +518,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               const SizedBox(width: 6),
                               Text(
                                 widget.product['category'],
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: _primaryColor,
                                   letterSpacing: 0.3,
@@ -538,8 +538,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           if (price != null) ...[
                             Text(
                               '$price',
-                              style: GoogleFonts.poppins(
-                                fontSize: 25,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 27,
                                 fontWeight: FontWeight.w700,
                                 color: _primaryColor,
                                 height: 1,
@@ -550,8 +550,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               padding: const EdgeInsets.only(bottom: 4),
                               child: Text(
                                 'FCFA',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   color: _primaryColor,
                                 ),
@@ -560,8 +560,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ] else ...[
                             Text(
                               'Prix non disponible',
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 20,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade600,
                                 fontStyle: FontStyle.italic,
@@ -574,8 +574,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               padding: const EdgeInsets.only(bottom: 4),
                               child: Text(
                                 '$oldPrice',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 18,
                                   color: Colors.grey.shade400,
                                   decoration: TextDecoration.lineThrough,
                                   decorationColor: Colors.grey.shade400,
@@ -589,13 +589,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE91E63),
+                                  color: const Color(0xFFCC0000),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   '-${(((oldPrice! - price!) / oldPrice!) * 100).round()}%',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -612,29 +612,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFFFFE8F0),
-                                const Color(0xFFFFE8F0).withOpacity(0.7),
-                              ],
-                            ),
+                            color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.savings_outlined,
                                 size: 18,
-                                color: Color(0xFFE91E63),
+                                color: Colors.grey.shade600,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 'Vous économisez $savings FCFA',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFFE91E63),
+                                  color: Colors.grey.shade800,
                                   letterSpacing: 0.2,
                                 ),
                               ),
@@ -677,8 +673,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   isOutOfStock ? 'Rupture de stock' : '$stock en stock',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13.5,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 15.5,
                                     fontWeight: FontWeight.w600,
                                     color: isOutOfStock
                                         ? const Color(0xFFE91E63)
@@ -700,8 +696,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           children: [
                             Text(
                               'Quantité',
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 17,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF2D2D2D),
                               ),
@@ -744,8 +740,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   alignment: Alignment.center,
                                   child: Text(
                                     '$_quantity',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 20,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 22,
                                       fontWeight: FontWeight.w700,
                                       color: const Color(0xFF1A1A2E),
                                     ),
@@ -827,8 +823,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(width: 10),
                             Text(
                               'Description',
-                              style: GoogleFonts.poppins(
-                                fontSize: 17,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 19,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF1A1A2E),
                               ),
@@ -839,8 +835,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       const SizedBox(height: 10),
                       Text(
                         _getDescription(),
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           color: Colors.grey.shade700,
                           height: 1.5,
                         ),
@@ -883,8 +879,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               left: 0,
               right: 0,
               child: Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -910,14 +906,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           children: [
                             Text(
                               'TOTAL',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 11,
                                 color: Colors.grey.shade600,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.2,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -925,8 +921,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 if (totalPrice != null) ...[
                                   Text(
                                     '$totalPrice',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 24,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 20,
                                       fontWeight: FontWeight.w800,
                                       color: const Color(0xFF2D2D2D),
                                       height: 1,
@@ -937,8 +933,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     padding: const EdgeInsets.only(bottom: 2),
                                     child: Text(
                                       'FCFA',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w700,
                                         color: Colors.grey.shade700,
                                       ),
@@ -947,8 +943,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 ] else ...[
                                   Text(
                                     'Prix non disponible',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey.shade600,
                                       fontStyle: FontStyle.italic,
@@ -1052,8 +1048,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       const SizedBox(width: 12),
                                       Text(
                                         'Produit ajouté avec succès',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 15,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 17,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
                                         ),
@@ -1087,7 +1083,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             scale: _isPressed ? 0.96 : 1.0,
                             duration: const Duration(milliseconds: 150),
                             child: Container(
-                              height: 56,
+                              height: 44,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -1117,8 +1113,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     'Ajouter',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                       letterSpacing: 0.5,

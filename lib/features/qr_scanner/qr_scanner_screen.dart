@@ -125,8 +125,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   Text(
                     'Scanner le QR code',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 26,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -135,8 +135,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   Text(
                     'Positionnez le QR code dans le cadre',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       color: Colors.white70,
                     ),
                   ),
@@ -201,8 +201,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         child: Center(
                           child: Text(
                             'Retour',
-                            style: GoogleFonts.poppins(
-                              fontSize: 17,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 19,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),

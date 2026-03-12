@@ -44,23 +44,10 @@ class _ShopLoadingScreenState extends State<ShopLoadingScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             // Logo TIKA
-            Text(
-              'TIKA',
-              style: GoogleFonts.poppins(
-                fontSize: 42,
-                fontWeight: FontWeight.w800,
-                color: primaryColor,
-                letterSpacing: 8,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Container(
-              width: 50,
-              height: 3,
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
+            Image.asset(
+              'lib/core/assets/logo_tika.png',
+              width: 140,
+              fit: BoxFit.contain,
             ),
             const SizedBox(height: 40),
 
@@ -80,8 +67,8 @@ class _ShopLoadingScreenState extends State<ShopLoadingScreen>
               opacity: _fadeAnimation,
               child: Text(
                 'Chargement de la boutique...',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: Colors.grey.shade500,
                 ),

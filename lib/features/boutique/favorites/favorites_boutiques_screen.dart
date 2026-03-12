@@ -4,6 +4,7 @@ import '../../../services/favorites_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/utils/api_endpoint.dart';
+import '../../../core/services/boutique_theme_provider.dart';
 import '../home/home_online_screen.dart';
 import '../home/components/home_bottom_navigation.dart';
 import '../loading_screens/loading_screens.dart';
@@ -24,6 +25,14 @@ class FavoritesBoutiquesScreen extends StatefulWidget {
 }
 
 class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
+  Color _shopPrimary = const Color(0xFF8936A8);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _shopPrimary = BoutiqueThemeProvider.of(context).primary;
+  }
+
   // Liste des boutiques favorites chargées depuis l'API
   List<Shop> _favoriteBoutiques = [];
   bool _isLoading = true;
@@ -108,9 +117,9 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
         SnackBar(
           content: Text(
             result['message'] ?? 'Boutique retirée des favoris',
-            style: GoogleFonts.openSans(),
+            style: GoogleFonts.inriaSerif(),
           ),
-          backgroundColor: const Color(0xFF8936A8),
+          backgroundColor: _shopPrimary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           duration: const Duration(seconds: 2),
@@ -170,12 +179,13 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _shopPrimary = BoutiqueThemeProvider.of(context).primary;
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       bottomNavigationBar: widget.showBottomNav
-          ? const HomeBottomNavigation(
+          ? HomeBottomNavigation(
               selectedIndex: 3,
-              currentShop: null,
+              currentShop: BoutiqueThemeProvider.shopOf(context),
             )
           : null,
       body: Stack(
@@ -188,8 +198,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF8936A8),
-                  const Color(0xFF9C4AB8),
+                  _shopPrimary,
+                  _shopPrimary,
                 ],
               ),
             ),
@@ -229,8 +239,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                           children: [
                             Text(
                               'Mes Boutiques',
-                              style: GoogleFonts.poppins(
-                                fontSize: 26,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 28,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.white,
                                 height: 1,
@@ -252,8 +262,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                                       const SizedBox(width: 6),
                                       Text(
                                         '${_favoriteBoutiques.length} ${_favoriteBoutiques.length > 1 ? 'favoris' : 'favori'}',
-                                        style: GoogleFonts.openSans(
-                                          fontSize: 13,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
                                         ),
@@ -281,7 +291,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                               ? _buildEmptyState()
                               : RefreshIndicator(
                                   onRefresh: _loadFavorites,
-                                  color: const Color(0xFF8936A8),
+                                  color: _shopPrimary,
                                   child: GridView.builder(
                                     padding: const EdgeInsets.all(16),
                                     physics: const BouncingScrollPhysics(),
@@ -318,20 +328,20 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: const Color(0xFF8936A8).withOpacity(0.1),
+                color: _shopPrimary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.lock_outline_rounded,
                 size: 60,
-                color: Color(0xFF8936A8),
+                color: _shopPrimary,
               ),
             ),
             const SizedBox(height: 28),
             Text(
               'Connexion requise',
-              style: GoogleFonts.poppins(
-                fontSize: 22,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -340,8 +350,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
             Text(
               'Connectez-vous pour accéder\nà vos boutiques favorites',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey[600],
                 height: 1.5,
               ),
@@ -360,7 +370,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                backgroundColor: const Color(0xFF8936A8),
+                backgroundColor: _shopPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -368,8 +378,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               ),
               child: Text(
                 'Se connecter',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -405,8 +415,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
             const SizedBox(height: 28),
             Text(
               'Oups !',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 26,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -415,8 +425,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
             Text(
               'Impossible de charger vos favoris',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                fontSize: 15,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 17,
                 color: Colors.grey[600],
               ),
             ),
@@ -425,8 +435,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.openSans(
-                  fontSize: 12,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 14,
                   color: Colors.grey[500],
                   fontStyle: FontStyle.italic,
                 ),
@@ -437,7 +447,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               onPressed: _loadFavorites,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                backgroundColor: const Color(0xFF8936A8),
+                backgroundColor: _shopPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -451,8 +461,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                   const SizedBox(width: 8),
                   Text(
                     'Réessayer',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -477,21 +487,21 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               width: 160,
               height: 160,
               decoration: BoxDecoration(
-                color: const Color(0xFF8936A8).withOpacity(0.08),
+                color: _shopPrimary.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.favorite_border_rounded,
                 size: 80,
-                color: const Color(0xFF8936A8).withOpacity(0.5),
+                color: _shopPrimary.withOpacity(0.5),
               ),
             ),
             const SizedBox(height: 32),
             Text(
               'Aucun favori pour le moment',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 22,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -500,8 +510,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
             Text(
               'Découvrez et ajoutez vos boutiques préférées',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                fontSize: 15,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 17,
                 color: Colors.grey[600],
                 height: 1.5,
               ),
@@ -527,8 +537,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                     child: Text(
                       'Explorer les boutiques',
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -607,7 +617,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                               return Icon(
                                 Icons.storefront_rounded,
                                 size: 45,
-                                color: const Color(0xFF8936A8).withOpacity(0.5),
+                                color: _shopPrimary.withOpacity(0.5),
                               );
                             },
                           ),
@@ -653,8 +663,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 children: [
                   Text(
                     shop.name,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF2D2D2D),
                     ),
@@ -665,25 +675,25 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8936A8).withOpacity(0.1),
+                      color: _shopPrimary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFF8936A8).withOpacity(0.3),
+                        color: _shopPrimary.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.category, size: 12, color: Color(0xFF8936A8)),
+                        Icon(Icons.category, size: 12, color: _shopPrimary),
                         const SizedBox(width: 5),
                         Flexible(
                           child: Text(
                             shop.category,
-                            style: GoogleFonts.openSans(
-                              fontSize: 11,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF8936A8),
+                              color: _shopPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

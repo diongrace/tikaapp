@@ -37,8 +37,8 @@ class FormFieldWidget extends StatelessWidget {
       children: [
         Text(
           required ? '$label *' : label,
-          style: GoogleFonts.openSans(
-            fontSize: 14,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -66,8 +66,8 @@ class FormFieldWidget extends StatelessWidget {
                 ? (context, {required currentLength, required isFocused, maxLength}) {
                     return Text(
                       '$currentLength/$maxLength',
-                      style: GoogleFonts.openSans(
-                        fontSize: 12,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 14,
                         color: currentLength == maxLength
                             ? const Color(0xFF4CAF50)
                             : Colors.grey.shade600,
@@ -77,8 +77,8 @@ class FormFieldWidget extends StatelessWidget {
                 : null,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: GoogleFonts.openSans(
-                fontSize: 14,
+              hintStyle: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade400,
               ),
               prefixIcon: Icon(icon, color: Colors.grey.shade600, size: 22),
@@ -184,8 +184,8 @@ class StepIndicator extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: GoogleFonts.openSans(
-                fontSize: 12,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 14,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
                 color: isActive ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade600,
               ),
@@ -249,8 +249,8 @@ class SummaryRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: GoogleFonts.openSans(
-                  fontSize: 12,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                   fontWeight: FontWeight.w500,
                 ),
@@ -258,8 +258,8 @@ class SummaryRow extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 value,
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
                 ),

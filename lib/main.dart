@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // import Firebase
-import 'firebase_options.dart';                   // import options générées
-import 'app/app.dart';                             // ton app existante
-import 'services/auth_service.dart';               // Service d'authentification
-import 'services/push_notification_service.dart';  // Service push notifications
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
+import 'app/app.dart';
+import 'services/auth_service.dart';
+import 'services/push_notification_service.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // nécessaire pour async
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // DOIT être fait AVANT Firebase.initializeApp() pour éviter "duplicate background isolate"
+  // C'est le pattern officiel Firebase Flutter pour les notifications hors app
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

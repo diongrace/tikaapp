@@ -11,7 +11,7 @@ import '../../../../services/auth_service.dart';
 import '../../../../services/models/shop_model.dart';
 import '../../../../services/utils/api_endpoint.dart';
 
-class BoutiqueInfoCard extends StatelessWidget {
+class BoutiqueInfoCard extends StatefulWidget {
 
   final int shopId;
   final String boutiqueName;
@@ -31,6 +31,91 @@ class BoutiqueInfoCard extends StatelessWidget {
     this.averageRating = 0.0,
     this.totalReviews = 0,
   });
+
+  @override
+  State<BoutiqueInfoCard> createState() => _BoutiqueInfoCardState();
+}
+
+class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
+    with SingleTickerProviderStateMixin {
+  int get shopId => widget.shopId;
+  String get boutiqueName => widget.boutiqueName;
+  String get boutiqueDescription => widget.boutiqueDescription;
+  String get boutiqueLogoPath => widget.boutiqueLogoPath;
+  String get phoneNumber => widget.phoneNumber;
+  double get averageRating => widget.averageRating;
+  int get totalReviews => widget.totalReviews;
+
+  bool _isExpanded = false;
+  OverlayEntry? _overlayEntry;
+  final GlobalKey _btnKey = GlobalKey();
+  late final AnimationController _animCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+  }
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    _animCtrl.dispose();
+    super.dispose();
+  }
+
+  void _toggleSpeedDial(ShopTheme t) {
+    if (_isExpanded) {
+      _removeOverlay();
+    } else {
+      _showSpeedDial(t);
+    }
+    setState(() => _isExpanded = !_isExpanded);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _showSpeedDial(ShopTheme t) {
+    final box = _btnKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final pos = box.localToGlobal(Offset.zero);
+    final size = box.size;
+
+    final actions = [
+      _SpeedDialItem(icon: Icons.phone_rounded,          color: t.primary,                  label: 'Appeler',    onTap: () { _closeAndRun(_call); }),
+      _SpeedDialItem(faIcon: FontAwesomeIcons.whatsapp,  color: const Color(0xFF25D366),    label: 'WhatsApp',   onTap: () { _closeAndRun(_whatsapp); }),
+      _SpeedDialItem(icon: Icons.receipt_long_rounded,   color: const Color(0xFF3B82F6),    label: 'Commandes',  onTap: () { _closeAndRun(() => _orders(context)); }),
+      _SpeedDialItem(icon: Icons.workspace_premium_rounded, color: const Color(0xFFF59E0B), label: 'Fidélité',   onTap: () { _closeAndRun(() => _loyalty(context)); }),
+    ];
+
+    _overlayEntry = OverlayEntry(
+      builder: (_) => _SpeedDialOverlay(
+        anchorRight: MediaQuery.of(context).size.width - pos.dx - size.width,
+        anchorTop: pos.dy + size.height + 8,
+        actions: actions,
+        controller: _animCtrl,
+        onDismiss: () {
+          _removeOverlay();
+          if (mounted) setState(() => _isExpanded = false);
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    _animCtrl.forward(from: 0);
+  }
+
+  void _closeAndRun(VoidCallback fn) {
+    _removeOverlay();
+    if (mounted) setState(() => _isExpanded = false);
+    fn();
+  }
 
   String? _logoUrl(String? url) {
     if (url == null || url.isEmpty) return null;
@@ -141,58 +226,53 @@ class BoutiqueInfoCard extends StatelessWidget {
               ),
             ),
 
-            // ── Logo + Nom + Description ──────────────────────────
+            // ── Logo + Nom + Description + bouton ··· ─────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Logo avec badge vérifié
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 68,
-                        height: 68,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(color: Colors.white, width: 3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.13),
-                              blurRadius: 14,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                  // Logo
+                  Container(
+                    width: 68,
+                    height: 68,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.13),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
                         ),
-                        child: ClipOval(
-                          child: logo != null
-                              ? Image.network(
-                                  logo,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _logoFallback(t),
-                                  loadingBuilder: (_, child, p) =>
-                                      p == null ? child : _logoFallback(t),
-                                )
-                              : _logoFallback(t),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: logo != null
+                          ? Image.network(
+                              logo,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _logoFallback(t),
+                              loadingBuilder: (_, child, p) =>
+                                  p == null ? child : _logoFallback(t),
+                            )
+                          : _logoFallback(t),
+                    ),
                   ),
 
                   const SizedBox(width: 14),
 
+                  // Nom + Description + Rating
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Nom de la boutique
                         Text(
                           boutiqueName,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15.5,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 17.5,
                             fontWeight: FontWeight.w800,
                             color: const Color(0xFF0D0D26),
                             letterSpacing: -0.3,
@@ -202,13 +282,12 @@ class BoutiqueInfoCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 5),
-                        // Description
                         Text(
                           boutiqueDescription,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.openSans(
-                            fontSize: 11.5,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 13.5,
                             color: const Color(0xFF6C7489),
                             height: 1.45,
                           ),
@@ -221,8 +300,8 @@ class BoutiqueInfoCard extends StatelessWidget {
                               const SizedBox(width: 3),
                               Text(
                                 averageRating.toStringAsFixed(1),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFF1C1C1E),
                                 ),
@@ -231,8 +310,8 @@ class BoutiqueInfoCard extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   '($totalReviews avis)',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 11,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 13,
                                     color: const Color(0xFF6C7489),
                                   ),
                                 ),
@@ -243,59 +322,33 @@ class BoutiqueInfoCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
 
-            // ── Boutons contact gradient ──────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-              child: Row(
-                children: [
-                  _actionBtn(
-                    icon: Icons.phone_in_talk_rounded,
-                    label: 'Appeler',
-                    colors: [t.primary, t.gradientEnd],
-                    onTap: _call,
+                  // Bouton Speed Dial
+                  GestureDetector(
+                    key: _btnKey,
+                    onTap: () => _toggleSpeedDial(t),
+                    child: Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: _isExpanded ? Colors.grey.shade400 : t.primary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: t.primary.withOpacity(0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        _isExpanded ? Icons.close : Icons.phone_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  _actionBtn(
-                    iconWidget: const FaIcon(
-                      FontAwesomeIcons.whatsapp,
-                      size: 15,
-                      color: Colors.white,
-                    ),
-                    label: 'WhatsApp',
-                    colors: const [Color(0xFF25D366), Color(0xFF128C7E)],
-                    onTap: _whatsapp,
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Séparateur ────────────────────────────────────────
-            Container(height: 1, color: const Color(0xFFF0F2F6)),
-
-            // ── Boutons action gradient ───────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 11, 14, 13),
-              child: Row(
-                children: [
-                  // Commandes
-                  _actionBtn(
-                    icon: Icons.receipt_long_rounded,
-                    label: 'Commandes',
-                    colors: [t.primary, t.primary.withOpacity(0.78)],
-                    onTap: () => _orders(context),
-                  ),
-                  const SizedBox(width: 10),
-                  // Fidélité
-                  _actionBtn(
-                    icon: Icons.workspace_premium_rounded,
-                    label: 'Fidélité',
-                    colors: const [Color(0xFFFF6B35), Color(0xFFFF9A5C)],
-                    onTap: () => _loyalty(context),
-                  ),
                 ],
               ),
             ),
@@ -312,50 +365,90 @@ class BoutiqueInfoCard extends StatelessWidget {
         child: Icon(Icons.storefront_rounded, size: 28, color: t.primary),
       );
 
-  Widget _actionBtn({
-    IconData? icon,
-    Widget? iconWidget,
-    required String label,
-    required List<Color> colors,
-    required VoidCallback onTap,
-  }) =>
-      Expanded(
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            height: 36,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: colors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(11),
-              boxShadow: [
-                BoxShadow(
-                  color: colors.first.withOpacity(0.36),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                iconWidget ?? Icon(icon!, size: 15, color: Colors.white),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: 0.1,
+}
+
+// ── Modèle d'action Speed Dial ────────────────────────────────────────────────
+class _SpeedDialItem {
+  final IconData? icon;
+  final IconData? faIcon;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+  const _SpeedDialItem({this.icon, this.faIcon, required this.color, required this.label, required this.onTap});
+}
+
+// ── Overlay Speed Dial ────────────────────────────────────────────────────────
+class _SpeedDialOverlay extends StatelessWidget {
+  final double anchorRight;
+  final double anchorTop;
+  final List<_SpeedDialItem> actions;
+  final AnimationController controller;
+  final VoidCallback onDismiss;
+
+  const _SpeedDialOverlay({
+    required this.anchorRight,
+    required this.anchorTop,
+    required this.actions,
+    required this.controller,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onDismiss,
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: [
+          ...List.generate(actions.length, (i) {
+            final delay = i * 0.15;
+            final anim = CurvedAnimation(
+              parent: controller,
+              curve: Interval(delay, delay + 0.5, curve: Curves.easeOut),
+            );
+            return Positioned(
+              right: anchorRight,
+              top: anchorTop + i * 70.0,
+              child: AnimatedBuilder(
+                animation: anim,
+                builder: (_, __) => Opacity(
+                  opacity: anim.value,
+                  child: Transform.translate(
+                    offset: Offset(0, 20 * (1 - anim.value)),
+                    child: _SpeedDialButton(item: actions[i]),
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpeedDialButton extends StatelessWidget {
+  final _SpeedDialItem item;
+  const _SpeedDialButton({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: item.onTap,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: item.color,
+          shape: BoxShape.circle,
+          boxShadow: [BoxShadow(color: item.color.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
         ),
-      );
+        child: Center(
+          child: item.faIcon != null
+              ? FaIcon(item.faIcon!, color: Colors.white, size: 22)
+              : Icon(item.icon!, color: Colors.white, size: 22),
+        ),
+      ),
+    );
+  }
 }

@@ -87,8 +87,8 @@ class _OrderProcessingPageState extends State<OrderProcessingPage>
                   String dots = '.' * _dotAnimation.value;
                   return Text(
                     'Traitement de votre commande$dots',
-                    style: GoogleFonts.openSans(
-                      fontSize: 16,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
                       fontWeight: FontWeight.w500,
                       color: const Color.fromARGB(255, 20, 20, 20),
                     ),

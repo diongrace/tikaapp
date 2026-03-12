@@ -244,7 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         try {
           final token = AuthService.authToken;
           if (token != null) {
-            final result = await OrderService.getOrders(token: token, page: 1);
+            final result = await OrderService.getOrders(page: 1);
             fallbackOrders = result['orders'] as List<Order>? ?? [];
           }
         } catch (_) {}
@@ -314,16 +314,16 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Text(
               'Mon Espace',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E1E2E),
               ),
             ),
             Text(
               _client?.name ?? AuthService.currentClient?.name ?? 'Accueil',
-              style: GoogleFonts.inter(
-                fontSize: 12,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Colors.grey[500],
               ),
@@ -387,7 +387,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           count > 99 ? '99+' : count.toString(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -535,8 +535,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   const SizedBox(width: 6),
                   Text(
                     tab.label,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151),
                     ),
@@ -565,8 +565,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(width: 10),
             Text(
               'Deconnexion',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -574,15 +574,15 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         content: Text(
           'Voulez-vous vraiment vous deconnecter ?',
-          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600]),
+          style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey[600]),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Annuler',
-              style: GoogleFonts.inter(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
               ),
@@ -600,8 +600,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
             child: Text(
               'Quitter',
-              style: GoogleFonts.inter(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -702,8 +702,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 16),
             Text(
               'Creer une carte de fidelite',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -714,8 +714,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               Text(
                 'Passez une commande ou ajoutez une boutique en favori pour pouvoir creer une carte.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.grey[600],
                 ),
               ),
@@ -730,8 +730,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   icon: const Icon(Icons.search_rounded, size: 18),
                   label: Text(
                     'Explorer les boutiques',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -749,8 +749,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               // Choisir une boutique parmi celles connues
               Text(
                 'Choisissez la boutique',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.grey[600],
                 ),
               ),
@@ -774,8 +774,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                       title: Text(
                         entry.value,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -812,8 +812,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Text(
               'Mes cartes de fidelite',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -831,15 +831,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   title: Text(
                     card.shopName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
                     '${card.points} points',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey[500],
                     ),
                   ),
@@ -921,8 +921,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Center(
               child: Text(
                 initials,
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -936,8 +936,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: [
                 Text(
                   'Bonjour, $name !',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -947,8 +947,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(height: 2),
                 Text(
                   'Bienvenue dans votre espace',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 15,
                     color: Colors.white.withOpacity(0.85),
                   ),
                 ),
@@ -957,7 +957,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Text(
                     _client!.formattedPhone,
                     style: GoogleFonts.robotoMono(
-                      fontSize: 11,
+                      fontSize: 13,
                       color: Colors.white.withOpacity(0.7),
                     ),
                   ),
@@ -971,15 +971,15 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: [
                 Text(
                   'Membre depuis',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 12,
                     color: Colors.white.withOpacity(0.7),
                   ),
                 ),
                 Text(
                   memberSince,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -1077,8 +1077,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 10),
             Text(
               value,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -1087,8 +1087,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
             Text(
               label,
-              style: GoogleFonts.inter(
-                fontSize: 9,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[500],
                 letterSpacing: 0.5,
@@ -1134,8 +1134,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   const SizedBox(width: 8),
                   Text(
                     'Dernieres commandes',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1E1E2E),
                     ),
@@ -1148,8 +1148,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   children: [
                     Text(
                       'Voir tout',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: accentColor,
                       ),
@@ -1207,8 +1207,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(width: 8),
             Text(
               'Boutiques visitees',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -1281,8 +1281,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                       const SizedBox(height: 6),
                       Text(
                         name,
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF1E1E2E),
                         ),
@@ -1320,8 +1320,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 12),
             Text(
               'Aucune commande',
-              style: GoogleFonts.poppins(
-                fontSize: 15,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 17,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
               ),
@@ -1329,8 +1329,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 4),
             Text(
               'Explorez les restaurants',
-              style: GoogleFonts.inter(
-                fontSize: 13,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 15,
                 color: Colors.grey[400],
               ),
             ),
@@ -1340,8 +1340,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               icon: const Icon(Icons.search_rounded, size: 18),
               label: Text(
                 'Decouvrir',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1415,8 +1415,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 children: [
                   Text(
                     order.shopName ?? '#${order.orderNumber}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1E1E2E),
                     ),
@@ -1426,8 +1426,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   const SizedBox(height: 2),
                   Text(
                     _formatDate(order.createdAt),
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey[500],
                     ),
                   ),
@@ -1439,8 +1439,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: [
                 Text(
                   '${order.totalAmount.toInt()} F',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF1E1E2E),
                   ),
@@ -1455,8 +1455,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   child: Text(
                     statusLabel,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: statusColor,
                     ),
@@ -1485,8 +1485,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(width: 8),
             Text(
               'Mes Favoris',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -1520,8 +1520,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                             _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false)),
                         child: Text(
                           'Voir tous les favoris',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: accentColor,
                           ),
@@ -1554,8 +1554,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 12),
             Text(
               'Aucun favori',
-              style: GoogleFonts.poppins(
-                fontSize: 15,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 17,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
               ),
@@ -1563,8 +1563,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 4),
             Text(
               'Ajoutez des restaurants a vos favoris',
-              style: GoogleFonts.inter(
-                fontSize: 13,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 15,
                 color: Colors.grey[400],
               ),
             ),
@@ -1574,8 +1574,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               icon: const Icon(Icons.search_rounded, size: 18),
               label: Text(
                 'Decouvrir',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1640,8 +1640,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 children: [
                   Text(
                     favorite.shopName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1E1E2E),
                     ),
@@ -1655,8 +1655,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                       [favorite.shopCategory, favorite.shopCity]
                           .where((e) => e != null && e.isNotEmpty)
                           .join(' - '),
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 14,
                         color: Colors.grey[500],
                       ),
                       maxLines: 1,
@@ -1718,8 +1718,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 children: [
                   Text(
                     'Programme de fidelite',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -1729,8 +1729,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     _loyaltyCards.isEmpty
                         ? 'Cumulez des points a chaque commande'
                         : '${_loyaltyCards.length} carte(s) - ${_loyaltyCards.fold<int>(0, (sum, c) => sum + c.points)} points',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.white.withOpacity(0.85),
                     ),
                   ),
@@ -1756,8 +1756,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   const SizedBox(width: 6),
                   Text(
                     _loyaltyCards.isEmpty ? 'Creer une carte' : 'Voir',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: primaryColor,
                     ),
@@ -1786,15 +1786,15 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 16),
             Text(
               'Erreur de chargement',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? 'Une erreur est survenue',
-              style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600]),
+              style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -1809,8 +1809,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
               child: Text(
                 'Reessayer',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),

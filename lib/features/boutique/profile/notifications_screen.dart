@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/push_notification_service.dart';
 
 /// Écran de gestion des préférences de notifications
 /// Utilise l'API si authentifié, sinon stockage local
@@ -15,6 +17,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   NotificationSettings _settings = NotificationSettings();
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isRegistering = false;
+  String _registrationStatus = '';
 
   @override
   void initState() {
@@ -55,7 +59,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           SnackBar(
             content: Text(
               'Préférences enregistrées',
-              style: GoogleFonts.openSans(fontWeight: FontWeight.w600),
+              style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600),
             ),
             backgroundColor: const Color(0xFF4CAF50),
             behavior: SnackBarBehavior.floating,
@@ -93,18 +97,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Désactiver tout',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Voulez-vous désactiver toutes les notifications ?',
-          style: GoogleFonts.openSans(),
+          style: GoogleFonts.inriaSerif(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Annuler',
-              style: GoogleFonts.openSans(color: Colors.grey),
+              style: GoogleFonts.inriaSerif(color: Colors.grey),
             ),
           ),
           TextButton(
@@ -124,7 +128,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             },
             child: Text(
               'Désactiver',
-              style: GoogleFonts.openSans(color: Colors.red),
+              style: GoogleFonts.inriaSerif(color: Colors.red),
             ),
           ),
         ],
@@ -153,8 +157,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   Expanded(
                     child: Text(
                       'Préférences',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -220,8 +224,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 Expanded(
                                   child: Text(
                                     'Personnalisez vos alertes pour ne recevoir que ce qui vous intéresse',
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 13,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 15,
                                       color: Colors.grey.shade800,
                                       height: 1.4,
                                     ),
@@ -235,8 +239,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           // Types de notifications
                           Text(
                             'Types de notifications',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -244,8 +248,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           const SizedBox(height: 4),
                           Text(
                             'Choisissez les notifications que vous souhaitez recevoir',
-                            style: GoogleFonts.openSans(
-                              fontSize: 13,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 15,
                               color: Colors.grey.shade600,
                             ),
                           ),
@@ -293,8 +297,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           // Canaux de notification
                           Text(
                             'Canaux de notification',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -302,8 +306,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           const SizedBox(height: 4),
                           Text(
                             'Comment souhaitez-vous être notifié ?',
-                            style: GoogleFonts.openSans(
-                              fontSize: 13,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 15,
                               color: Colors.grey.shade600,
                             ),
                           ),
@@ -356,14 +360,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               ),
                               label: Text(
                                 'Désactiver toutes les notifications',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 14,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 16,
                                   color: Colors.grey.shade600,
                                 ),
                               ),
                             ),
                           ),
 
+                          const SizedBox(height: 32),
+                          _buildFcmDiagnosticCard(),
                           const SizedBox(height: 20),
                         ],
                       ),
@@ -371,6 +377,147 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _testFcmRegistration() async {
+    setState(() { _isRegistering = true; _registrationStatus = ''; });
+    try {
+      await PushNotificationService.registerDeviceToken();
+      final token = PushNotificationService.fcmToken;
+      setState(() {
+        _registrationStatus = token != null
+            ? 'Token enregistré avec succès'
+            : 'Aucun token FCM disponible';
+      });
+    } catch (e) {
+      setState(() { _registrationStatus = 'Erreur: $e'; });
+    } finally {
+      setState(() => _isRegistering = false);
+    }
+  }
+
+  Widget _buildFcmDiagnosticCard() {
+    final token = PushNotificationService.fcmToken;
+    final shortToken = token != null && token.length > 30
+        ? '${token.substring(0, 15)}...${token.substring(token.length - 10)}'
+        : (token ?? 'Non disponible');
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.bug_report_outlined, size: 18, color: Colors.grey),
+              const SizedBox(width: 8),
+              Text(
+                'Diagnostic push notifications',
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Token FCM
+          Text('Token FCM :', style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade500)),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  shortToken,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 13,
+                    color: token != null ? Colors.green.shade700 : Colors.red.shade400,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (token != null)
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: token));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Token copié', style: GoogleFonts.inriaSerif()),
+                        backgroundColor: Colors.green,
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  },
+                  child: const Icon(Icons.copy_outlined, size: 16, color: Colors.grey),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Bouton re-enregistrer
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isRegistering ? null : _testFcmRegistration,
+              icon: _isRegistering
+                  ? const SizedBox(
+                      width: 14, height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.refresh_rounded, size: 16),
+              label: Text(
+                _isRegistering ? 'Enregistrement...' : 'Re-enregistrer l\'appareil',
+                style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8936A8),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+
+          if (_registrationStatus.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  _registrationStatus.contains('succès')
+                      ? Icons.check_circle_outline
+                      : Icons.error_outline,
+                  size: 14,
+                  color: _registrationStatus.contains('succès') ? Colors.green : Colors.red,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _registrationStatus,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
+                      color: _registrationStatus.contains('succès')
+                          ? Colors.green.shade700
+                          : Colors.red.shade400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -414,8 +561,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
@@ -423,8 +570,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   const SizedBox(height: 2),
                   Text(
                     description,
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -498,8 +645,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       Flexible(
                         child: Text(
                           title,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 17,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
                           ),
@@ -516,8 +663,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ),
                           child: Text(
                             'Recommandé',
-                            style: GoogleFonts.openSans(
-                              fontSize: 9,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -529,8 +676,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   const SizedBox(height: 2),
                   Text(
                     description,
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),

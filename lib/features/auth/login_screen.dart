@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
+import '../../services/push_notification_service.dart';
 import '../../core/messages/message_modal.dart';
 import '../access_boutique/access_boutique_screen.dart';
 import 'widgets/phone_field.dart';
@@ -46,6 +47,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (response.success) {
+        // Enregistrer le token FCM + démarrer le polling après connexion
+        PushNotificationService.registerDeviceToken();
+        PushNotificationService.startPolling();
+
         showSuccessModal(context, 'Connexion réussie');
 
         // Attendre un peu pour afficher le modal
@@ -121,8 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: Text(
                     'Connexion',
-                    style: GoogleFonts.openSans(
-                      fontSize: 28,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -135,8 +140,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: Text(
                     'Connectez-vous à votre compte TIKA',
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -158,8 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       'Mot de passe *',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
@@ -187,8 +192,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         decoration: InputDecoration(
                           hintText: 'Votre mot de passe',
-                          hintStyle: GoogleFonts.openSans(
-                            fontSize: 14,
+                          hintStyle: GoogleFonts.inriaSerif(
+                            fontSize: 16,
                             color: Colors.grey.shade400,
                           ),
                           prefixIcon: Icon(
@@ -260,8 +265,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                     child: Text(
                       'Mot de passe oublié ?',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF8936A8),
                       ),
@@ -296,8 +301,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : Text(
                             'Se connecter',
-                            style: GoogleFonts.openSans(
-                              fontSize: 16,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -314,8 +319,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'ou',
-                        style: GoogleFonts.openSans(
-                          fontSize: 14,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 16,
                           color: Colors.grey.shade500,
                         ),
                       ),
@@ -332,8 +337,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       'Pas encore de compte ?',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -350,8 +355,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                       child: Text(
                         'Créer un compte',
-                        style: GoogleFonts.openSans(
-                          fontSize: 14,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF8936A8),
                         ),

@@ -14,10 +14,18 @@ class CartManager extends ChangeNotifier {
   List<Map<String, dynamic>> get items => List.unmodifiable(_items);
   int? get shopId => _shopId;
 
-  int get itemCount => _items.fold(0, (sum, item) => sum + (item['quantity'] as int));
+  int get itemCount => _items.fold(0, (sum, item) {
+    final q = item['quantity'];
+    return sum + (q is int ? q : int.tryParse(q?.toString() ?? '0') ?? 0);
+  });
 
-  int get totalPrice => _items.fold(
-      0, (sum, item) => sum + ((item['price'] as int) * (item['quantity'] as int)));
+  int get totalPrice => _items.fold(0, (sum, item) {
+    final p = item['price'];
+    final q = item['quantity'];
+    final price = p is int ? p : (p is num ? p.toInt() : int.tryParse(p?.toString() ?? '0') ?? 0);
+    final qty = q is int ? q : (q is num ? q.toInt() : int.tryParse(q?.toString() ?? '0') ?? 0);
+    return sum + price * qty;
+  });
 
   /// Ajoute un produit au panier
   /// Retourne un message d'erreur si l'ajout échoue, null si succès
@@ -120,6 +128,37 @@ class CartManager extends ChangeNotifier {
   void clear() {
     _items.clear();
     _shopId = null;
+    notifyListeners();
+  }
+
+  /// Charge des articles depuis un reorder (disponibilité déjà vérifiée par l'API)
+  /// items: liste retournée par POST /client/orders/{id}/reorder
+  /// Format attendu: [{ "product_id", "name", "image", "price", "quantity" }]
+  void loadReorderItems(List<Map<String, dynamic>> items, int shopId) {
+    _items.clear();
+    _shopId = shopId;
+    for (final item in items) {
+      final qtyRaw = item['quantity'] ?? item['available_quantity'] ?? 1;
+      final qty = qtyRaw is int ? qtyRaw : int.tryParse(qtyRaw.toString()) ?? 1;
+      if (qty <= 0) continue; // ignorer les articles non disponibles
+      final priceRaw = item['price'];
+      final price = priceRaw is int
+          ? priceRaw
+          : priceRaw is num
+              ? priceRaw.toInt()
+              : int.tryParse(priceRaw?.toString() ?? '0') ?? 0;
+      _items.add({
+        'id': item['product_id'],
+        'name': item['name'] ?? item['product_name'] ?? 'Produit',
+        'price': price,
+        'image': item['image'] ?? '',
+        'quantity': qty,
+        'stock': 999,         // déjà validé par l'API
+        'isAvailable': true,  // déjà validé par l'API
+        'size': null,
+        'portion_id': null,
+      });
+    }
     notifyListeners();
   }
 

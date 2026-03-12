@@ -143,7 +143,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           children: [
             Text(
               'Choisir une adresse',
-              style: GoogleFonts.openSans(fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.inriaSerif(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ...addresses.map((addr) {
@@ -163,7 +163,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 ),
                 title: Row(
                   children: [
-                    Text(name, style: GoogleFonts.openSans(fontWeight: FontWeight.w600)),
+                    Text(name, style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600)),
                     if (isDefault) ...[
                       const SizedBox(width: 6),
                       Container(
@@ -173,12 +173,12 @@ class _CommandeScreenState extends State<CommandeScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text('Par défaut',
-                            style: GoogleFonts.openSans(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w600)),
+                            style: GoogleFonts.inriaSerif(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ],
                 ),
-                subtitle: Text(address, style: GoogleFonts.openSans(fontSize: 12, color: Colors.grey.shade600)),
+                subtitle: Text(address, style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade600)),
                 onTap: () {
                   setState(() {
                     _addressController.text = address;
@@ -761,8 +761,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   const SizedBox(width: 16),
                   Text(
                     'Finaliser la commande',
-                    style: GoogleFonts.openSans(
-                      fontSize: 20,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -858,8 +858,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 'Retour',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 15,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 17,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey.shade700,
                                 ),
@@ -892,8 +892,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                             _currentStep == 2
                                 ? 'Valider la commande'
                                 : 'Continuer',
-                            style: GoogleFonts.openSans(
-                              fontSize: 15,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -935,8 +935,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 ? const Icon(Icons.check, color: Colors.white, size: 18)
                 : Text(
                     '$step',
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: isActive ? Colors.white : Colors.grey.shade500,
                     ),
@@ -946,8 +946,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
         const SizedBox(height: 6),
         Text(
           label,
-          style: GoogleFonts.openSans(
-            fontSize: 11,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 13,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             color: isActive ? _primaryColor : Colors.grey.shade500,
           ),
@@ -965,8 +965,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
         children: [
           Text(
             'Vos informations',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1044,8 +1044,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
       children: [
         Text(
           'Mode de livraison',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -1079,8 +1079,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
           const SizedBox(height: 28),
           Text(
             'Quand souhaitez-vous récupérer votre commande ?',
-            style: GoogleFonts.openSans(
-              fontSize: 16,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
@@ -1125,16 +1125,16 @@ class _CommandeScreenState extends State<CommandeScreen> {
                       children: [
                         Text(
                           'Date de récupération',
-                          style: GoogleFonts.openSans(
-                            fontSize: 12,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 14,
                             color: Colors.grey.shade600,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           _formatDate(_selectedPickupDate),
-                          style: GoogleFonts.openSans(
-                            fontSize: 15,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 17,
                             fontWeight: FontWeight.w600,
                             color: _selectedPickupDate != null
                                 ? Colors.black87
@@ -1194,16 +1194,16 @@ class _CommandeScreenState extends State<CommandeScreen> {
                       children: [
                         Text(
                           'Heure de récupération',
-                          style: GoogleFonts.openSans(
-                            fontSize: 12,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 14,
                             color: Colors.grey.shade600,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           _formatTime(_selectedPickupTime),
-                          style: GoogleFonts.openSans(
-                            fontSize: 15,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 17,
                             fontWeight: FontWeight.w600,
                             color: _selectedPickupTime != null
                                 ? Colors.black87
@@ -1234,8 +1234,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
       children: [
         Text(
           'Méthode de paiement',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -1382,8 +1382,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
                           color: isSelected ? color : Colors.black87,
                         ),
@@ -1398,8 +1398,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                           ),
                           child: Text(
                             badge,
-                            style: GoogleFonts.openSans(
-                              fontSize: 10,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -1411,8 +1411,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   const SizedBox(height: 3),
                   Text(
                     description,
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade500,
                     ),
                   ),
@@ -1506,8 +1506,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                       color: isSelected ? _primaryColor : Colors.black87,
                     ),
@@ -1515,8 +1515,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   const SizedBox(height: 3),
                   Text(
                     description,
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade500,
                     ),
                   ),
@@ -1562,8 +1562,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   const SizedBox(width: 6),
                   Text(
                     'Utiliser une adresse enregistrée',
-                    style: GoogleFonts.openSans(
-                      fontSize: 13,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
                       color: _primaryColor,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1672,8 +1672,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                       color: isSelected ? _primaryColor : Colors.black87,
                     ),
@@ -1681,8 +1681,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   const SizedBox(height: 3),
                   Text(
                     description,
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade500,
                     ),
                   ),

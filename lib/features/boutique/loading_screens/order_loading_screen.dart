@@ -79,8 +79,8 @@ class OrderLoadingScreen extends StatelessWidget {
               // Message
               Text(
                 message ?? 'Traitement en cours...',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -91,8 +91,8 @@ class OrderLoadingScreen extends StatelessWidget {
 
               Text(
                 'Veuillez patienter',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.white.withOpacity(0.9),
                 ),
               ),

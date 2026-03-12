@@ -23,6 +23,15 @@ class AccessBoutiqueScreen extends StatefulWidget {
 class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
   final TextEditingController _linkController = TextEditingController();
   bool _isLoading = false;
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _linkController.addListener(() {
+      setState(() => _hasText = _linkController.text.isNotEmpty);
+    });
+  }
 
   @override
   void dispose() {
@@ -83,8 +92,8 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
             const SizedBox(height: 16),
             Text(
               'Carte de fidelite',
-              style: GoogleFonts.openSans(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -92,8 +101,8 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
             Text(
               'Vous n\'avez pas encore de carte.\nScannez ou entrez le lien d\'une boutique, puis creez votre carte depuis la page de la boutique.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -107,7 +116,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                 icon: const Icon(Icons.qr_code_scanner, size: 18),
                 label: Text(
                   'Scanner une boutique',
-                  style: GoogleFonts.openSans(fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8936A8),
@@ -197,8 +206,8 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
           children: [
             Text(
               'Mes cartes de fidelite',
-              style: GoogleFonts.openSans(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -219,14 +228,14 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                   ),
                   title: Text(
                     card.shopName,
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
                     '${card.points} points',
-                    style: GoogleFonts.openSans(fontSize: 12, color: Colors.grey),
+                    style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey),
                   ),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                   onTap: () async {
@@ -251,7 +260,10 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Stack(
           children: [
@@ -268,25 +280,28 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
               child: Container(color: Colors.white.withOpacity(0.10)),
             ),
 
-            // Logo Tika
-            Positioned(
-              top: 40,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Image.asset(
-                  'lib/core/assets/logo.png',
-                  width: 80,
-                  height: 80,
+            // Logo Tika — caché quand le clavier est ouvert
+            if (!keyboardOpen)
+              Positioned(
+                top: 40,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Image.asset(
+                    'lib/core/assets/logo.png',
+                    width: 80,
+                    height: 80,
+                  ),
                 ),
               ),
-            ),
 
             // Contenu principal
             Align(
-              alignment: Alignment.bottomCenter,
+              alignment: keyboardOpen ? Alignment.center : Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 120.0),
+                padding: EdgeInsets.only(
+                  bottom: keyboardOpen ? 0 : 120.0,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Column(
@@ -322,8 +337,8 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                           child: Center(
                             child: Text(
                               'Scanner Un Qr Code',
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
@@ -334,52 +349,89 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                       const SizedBox(height: 12),
                       Text(
                         '-ou-',
-                        style: GoogleFonts.openSans(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey[500],
                         ),
                       ),
                       const SizedBox(height: 12),
                       // Champ de saisie du lien boutique
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(100),
-                          border: Border.all(
-                            color: Colors.grey[300]!,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: TextField(
-                          controller: _linkController,
-                          onSubmitted: (value) {
-                            if (value.isNotEmpty) {
-                              _openLink(value);
-                            }
-                          },
-                          decoration: InputDecoration(
-                            hintText: 'Entrez le lien de la boutique',
-                            hintStyle: GoogleFonts.openSans(
-                              fontSize: 13,
-                              color: Colors.grey[400],
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(
+                                  color: Colors.grey[300]!,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _linkController,
+                                onSubmitted: (value) {
+                                  if (value.isNotEmpty) _openLink(value);
+                                },
+                                decoration: InputDecoration(
+                                  hintText: 'Entrez le lien de la boutique',
+                                  hintStyle: GoogleFonts.inriaSerif(
+                                    fontSize: 15,
+                                    color: Colors.grey[400],
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.link,
+                                    color: Color(0xFF8936A8),
+                                    size: 18,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 15,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ),
-                            prefixIcon: const Icon(
-                              Icons.link,
-                              color: Color(0xFF8936A8),
-                              size: 18,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 12,
-                            ),
                           ),
-                          style: GoogleFonts.openSans(
-                            fontSize: 13,
-                            color: Colors.black87,
-                          ),
-                        ),
+                          if (_hasText) ...[
+                            const SizedBox(width: 10),
+                            GestureDetector(
+                              onTap: () => _openLink(_linkController.text),
+                              child: Container(
+                                height: 48,
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF8936A8), Color(0xFFB932D6)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(100),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF8936A8).withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Go',
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       if (_isLoading) ...[
                         const SizedBox(height: 16),

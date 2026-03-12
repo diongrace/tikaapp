@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../notifications/notifications_list_screen.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
@@ -155,32 +154,11 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                   height: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
                     print('❌ Erreur chargement banner depuis API: $error');
-                    print('   → Affichage banner par défaut (Black Friday)');
-                    // En cas d'erreur, afficher le banner par défaut (Black Friday)
-                    return Image.asset(
-                      'lib/core/assets/couvre.jpeg',
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
+                    // En cas d'erreur, afficher la couleur naturelle de la boutique
+                    return Container(
                       width: double.infinity,
                       height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) {
-                        // Si le banner par défaut n'existe pas, afficher le fond de couleur
-                        print('⚠️ Banner par défaut introuvable, affichage fond de couleur');
-                        return Container(
-                          width: double.infinity,
-                          height: double.infinity,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                shopTheme.primary,
-                                shopTheme.gradientEnd,
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                      color: shopTheme.primary,
                     );
                   },
                   loadingBuilder: (context, child, loadingProgress) {
@@ -204,37 +182,11 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                   },
                 )
               else
-                // Si pas de page de couverture, afficher le banner par défaut (Black Friday)
-                Builder(
-                  builder: (context) {
-                    print('📸 Chargement banner par défaut: lib/core/assets/couvre.jpeg');
-                    return Image.asset(
-                      'lib/core/assets/couvre.jpeg',
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) {
-                        // Si le banner par défaut n'existe pas, afficher un fond de couleur avec le thème de la boutique
-                        print('⚠️ Banner par défaut introuvable: $error');
-                        print('   → Affichage fond de couleur');
-                        return Container(
-                          width: double.infinity,
-                          height: double.infinity,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                shopTheme.primary,
-                                shopTheme.gradientEnd,
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                // Pas de page de couverture → couleur naturelle de la boutique (sans dégradé)
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: shopTheme.primary,
                 ),
 
               // ── Gradient overlay bas → transition douce banner→carte ──
@@ -264,70 +216,35 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // ── Gauche : retour + accueil dans une pill glass ──
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.18),
-                        blurRadius: 12,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 3),
+                // ── Gauche : retour + accueil en cercles séparés ──
+                Row(
+                  children: [
+                    _buildGlassBtn(
+                      icon: Icons.arrow_back_rounded,
+                      onPressed: widget.onBackPressed,
+                    ),
+                    if (widget.onHomeTap != null) ...[
+                      const SizedBox(width: 10),
+                      _buildGlassBtn(
+                        icon: Icons.home,
+                        onPressed: widget.onHomeTap!,
                       ),
                     ],
-                  ),
-                  child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                    child: Container(
-                      height: 44,
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.95),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _glassIconBtn(
-                            icon: Icons.arrow_back_ios_new_rounded,
-                            onTap: widget.onBackPressed,
-                          ),
-                          if (widget.onHomeTap != null) ...[
-                            Container(
-                              width: 1,
-                              height: 22,
-                              color: Colors.black.withOpacity(0.12),
-                            ),
-                            _glassIconBtn(
-                              icon: Icons.storefront_rounded,
-                              onTap: widget.onHomeTap!,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  ),
+                  ],
                 ),
 
                 // ── Droite : favoris + notification ───────────────
                 Row(
                   children: [
                     // Bouton favori
-                    // iconColor non passé → auto: blanc si activeTint, sombre sinon
                     _buildGlassBtn(
                       icon: widget.isFavorite
                           ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
+                          : Icons.favorite_outline_rounded,
                       onPressed: widget.onFavoriteToggle,
-                      activeTint: widget.isFavorite ? Colors.red.shade500 : null,
+                      activeTint: widget.isFavorite
+                          ? const Color(0xFFE53935)
+                          : null,
                     ),
                     const SizedBox(width: 10),
                     // Bouton notification
@@ -342,20 +259,6 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
     );
   }
 
-  // ── Icône simple dans la pill gauche ──────────────────────────────────────
-  Widget _glassIconBtn({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) =>
-      GestureDetector(
-        onTap: onTap,
-        child: SizedBox(
-          width: 38,
-          height: 44,
-          child: Icon(icon, color: const Color(0xFF1A1A2E), size: 20),
-        ),
-      );
-
   // ── Bouton glassmorphisme circulaire ──────────────────────────────────────
   Widget _buildGlassBtn({
     required IconData icon,
@@ -363,42 +266,26 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
     Color? activeTint,
     Color? iconColor,
   }) {
-    final bool hasActiveTint = activeTint != null;
-    final Color resolvedIconColor = iconColor ??
-        (hasActiveTint ? Colors.white : const Color(0xFF1A1A2E));
-
     return GestureDetector(
       onTap: onPressed,
       child: Container(
+        width: 46,
+        height: 46,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          color: activeTint ?? Colors.white.withOpacity(0.92),
+          shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.18),
-              blurRadius: 12,
-              spreadRadius: 0,
+              blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: activeTint ?? Colors.white.withOpacity(0.95),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white,
-                  width: 1,
-                ),
-              ),
-              child: Icon(icon, color: resolvedIconColor, size: 22),
-            ),
-          ),
+        child: Icon(
+          icon,
+          color: activeTint != null ? Colors.white : const Color(0xFF1A1A2E),
+          size: 22,
         ),
       ),
     );
@@ -420,8 +307,8 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
               ),
               child: _buildGlassBtn(
                 icon: count > 0
-                    ? Icons.notifications_active_rounded
-                    : Icons.notifications_none_rounded,
+                    ? Icons.notifications_rounded
+                    : Icons.notifications_outlined,
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -465,7 +352,7 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                       count > 99 ? '99+' : count.toString(),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,

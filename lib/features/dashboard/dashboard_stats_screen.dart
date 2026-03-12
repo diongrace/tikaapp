@@ -74,16 +74,16 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
           children: [
             Text(
               'Statistiques',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E1E2E),
               ),
             ),
             Text(
               'Mon activité',
-              style: GoogleFonts.inter(
-                fontSize: 12,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Colors.grey[500],
               ),
@@ -130,7 +130,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
               const SizedBox(height: 16),
               Text(
                 _errorMessage ?? 'Une erreur est survenue',
-                style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600]),
+                style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -138,7 +138,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                 onPressed: _loadStats,
                 style: ElevatedButton.styleFrom(backgroundColor: accentColor),
                 child: Text('Réessayer',
-                    style: GoogleFonts.inter(color: Colors.white)),
+                    style: GoogleFonts.inriaSerif(color: Colors.white)),
               ),
             ],
           ),
@@ -292,16 +292,16 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
         children: [
           Text(
             'Total dépensé',
-            style: GoogleFonts.inter(
-              fontSize: 14,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 16,
               color: Colors.white.withOpacity(0.8),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '${stats.totalSpent.toInt()} FCFA',
-            style: GoogleFonts.poppins(
-              fontSize: 32,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 34,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -333,16 +333,16 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
       children: [
         Text(
           value,
-          style: GoogleFonts.poppins(
-            fontSize: 18,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
         Text(
           label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 13,
             color: Colors.white.withOpacity(0.7),
           ),
         ),
@@ -353,8 +353,8 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.poppins(
-        fontSize: 18,
+      style: GoogleFonts.inriaSerif(
+        fontSize: 20,
         fontWeight: FontWeight.w600,
         color: const Color(0xFF1E1E2E),
       ),
@@ -396,16 +396,16 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             const SizedBox(height: 12),
             Text(
               value,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF1E1E2E),
               ),
             ),
             Text(
               label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 14,
                 color: Colors.grey[500],
               ),
             ),
@@ -452,13 +452,13 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.inter(
-                      fontSize: 12, color: Colors.grey[500]),
+                  style: GoogleFonts.inriaSerif(
+                      fontSize: 14, color: Colors.grey[500]),
                 ),
                 Text(
                   value,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 17,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1E1E2E),
                   ),
@@ -502,8 +502,8 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                   width: 100,
                   child: Text(
                     label,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey[700],
                     ),
@@ -525,8 +525,8 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                   width: 30,
                   child: Text(
                     '${entry.value}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151),
                     ),
@@ -576,8 +576,8 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                       children: [
                         Text(
                           '${entry.value.toInt()}',
-                          style: GoogleFonts.inter(
-                            fontSize: 9,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey[600],
                           ),
@@ -600,8 +600,8 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                         const SizedBox(height: 6),
                         Text(
                           _formatMonthLabel(entry.key),
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 12,
                             color: Colors.grey[500],
                           ),
                         ),

@@ -137,8 +137,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
                 children: [
                   Text(
                     'Paiement ${widget.paymentData['name']}',
-                    style: GoogleFonts.openSans(
-                      fontSize: 18,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -149,8 +149,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
                       'Montant: ${widget.total} FCFA',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: widget.paymentData['color'],
                       ),
@@ -177,8 +177,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
                         ),
                         child: Text(
                           'Confirmer le paiement',
-                          style: GoogleFonts.openSans(
-                            fontSize: 16,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -191,8 +191,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
                     onPressed: () => Navigator.pop(context),
                     child: Text(
                       'Annuler',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -223,8 +223,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
                   const SizedBox(width: 16),
                   Text(
                     'Finaliser la commande',
-                    style: GoogleFonts.openSans(
-                      fontSize: 20,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -271,8 +271,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
           child: Center(
             child: Text(
               '$step',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -282,8 +282,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
         const SizedBox(height: 4),
         Text(
           label,
-          style: GoogleFonts.openSans(
-            fontSize: 10,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 12,
             color: Colors.grey.shade600,
           ),
         ),
@@ -298,15 +298,15 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
       children: [
         Text(
           'Informations de la carte',
-          style: GoogleFonts.openSans(
-            fontSize: 18,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 20),
 
         // Numéro de carte
-        Text('Numéro de carte *', style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600)),
+        Text('Numéro de carte *', style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         TextField(
           controller: _cardNumberController,
@@ -324,7 +324,7 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
         const SizedBox(height: 16),
 
         // Nom du titulaire
-        Text('Nom du titulaire *', style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600)),
+        Text('Nom du titulaire *', style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         TextField(
           controller: _cardHolderController,
@@ -347,7 +347,7 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Date d\'expiration *', style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('Date d\'expiration *', style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _expiryController,
@@ -370,7 +370,7 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('CVV *', style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('CVV *', style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _cvvController,
@@ -406,11 +406,11 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
             children: [
               const Icon(Icons.credit_card, color: Colors.white, size: 32),
               const SizedBox(height: 24),
-              Text('Numéro de carte', style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey.shade400)),
+              Text('Numéro de carte', style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade400)),
               const SizedBox(height: 4),
               Text(
                 _cardNumberController.text.isEmpty ? '•••• •••• •••• ••••' : _cardNumberController.text,
-                style: GoogleFonts.openSans(fontSize: 16, color: Colors.white, letterSpacing: 2),
+                style: GoogleFonts.inriaSerif(fontSize: 18, color: Colors.white, letterSpacing: 2),
               ),
               const SizedBox(height: 16),
               Row(
@@ -419,22 +419,22 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Titulaire', style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey.shade400)),
+                      Text('Titulaire', style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade400)),
                       const SizedBox(height: 4),
                       Text(
                         _cardHolderController.text.isEmpty ? 'NOM PRÉNOM' : _cardHolderController.text.toUpperCase(),
-                        style: GoogleFonts.openSans(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Expire', style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey.shade400)),
+                      Text('Expire', style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade400)),
                       const SizedBox(height: 4),
                       Text(
                         _expiryController.text.isEmpty ? 'MM/AA' : _expiryController.text,
-                        style: GoogleFonts.openSans(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -446,23 +446,23 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
         const SizedBox(height: 24),
 
         // Récapitulatif
-        Text('Récapitulatif', style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text('Récapitulatif', style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Sous-total', style: GoogleFonts.openSans(fontSize: 14)),
-            Text('${widget.total} FCFA', style: GoogleFonts.openSans(fontSize: 14)),
+            Text('Sous-total', style: GoogleFonts.inriaSerif(fontSize: 16)),
+            Text('${widget.total} FCFA', style: GoogleFonts.inriaSerif(fontSize: 16)),
           ],
         ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Total', style: GoogleFonts.openSans(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Total', style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold)),
             Text(
               '${widget.total} FCFA',
-              style: GoogleFonts.openSans(fontSize: 18, fontWeight: FontWeight.bold, color: BoutiqueThemeProvider.of(context).primary),
+              style: GoogleFonts.inriaSerif(fontSize: 20, fontWeight: FontWeight.bold, color: BoutiqueThemeProvider.of(context).primary),
             ),
           ],
         ),
@@ -494,8 +494,8 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
               child: Center(
                 child: Text(
                   'Payer ${widget.total} FCFA',
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),

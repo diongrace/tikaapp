@@ -29,6 +29,7 @@ class Order {
   final String? receiptUrl;
   final String? receiptViewUrl;
   final DateTime createdAt;
+  final List<Map<String, dynamic>>? timeline; // Timeline retournée par l'API de suivi
 
   Order({
     required this.id,
@@ -60,6 +61,7 @@ class Order {
     this.receiptUrl,
     this.receiptViewUrl,
     required this.createdAt,
+    this.timeline,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -161,6 +163,9 @@ class Order {
       receiptViewUrl: json['receipt_view_url']?.toString(),
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ??
           DateTime.now(),
+      timeline: (json['timeline'] as List?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
     );
   }
 

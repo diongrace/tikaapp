@@ -26,7 +26,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     {'id': 'promo',   'label': 'Promos',    'icon': Icons.local_offer_rounded},
   ];
 
-  static const _purple = Color(0xFF7B1FA2);
+  static const _purple = Color.fromARGB(255, 151, 24, 210);
   static const _purpleLight = Color(0xFFAB47BC);
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -123,6 +123,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
   }
 
   Future<void> _deleteNotification(int id) async {
+
     try {
       await NotificationService.deleteNotification(id);
       await _loadNotifications();
@@ -132,42 +133,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     }
   }
 
-  void _clearReadNotifications() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Supprimer les lues', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        content: Text(
-          'Voulez-vous supprimer toutes les notifications lues ?',
-          style: GoogleFonts.openSans(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                final count = await NotificationService.clearReadNotifications();
-                await _loadNotifications();
-                if (mounted) _showSnack('$count notification(s) supprimée(s)', Colors.grey.shade700);
-              } catch (e) {
-                if (mounted) _showError(e.toString());
-              }
-            },
-            child: Text('Supprimer', style: GoogleFonts.openSans(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showSnack(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: GoogleFonts.openSans()),
+      content: Text(msg, style: GoogleFonts.inriaSerif()),
       backgroundColor: color,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -230,8 +198,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                   children: [
                     Text(
                       'Notifications',
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                         letterSpacing: -0.3,
@@ -251,8 +219,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                           const SizedBox(width: 6),
                           Text(
                             '$_unreadCount non lue${_unreadCount > 1 ? 's' : ''}',
-                            style: GoogleFonts.openSans(
-                              fontSize: 12,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 14,
                               color: Colors.white.withOpacity(0.80),
                               fontWeight: FontWeight.w600,
                             ),
@@ -265,28 +233,18 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
               ),
 
               // Menu actions
-              if (_notifications.isNotEmpty)
+              if (_notifications.isNotEmpty && _unreadCount > 0)
                 PopupMenuButton<String>(
                   onSelected: (value) {
                     if (value == 'mark_all') _markAllAsRead();
-                    else if (value == 'clear_read') _clearReadNotifications();
                   },
                   itemBuilder: (ctx) => [
-                    if (_unreadCount > 0)
-                      PopupMenuItem(
-                        value: 'mark_all',
-                        child: Row(children: [
-                          const Icon(Icons.done_all_rounded, size: 20, color: _purple),
-                          const SizedBox(width: 12),
-                          Text('Tout marquer comme lu', style: GoogleFonts.openSans(fontSize: 14)),
-                        ]),
-                      ),
                     PopupMenuItem(
-                      value: 'clear_read',
+                      value: 'mark_all',
                       child: Row(children: [
-                        const Icon(Icons.delete_sweep_rounded, size: 20, color: Colors.red),
+                        const Icon(Icons.done_all_rounded, size: 20, color: _purple),
                         const SizedBox(width: 12),
-                        Text('Supprimer les lues', style: GoogleFonts.openSans(fontSize: 14, color: Colors.red)),
+                        Text('Tout marquer comme lu', style: GoogleFonts.inriaSerif(fontSize: 16)),
                       ]),
                     ),
                   ],
@@ -365,8 +323,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                     const SizedBox(width: 5),
                     Text(
                       filter['label'],
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 14,
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                         color: isSelected ? Colors.white : Colors.grey.shade600,
                       ),
@@ -432,9 +390,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             const SizedBox(height: 3),
             Text(
               'Supprimer',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.inriaSerif(
                 color: Colors.white,
-                fontSize: 10.5,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -529,8 +487,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                                       ),
                                       child: Text(
                                         _getTypeLabelForDisplay(detectedType),
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 9.5,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 11.5,
                                           fontWeight: FontWeight.w700,
                                           color: color,
                                           letterSpacing: 0.2,
@@ -560,8 +518,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   notification.title,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13.5,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 15.5,
                                     fontWeight:
                                         isRead ? FontWeight.w500 : FontWeight.w700,
                                     color: const Color(0xFF1A1A2E),
@@ -571,8 +529,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   notification.message,
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 12.5,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 14.5,
                                     color: Colors.grey.shade600,
                                     height: 1.4,
                                   ),
@@ -588,8 +546,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                                     Text(
                                       notification.createdAtHuman ??
                                           notification.createdAt,
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 11,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 13,
                                         color: Colors.grey.shade400,
                                       ),
                                     ),
@@ -632,8 +590,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
           const SizedBox(height: 20),
           Text(
             'Aucune notification',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 20,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1A1A2E),
             ),
@@ -643,7 +601,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             _selectedFilter == 'all'
                 ? 'Vous êtes à jour !'
                 : 'Aucune notification dans cette catégorie',
-            style: GoogleFonts.openSans(fontSize: 13.5, color: Colors.grey.shade500),
+            style: GoogleFonts.inriaSerif(fontSize: 15.5, color: Colors.grey.shade500),
           ),
         ],
       ),
@@ -669,8 +627,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             const SizedBox(height: 20),
             Text(
               'Erreur',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -679,7 +637,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(fontSize: 14, color: Colors.grey.shade600),
+              style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(

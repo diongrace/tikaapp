@@ -77,10 +77,11 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
   Widget build(BuildContext context) {
     final shopTheme = _shopTheme;
 
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
+      padding: EdgeInsets.fromLTRB(14, 4, 14, 8 + bottomInset),
       child: Container(
-        height: 66,
+        height: 54,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(34),
@@ -135,8 +136,8 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
         children: [
           // Halo externe pulsant
           Container(
-            width: 64,
-            height: 64,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
@@ -150,8 +151,8 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
 
           // Bouton principal
           Container(
-            width: 54,
-            height: 54,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -200,7 +201,7 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
                   child: Text(
                     count > 99 ? '99+' : '$count',
                     style: const TextStyle(
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -224,7 +225,7 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
     required int index,
   }) {
     final isSelected = widget.selectedIndex == index;
-    final color = isSelected ? shopTheme.primary : const Color(0xFFB0BAC8);
+    final color = isSelected ? shopTheme.primary : const Color(0xFF6B7280);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -242,15 +243,15 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
               child: Icon(
                 isSelected ? iconActive : icon,
                 key: ValueKey(isSelected),
-                size: 24,
+                size: 22,
                 color: color,
               ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             AnimatedContainer(
               duration: const Duration(milliseconds: 220),
-              width: isSelected ? 18 : 0,
-              height: 3,
+              width: isSelected ? 14 : 0,
+              height: 2,
               decoration: BoxDecoration(
                 color: shopTheme.primary,
                 borderRadius: BorderRadius.circular(2),
@@ -259,7 +260,7 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
             const SizedBox(height: 2),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 220),
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.inriaSerif(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: color,
@@ -276,7 +277,7 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
   void _handleTap(BuildContext context, int index) {
     switch (index) {
       case 0: // Accueil
-        if (widget.selectedIndex != 0) {
+        if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         } else {
           widget.onIndexChanged?.call(0);
@@ -288,13 +289,19 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
       case 3: // Favoris
         if (widget.selectedIndex != 3) {
           Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const FavoritesBoutiquesScreen()));
+            MaterialPageRoute(builder: (_) => BoutiqueThemeProvider(
+              shop: widget.currentShop,
+              child: const FavoritesBoutiquesScreen(),
+            )));
         }
         break;
       case 5: // Profil
         if (widget.selectedIndex != 5) {
           Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const ProfileScreen()));
+            MaterialPageRoute(builder: (_) => BoutiqueThemeProvider(
+              shop: widget.currentShop,
+              child: const ProfileScreen(),
+            )));
         }
         break;
       default:

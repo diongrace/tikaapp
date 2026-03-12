@@ -8,9 +8,8 @@ class OnboardingScreen3 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
+      body: Stack(
+        children: [
             Column(
               children: [
                 // Image du livreur
@@ -20,7 +19,7 @@ class OnboardingScreen3 extends StatelessWidget {
                     'lib/core/assets/livreur.jpg',
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
+                    alignment: Alignment.center,
                   ),
                 ),
 
@@ -57,9 +56,9 @@ class OnboardingScreen3 extends StatelessWidget {
                           child: Text(
                             'Suivez Vos\nLivraisons En\nTemps Réel',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.openSans(
+                            style: GoogleFonts.inriaSerif(
                               color: Color(0xFF670C88),
-                              fontSize: 24,
+                              fontSize: 26,
                               fontWeight: FontWeight.w600,
                               height: 1.0,
                             ),
@@ -103,7 +102,7 @@ class OnboardingScreen3 extends StatelessWidget {
                                 child: const Text(
                                   'suivant',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
                                   ),
@@ -137,7 +136,6 @@ class OnboardingScreen3 extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

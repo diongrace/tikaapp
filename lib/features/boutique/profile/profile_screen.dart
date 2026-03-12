@@ -19,6 +19,7 @@ import '../history/global_history_screen.dart';
 import '../favorites/favorites_boutiques_screen.dart';
 import '../loyalty/loyalty_card_page.dart';
 import '../home/components/home_bottom_navigation.dart';
+import '../../../core/services/boutique_theme_provider.dart';
 
 /// Ecran de profil client - Conforme a l'API TIKA
 /// Affiche le profil connecte ou les infos locales
@@ -30,6 +31,14 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  Color _shopPrimary = const Color(0xFF8936A8);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _shopPrimary = BoutiqueThemeProvider.of(context).primary;
+  }
+
   String _customerName = '';
   String _customerPhone = '';
   String _customerEmail = '';
@@ -186,25 +195,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Deconnexion',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Etes-vous sur de vouloir vous deconnecter ?',
-          style: GoogleFonts.openSans(),
+          style: GoogleFonts.inriaSerif(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Annuler',
-              style: GoogleFonts.openSans(color: Colors.grey),
+              style: GoogleFonts.inriaSerif(color: Colors.grey),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Deconnexion',
-              style: GoogleFonts.openSans(
+              style: GoogleFonts.inriaSerif(
                 color: Colors.red,
                 fontWeight: FontWeight.w600,
               ),
@@ -246,9 +255,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SnackBar(
             content: Text(
               'Aucune carte de fidelite. Visitez une boutique pour en creer une.',
-              style: GoogleFonts.openSans(color: Colors.white),
+              style: GoogleFonts.inriaSerif(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFF8936A8),
+            backgroundColor: _shopPrimary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
@@ -258,7 +267,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => LoyaltyCardPage(loyaltyCard: cards.first),
+            builder: (context) => BoutiqueThemeProvider(
+              shop: BoutiqueThemeProvider.shopOf(context),
+              child: LoyaltyCardPage(loyaltyCard: cards.first),
+            ),
           ),
         );
       } else {
@@ -315,8 +327,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFD48EFC), Color(0xFF8936A8)],
+                      gradient: LinearGradient(
+                        colors: [_shopPrimary.withOpacity(0.6), _shopPrimary],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -334,16 +346,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         'Mes cartes de fidelite',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                       ),
                       Text(
                         '${cards.length} carte${cards.length > 1 ? 's' : ''}',
-                        style: GoogleFonts.openSans(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           color: Colors.grey.shade500,
                         ),
                       ),
@@ -373,7 +385,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => LoyaltyCardPage(loyaltyCard: card),
+                          builder: (context) => BoutiqueThemeProvider(
+                            shop: BoutiqueThemeProvider.shopOf(context),
+                            child: LoyaltyCardPage(loyaltyCard: card),
+                          ),
                         ),
                       );
                     },
@@ -384,7 +399,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: const Color(0xFFF8F4FF),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFF8936A8).withOpacity(0.15),
+                          color: _shopPrimary.withOpacity(0.15),
                           width: 1,
                         ),
                       ),
@@ -401,8 +416,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               children: [
                                 Text(
                                   card.shopName,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 15,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black87,
                                   ),
@@ -414,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       Icons.stars_rounded,
                                       size: 15,
                                       color: hasPoints
-                                          ? const Color(0xFF8936A8)
+                                          ? _shopPrimary
                                           : Colors.grey.shade400,
                                     ),
                                     const SizedBox(width: 4),
@@ -422,13 +437,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       hasPoints
                                           ? '${card.points} points'
                                           : 'Aucun point',
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 13,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 15,
                                         fontWeight: hasPoints
                                             ? FontWeight.w600
                                             : FontWeight.normal,
                                         color: hasPoints
-                                            ? const Color(0xFF8936A8)
+                                            ? _shopPrimary
                                             : Colors.grey.shade400,
                                       ),
                                     ),
@@ -443,13 +458,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 32,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF8936A8).withOpacity(0.1),
+                              color: _shopPrimary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.arrow_forward_ios_rounded,
                               size: 14,
-                              color: Color(0xFF8936A8),
+                              color: _shopPrimary,
                             ),
                           ),
                         ],
@@ -489,11 +504,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _shopPrimary = BoutiqueThemeProvider.of(context).primary;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      bottomNavigationBar: const HomeBottomNavigation(
+      bottomNavigationBar: HomeBottomNavigation(
         selectedIndex: 5,
-        currentShop: null,
+        currentShop: BoutiqueThemeProvider.shopOf(context),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -503,13 +519,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Container(
                   height: 220,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFFD48EFC),
-                        Color(0xFF8936A8),
+                        
+                        _shopPrimary.withOpacity(0.6),
+                        _shopPrimary,
                       ],
                     ),
                   ),
@@ -538,8 +555,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const Spacer(),
                         Text(
                           'Profil',
-                          style: GoogleFonts.openSans(
-                            fontSize: 20,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -580,15 +597,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFD48EFC), Color(0xFF8936A8)],
+                              gradient: LinearGradient(
+                                colors: [_shopPrimary.withOpacity(0.6), _shopPrimary],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF8936A8).withOpacity(0.4),
+                                  color: _shopPrimary.withOpacity(0.4),
                                   blurRadius: 15,
                                   offset: const Offset(0, 5),
                                 ),
@@ -598,8 +615,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: _isAuthenticated
                                   ? Text(
                                       _getInitials(_customerName),
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 36,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 38,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                       ),
@@ -619,8 +636,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _isAuthenticated
                                 ? (_customerName.isEmpty ? 'Mon profil' : _customerName)
                                 : 'Bienvenue',
-                            style: GoogleFonts.openSans(
-                              fontSize: 24,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 26,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -638,8 +655,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     _customerEmail,
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 14,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
                                       color: Colors.grey.shade700,
                                     ),
                                   ),
@@ -655,8 +672,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     _customerPhone,
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 14,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
                                       color: Colors.grey.shade700,
                                     ),
                                   ),
@@ -666,8 +683,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ] else ...[
                             Text(
                               'Connectez-vous pour acceder a votre profil',
-                              style: GoogleFonts.openSans(
-                                fontSize: 13,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 15,
                                 color: Colors.grey.shade500,
                               ),
                               textAlign: TextAlign.center,
@@ -693,7 +710,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const GlobalHistoryScreen(),
+                                  builder: (context) => BoutiqueThemeProvider(
+                                    shop: BoutiqueThemeProvider.shopOf(context),
+                                    child: const GlobalHistoryScreen(),
+                                  ),
                                 ),
                               );
                             },
@@ -713,7 +733,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const FavoritesBoutiquesScreen(),
+                                  builder: (context) => BoutiqueThemeProvider(
+                                    shop: BoutiqueThemeProvider.shopOf(context),
+                                    child: const FavoritesBoutiquesScreen(),
+                                  ),
                                 ),
                               );
                             },
@@ -748,18 +771,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Color(0xFFD48EFC),
-                              Color(0xFF8936A8),
+                              _shopPrimary.withOpacity(0.6),
+                              _shopPrimary,
                             ],
                           ),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF8936A8).withOpacity(0.4),
+                              color: _shopPrimary.withOpacity(0.4),
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -775,8 +798,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       const SizedBox(width: 12),
                                       Text(
                                         'Programme de fidelite',
-                                        style: GoogleFonts.openSans(
-                                          fontSize: 16,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
                                         ),
@@ -786,8 +809,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const SizedBox(height: 16),
                                   Text(
                                     '$_loyaltyPoints points',
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 36,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 38,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -797,8 +820,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     _loyaltyPoints > 0
                                         ? 'Valeur: ${(_loyaltyPoints * 5).toStringAsFixed(0)} FCFA'
                                         : 'Creez une carte pour gagner des points',
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 14,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
                                       color: Colors.white.withOpacity(0.9),
                                     ),
                                   ),
@@ -816,8 +839,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     child: Text(
                                       'Voir mes cartes',
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 14,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -834,8 +857,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       children: [
                                         Text(
                                           'Programme de fidelite',
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 16,
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 18,
                                             fontWeight: FontWeight.w600,
                                             color: Colors.white,
                                           ),
@@ -843,8 +866,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         const SizedBox(height: 6),
                                         Text(
                                           'Connectez-vous pour gagner des points et des recompenses',
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 13,
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 15,
                                             color: Colors.white.withOpacity(0.85),
                                           ),
                                         ),
@@ -878,7 +901,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const PersonalInfoScreen(),
+                                builder: (context) => BoutiqueThemeProvider(
+                                  shop: BoutiqueThemeProvider.shopOf(context),
+                                  child: const PersonalInfoScreen(),
+                                ),
                               ),
                             );
                             if (result == true) {
@@ -900,7 +926,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AddressesScreen(),
+                                builder: (context) => BoutiqueThemeProvider(
+                                  shop: BoutiqueThemeProvider.shopOf(context),
+                                  child: const AddressesScreen(),
+                                ),
                               ),
                             );
                           },
@@ -919,7 +948,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const NotificationsScreen(),
+                                builder: (context) => BoutiqueThemeProvider(
+                                  shop: BoutiqueThemeProvider.shopOf(context),
+                                  child: const NotificationsScreen(),
+                                ),
                               ),
                             );
                           },
@@ -933,7 +965,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const HelpSupportScreen(),
+                                builder: (context) => BoutiqueThemeProvider(
+                                  shop: BoutiqueThemeProvider.shopOf(context),
+                                  child: const HelpSupportScreen(),
+                                ),
                               ),
                             );
                           },
@@ -957,16 +992,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Version et copyright
                   Text(
                     'Tika v1.0.0',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade500,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '2025 Tika. Tous droits reserves.',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade500,
                     ),
                   ),
@@ -1024,8 +1059,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: 52,
       height: 52,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFD48EFC), Color(0xFF8936A8)],
+        gradient: LinearGradient(
+          colors: [_shopPrimary.withOpacity(0.6), _shopPrimary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -1034,8 +1069,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Center(
         child: Text(
           initial,
-          style: GoogleFonts.poppins(
-            fontSize: 22,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -1048,7 +1083,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -1066,16 +1101,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ? Icon(Icons.lock_outline, size: 28, color: Colors.grey.shade400)
                 : Text(
                     value,
-                    style: GoogleFonts.openSans(
-                      fontSize: 32,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF8936A8),
+                      color: _shopPrimary,
                     ),
                   ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: GoogleFonts.openSans(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inriaSerif(
                 fontSize: 13,
                 color: locked ? Colors.grey.shade400 : Colors.grey.shade700,
               ),
@@ -1117,12 +1154,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(
                 color: locked
                     ? Colors.grey.withOpacity(0.08)
-                    : const Color(0xFF8936A8).withOpacity(0.1),
+                    : _shopPrimary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: locked ? Colors.grey.shade400 : const Color(0xFF8936A8),
+                color: locked ? Colors.grey.shade400 : _shopPrimary,
                 size: 24,
               ),
             ),
@@ -1133,8 +1170,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.openSans(
-                      fontSize: 16,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: locked ? Colors.grey.shade400 : Colors.black87,
                     ),
@@ -1142,8 +1179,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: GoogleFonts.openSans(
-                      fontSize: 13,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
                       color: Colors.grey.shade500,
                     ),
                   ),
@@ -1164,15 +1201,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildLoginButton() {
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8936A8), Color(0xFFB932D6)],
+        gradient: LinearGradient(
+          colors: [_shopPrimary, _shopPrimary],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8936A8).withOpacity(0.3),
+            color: _shopPrimary.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1207,8 +1244,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         'Se connecter',
-                        style: GoogleFonts.openSans(
-                          fontSize: 16,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -1216,8 +1253,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Synchronisez vos donnees',
-                        style: GoogleFonts.openSans(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           color: Colors.white.withOpacity(0.8),
                         ),
                       ),
@@ -1280,8 +1317,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         'Deconnexion',
-                        style: GoogleFonts.openSans(
-                          fontSize: 16,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.red.shade700,
                         ),
@@ -1289,8 +1326,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Se deconnecter de ce compte',
-                        style: GoogleFonts.openSans(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           color: Colors.grey.shade600,
                         ),
                       ),

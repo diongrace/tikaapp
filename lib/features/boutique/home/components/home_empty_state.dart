@@ -133,8 +133,8 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
             // Titre
             Text(
               'Aucun produit disponible',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -147,8 +147,8 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
               hasFilter
                   ? 'Aucun produit ne correspond à votre recherche'
                   : '${widget.shop?.name ?? "Cette boutique"} n\'a pas encore ajouté de produits',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey[600],
                 height: 1.5,
               ),
@@ -181,8 +181,8 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
                     const SizedBox(width: 8),
                     Text(
                       'Essayez une autre recherche',
-                      style: GoogleFonts.openSans(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: widget.primaryColor,
                       ),

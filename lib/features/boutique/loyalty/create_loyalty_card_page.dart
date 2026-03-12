@@ -125,8 +125,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             const SizedBox(height: 16),
             Text(
               'Connexion requise',
-              style: GoogleFonts.poppins(
-                fontSize: 17,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 19,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E293B),
               ),
@@ -134,8 +134,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             const SizedBox(height: 8),
             Text(
               'Vous devez être connecté pour créer une carte de fidélité.',
-              style: GoogleFonts.openSans(
-                fontSize: 13,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 15,
                 color: Colors.grey.shade600,
               ),
               textAlign: TextAlign.center,
@@ -150,7 +150,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             },
             child: Text(
               'Annuler',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.inriaSerif(
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),
@@ -172,7 +172,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             ),
             child: Text(
               'Se connecter',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -302,16 +302,16 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
           children: [
             Text(
               'Carte de fidelite',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E293B),
               ),
             ),
             Text(
               widget.boutiqueName,
-              style: GoogleFonts.openSans(
-                fontSize: 12,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 14,
                 color: Colors.grey.shade500,
               ),
             ),
@@ -365,8 +365,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                           children: [
                             Text(
                               'Programme Fidelite',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
@@ -374,8 +374,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                             const SizedBox(height: 2),
                             Text(
                               'Rejoignez-nous et profitez d\'avantages exclusifs',
-                              style: GoogleFonts.openSans(
-                                fontSize: 12,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 14,
                                 color: Colors.white.withOpacity(0.7),
                               ),
                             ),
@@ -423,8 +423,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                       const SizedBox(width: 10),
                       Text(
                         'Vos avantages',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1E293B),
                         ),
@@ -490,16 +490,16 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                       children: [
                         Text(
                           'Code PIN automatique',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1E40AF),
                           ),
                         ),
                         Text(
                           'Votre PIN sera les 4 derniers chiffres du numéro de téléphone de votre compte',
-                          style: GoogleFonts.openSans(
-                            fontSize: 11,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 13,
                             color: const Color(0xFF1E40AF).withOpacity(0.8),
                           ),
                         ),
@@ -543,8 +543,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                             const SizedBox(width: 10),
                             Text(
                               'Creer ma carte',
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 17,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -578,8 +578,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                     const SizedBox(width: 8),
                     Text(
                       'Retour a la boutique',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey.shade600,
                       ),
@@ -620,16 +620,16 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                       children: [
                         Text(
                           'Vos donnees sont protegees',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF166534),
                           ),
                         ),
                         Text(
                           'Nous ne partageons jamais vos informations personnelles',
-                          style: GoogleFonts.openSans(
-                            fontSize: 11,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 13,
                             color: const Color(0xFF166534).withOpacity(0.8),
                           ),
                         ),
@@ -661,8 +661,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
           const SizedBox(width: 6),
           Text(
             text,
-            style: GoogleFonts.openSans(
-              fontSize: 11,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 13,
               fontWeight: FontWeight.w500,
               color: Colors.white.withOpacity(0.9),
             ),
@@ -691,16 +691,16 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             children: [
               Text(
                 title,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1E293B),
                 ),
               ),
               Text(
                 subtitle,
-                style: GoogleFonts.openSans(
-                  fontSize: 11,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 13,
                   color: Colors.grey.shade500,
                 ),
               ),

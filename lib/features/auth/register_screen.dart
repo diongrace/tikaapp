@@ -173,8 +173,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Center(
                   child: Text(
                     'Creer un compte',
-                    style: GoogleFonts.openSans(
-                      fontSize: 26,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -187,8 +187,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Center(
                   child: Text(
                     'Inscrivez-vous pour profiter de toutes les fonctionnalites',
-                    style: GoogleFonts.openSans(
-                      fontSize: 13,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
                       color: Colors.grey.shade600,
                     ),
                     textAlign: TextAlign.center,
@@ -338,16 +338,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               },
                         child: RichText(
                           text: TextSpan(
-                            style: GoogleFonts.openSans(
-                              fontSize: 13,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 15,
                               color: Colors.grey.shade700,
                             ),
                             children: [
                               const TextSpan(text: 'J\'accepte les '),
                               TextSpan(
                                 text: 'conditions d\'utilisation',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 13,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 15,
                                   color: const Color(0xFF8936A8),
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -355,8 +355,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const TextSpan(text: ' et la '),
                               TextSpan(
                                 text: 'politique de confidentialite',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 13,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 15,
                                   color: const Color(0xFF8936A8),
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -396,8 +396,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           )
                         : Text(
                             'Creer mon compte',
-                            style: GoogleFonts.openSans(
-                              fontSize: 16,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -412,8 +412,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Text(
                       'Deja un compte ?',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -430,8 +430,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             },
                       child: Text(
                         'Se connecter',
-                        style: GoogleFonts.openSans(
-                          fontSize: 14,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF8936A8),
                         ),
@@ -463,8 +463,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       children: [
         Text(
           required ? '$label *' : '$label (optionnel)',
-          style: GoogleFonts.openSans(
-            fontSize: 14,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -487,8 +487,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             validator: validator,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: GoogleFonts.openSans(
-                fontSize: 14,
+              hintStyle: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade400,
               ),
               prefixIcon: Icon(icon, color: Colors.grey.shade600, size: 22),
@@ -538,8 +538,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       children: [
         Text(
           '$label *',
-          style: GoogleFonts.openSans(
-            fontSize: 14,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -562,8 +562,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             validator: validator,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: GoogleFonts.openSans(
-                fontSize: 14,
+              hintStyle: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade400,
               ),
               prefixIcon: Icon(

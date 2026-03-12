@@ -273,6 +273,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
   @override
   Widget build(BuildContext context) {
     final primaryColor = BoutiqueThemeProvider.of(context).primary;
+    final isCancelled = _order != null && _isCancelledStatus(_order!.status);
+    final headerColor = isCancelled ? const Color(0xFFB71C1C) : primaryColor;
 
     return WillPopScope(
       onWillPop: () async {
@@ -284,7 +286,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
         body: Column(
           children: [
             // Header amélioré
-            _buildHeader(primaryColor),
+            _buildHeader(headerColor),
             // Contenu
             Expanded(
               child: _buildContent(),
@@ -296,14 +298,21 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
   }
 
   Widget _buildHeader(Color primaryColor) {
+    final isCancelled = _order != null && _isCancelledStatus(_order!.status);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            primaryColor,
-            primaryColor.withOpacity(0.8),
-            const Color(0xFFD48EFC),
-          ],
+          colors: isCancelled
+              ? [
+                  const Color(0xFFB71C1C),
+                  const Color(0xFFE53935),
+                  const Color(0xFFEF9A9A),
+                ]
+              : [
+                  primaryColor,
+                  primaryColor.withOpacity(0.8),
+                  const Color(0xFFD48EFC),
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -342,9 +351,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Suivi de commande',
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
+                          isCancelled ? 'Commande annulée' : 'Suivi de commande',
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -358,8 +367,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           ),
                           child: Text(
                             '#${widget.orderNumber}',
-                            style: GoogleFonts.openSans(
-                              fontSize: 12,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
@@ -438,8 +447,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         children: [
                           Text(
                             _order!.shopName ?? 'Boutique',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
@@ -449,8 +458,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           const SizedBox(height: 4),
                           Text(
                             '${_order!.totalAmount.toInt()} FCFA',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -480,8 +489,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
             const SizedBox(height: 16),
             Text(
               'Chargement de votre commande...',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey[600],
               ),
             ),
@@ -513,16 +522,16 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               const SizedBox(height: 20),
               Text(
                 'Erreur de chargement',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 _errorMessage ?? 'Une erreur est survenue',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
@@ -533,8 +542,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 icon: const Icon(Icons.refresh_rounded, size: 20),
                 label: Text(
                   'Réessayer',
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -557,7 +566,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
       return Center(
         child: Text(
           'Commande introuvable',
-          style: GoogleFonts.openSans(fontSize: 16),
+          style: GoogleFonts.inriaSerif(fontSize: 18),
         ),
       );
     }
@@ -622,8 +631,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Expanded(
                 child: Text(
                   'Détails de la commande',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -639,8 +648,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 ),
                 child: Text(
                   '$itemsCount article${itemsCount > 1 ? 's' : ''}',
-                  style: GoogleFonts.openSans(
-                    fontSize: 12,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: primaryColor,
                   ),
@@ -729,8 +738,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         children: [
                           Text(
                             name,
-                            style: GoogleFonts.openSans(
-                              fontSize: 14,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
@@ -746,8 +755,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             ),
                             child: Text(
                               'Qté: $quantity',
-                              style: GoogleFonts.openSans(
-                                fontSize: 11,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey[700],
                               ),
@@ -763,8 +772,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                       children: [
                         Text(
                           '${(price * quantity).toInt()} F',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: primaryColor,
                           ),
@@ -772,8 +781,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         if (quantity > 1)
                           Text(
                             '${price.toInt()} F/u',
-                            style: GoogleFonts.openSans(
-                              fontSize: 11,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 13,
                               color: Colors.grey[500],
                             ),
                           ),
@@ -802,8 +811,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                       children: [
                         Text(
                           '$itemsCount article${itemsCount > 1 ? 's' : ''} commandé${itemsCount > 1 ? 's' : ''}',
-                          style: GoogleFonts.openSans(
-                            fontSize: 14,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
                           ),
@@ -811,8 +820,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         const SizedBox(height: 4),
                         Text(
                           'Détails disponibles après traitement',
-                          style: GoogleFonts.openSans(
-                            fontSize: 12,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 14,
                             color: Colors.grey[500],
                           ),
                         ),
@@ -860,8 +869,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                     const SizedBox(width: 12),
                     Text(
                       'Total',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
@@ -870,8 +879,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 ),
                 Text(
                   '${order.totalAmount.toInt()} FCFA',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: primaryColor,
                   ),
@@ -884,31 +893,369 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
     );
   }
 
+  bool _isCancelledStatus(String status) {
+    final s = status.toLowerCase().trim();
+    return s == 'annulée' ||
+        s == 'annulee' ||
+        s == 'annulé' ||
+        s == 'annule' ||
+        s == 'cancelled' ||
+        s == 'canceled' ||
+        s == 'rejetée' ||
+        s == 'rejetee' ||
+        s == 'rejected';
+  }
+
+  Widget _buildCancelledTimeline() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // En-tête rouge
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE53935),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Statut de la commande',
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          // Icône annulation centrée
+          Center(
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEBEE),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE53935).withOpacity(0.3), width: 2),
+              ),
+              child: const Icon(
+                Icons.cancel_rounded,
+                size: 44,
+                color: Color(0xFFE53935),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              'Commande annulée',
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFE53935),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              'Cette commande a été annulée\net ne sera pas traitée.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 14,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Étapes grisées
+          _buildGreyedStep(Icons.shopping_cart_checkout_rounded, 'Commande reçue', isFirst: true),
+          _buildGreyedStep(Icons.restaurant_rounded, 'En préparation'),
+          _buildGreyedStep(Icons.inventory_2_rounded, 'Prête à récupérer'),
+          _buildGreyedStep(Icons.delivery_dining_rounded, 'En livraison', isLast: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGreyedStep(IconData icon, String label, {bool isFirst = false, bool isLast = false}) {
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey[300]!, width: 1.5),
+                  ),
+                  child: Icon(icon, size: 20, color: Colors.grey[350]),
+                ),
+                if (!isLast)
+                  Container(
+                    width: 2,
+                    height: 36,
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    color: Colors.grey[200],
+                  ),
+              ],
+            ),
+            const SizedBox(width: 14),
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                label,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[400],
+                  decoration: TextDecoration.lineThrough,
+                  decorationColor: Colors.grey[350],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Construit la timeline directement depuis les données du backend
+  Widget _buildTimelineFromBackend(List<Map<String, dynamic>> timeline) {
+    // Map des icônes par status
+    const iconMap = {
+      'recue': Icons.shopping_cart_checkout_rounded,
+      'en_traitement': Icons.restaurant_rounded,
+      'prete': Icons.inventory_2_rounded,
+      'livree': Icons.delivery_dining_rounded,
+    };
+    const colorMap = {
+      'recue': Color(0xFF4CAF50),
+      'en_traitement': Color(0xFFFF9800),
+      'prete': Color(0xFF2196F3),
+      'livree': Color(0xFF4CAF50),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 4, height: 20,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Suivi en temps réel',
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          ...timeline.asMap().entries.map((entry) {
+            final index = entry.key;
+            final step = entry.value;
+            final isLast = index == timeline.length - 1;
+            final completed = step['completed'] == true;
+            final isCurrent = step['current'] == true;
+            final status = step['status']?.toString() ?? '';
+            final label = step['label']?.toString() ?? status;
+            final date = step['date']?.toString();
+            final color = colorMap[status] ?? const Color(0xFF4CAF50);
+            final icon = iconMap[status] ?? Icons.circle;
+
+            return Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      children: [
+                        isCurrent
+                            ? AnimatedBuilder(
+                                animation: _pulseAnimation,
+                                builder: (context, child) => Transform.scale(
+                                  scale: _pulseAnimation.value,
+                                  child: Container(
+                                    width: 48, height: 48,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [color, color.withOpacity(0.7)],
+                                      ),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [BoxShadow(color: color.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))],
+                                    ),
+                                    child: Icon(icon, size: 24, color: Colors.white),
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                width: 48, height: 48,
+                                decoration: BoxDecoration(
+                                  color: completed ? color : Colors.grey[100],
+                                  shape: BoxShape.circle,
+                                  border: completed ? null : Border.all(color: Colors.grey[300]!, width: 2),
+                                ),
+                                child: Icon(icon, size: 22, color: completed ? Colors.white : Colors.grey[400]),
+                              ),
+                        if (!isLast)
+                          Container(
+                            width: 3, height: 50,
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: completed ? color : Colors.grey[200],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              label,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 17,
+                                fontWeight: (completed || isCurrent) ? FontWeight.w600 : FontWeight.w500,
+                                color: (completed || isCurrent) ? Colors.black87 : Colors.grey[400],
+                              ),
+                            ),
+                            if (date != null && date.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  date,
+                                  style: GoogleFonts.inriaSerif(fontSize: 13, color: color, fontWeight: FontWeight.w600),
+                                ),
+                              )
+                            else if (isCurrent)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  'En cours...',
+                                  style: GoogleFonts.inriaSerif(fontSize: 15, color: color, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            if (!isLast) const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (completed || isCurrent)
+                      Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isCurrent ? Icons.hourglass_top_rounded : Icons.check_circle_rounded,
+                              size: 14, color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isCurrent ? 'Actuel' : 'Fait',
+                              style: GoogleFonts.inriaSerif(fontSize: 13, fontWeight: FontWeight.w600, color: color),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   Widget _buildModernTimeline(Order order) {
-    final statuses = ['reçue', 'en_traitement', 'prête', 'en_livraison'];
+    // Afficher l'état annulé si la commande est annulée
+    if (_isCancelledStatus(order.status)) {
+      return _buildCancelledTimeline();
+    }
+
+    // Si le backend a retourné une timeline, l'utiliser directement
+    if (order.timeline != null && order.timeline!.isNotEmpty) {
+      return _buildTimelineFromBackend(order.timeline!);
+    }
+
+    final statuses = ['recue', 'en_traitement', 'prete', 'en_livraison'];
     final statusLabels = {
-      'reçue': 'Commande reçue',
+      'recue': 'Commande reçue',
       'en_traitement': 'En préparation',
-      'prête': 'Prête à récupérer',
+      'prete': 'Prête à récupérer',
       'en_livraison': 'En livraison',
     };
     final statusDescriptions = {
-      'reçue': 'Votre commande a été enregistrée',
+      'recue': 'Votre commande a été enregistrée',
       'en_traitement': 'La boutique prépare votre commande',
-      'prête': 'Votre commande vous attend',
+      'prete': 'Votre commande vous attend',
       'en_livraison': 'Le livreur est en route',
     };
     final statusIcons = {
-      'reçue': Icons.shopping_cart_checkout_rounded,
+      'recue': Icons.shopping_cart_checkout_rounded,
       'en_traitement': Icons.restaurant_rounded,
-      'prête': Icons.inventory_2_rounded,
+      'prete': Icons.inventory_2_rounded,
       'en_livraison': Icons.delivery_dining_rounded,
     };
     // Couleurs spécifiques pour chaque étape
     final statusColors = {
-      'reçue': const Color(0xFF4CAF50),          // Vert
+      'recue': const Color(0xFF4CAF50),          // Vert
       'en_traitement': const Color(0xFFFF9800),  // Orange
-      'prête': const Color(0xFF2196F3),          // Bleu
+      'prete': const Color(0xFF2196F3),          // Bleu
       'en_livraison': const Color(0xFF4CAF50),   // Vert
     };
 
@@ -944,8 +1291,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               const SizedBox(width: 10),
               Text(
                 'Suivi en temps réel',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -1042,8 +1389,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           children: [
                             Text(
                               label,
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 17,
                                 fontWeight: isPassed ? FontWeight.w600 : FontWeight.w500,
                                 color: isPassed ? Colors.black87 : Colors.grey[400],
                               ),
@@ -1055,8 +1402,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                   : isCompleted
                                       ? 'Terminé ✓'
                                       : description,
-                              style: GoogleFonts.openSans(
-                                fontSize: 13,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 15,
                                 color: isCurrent
                                     ? stepColor
                                     : isCompleted
@@ -1090,8 +1437,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             const SizedBox(width: 4),
                             Text(
                               isCurrent ? 'Actuel' : 'Fait',
-                              style: GoogleFonts.openSans(
-                                fontSize: 11,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: stepColor,
                               ),
@@ -1141,8 +1488,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               const SizedBox(width: 10),
               Text(
                 'Informations',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -1217,8 +1564,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.openSans(
-                    fontSize: 11,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 13,
                     color: Colors.grey[500],
                     fontWeight: FontWeight.w500,
                   ),
@@ -1226,8 +1573,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -1282,16 +1629,16 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                   children: [
                     Text(
                       'Besoin d\'aide ?',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
                     Text(
                       'Contactez la boutique directement',
-                      style: GoogleFonts.openSans(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -1324,8 +1671,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           const SizedBox(width: 8),
                           Text(
                             'Appeler',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
                             ),
@@ -1366,8 +1713,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           const SizedBox(width: 8),
                           Text(
                             'WhatsApp',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),

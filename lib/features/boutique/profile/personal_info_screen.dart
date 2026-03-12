@@ -165,7 +165,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   void _snack(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: GoogleFonts.openSans(fontWeight: FontWeight.w600)),
+      content: Text(msg, style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600)),
       backgroundColor: color,
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
@@ -191,7 +191,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     child: const Icon(Icons.arrow_back, size: 24),
                   ),
                   const SizedBox(width: 16),
-                  Text('Mon profil', style: GoogleFonts.openSans(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('Mon profil', style: GoogleFonts.inriaSerif(fontSize: 22, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -247,7 +247,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Text(
                                     'Le numéro de téléphone ne peut pas être modifié',
-                                    style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey.shade500),
+                                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade500),
                                   ),
                                 ),
                               ],
@@ -289,7 +289,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 12),
                                   child: Text(
                                     'Changer le mot de passe',
-                                    style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey.shade500),
+                                    style: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey.shade500),
                                   ),
                                 ),
                                 Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -333,7 +333,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                   const SizedBox(width: 6),
                                   Expanded(child: Text(
                                     'Laissez les champs mot de passe vides si vous ne souhaitez pas le modifier.',
-                                    style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey.shade500),
+                                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade500),
                                   )),
                                 ]),
                               ]),
@@ -363,7 +363,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                           : Row(mainAxisSize: MainAxisSize.min, children: [
                                               const Icon(Icons.save_outlined, color: Colors.white, size: 20),
                                               const SizedBox(width: 8),
-                                              Text('Enregistrer', style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
+                                              Text('Enregistrer', style: GoogleFonts.inriaSerif(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
                                             ]),
                                     ),
                                   ),
@@ -374,7 +374,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                 child: OutlinedButton.icon(
                                   onPressed: _isSaving ? null : () => Navigator.pop(context),
                                   icon: const Icon(Icons.close, size: 18),
-                                  label: Text('Annuler', style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.w600)),
+                                  label: Text('Annuler', style: GoogleFonts.inriaSerif(fontSize: 17, fontWeight: FontWeight.w600)),
                                   style: OutlinedButton.styleFrom(
                                     minimumSize: const Size(0, 52),
                                     foregroundColor: Colors.black87,
@@ -429,7 +429,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         Row(children: [
           Icon(icon, size: 14, color: const Color(0xFF8936A8)),
           const SizedBox(width: 5),
-          Text(label, style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+          Text(label, style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
         ]),
         const SizedBox(height: 6),
         TextFormField(
@@ -437,10 +437,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           keyboardType: keyboardType,
           readOnly: readOnly,
           validator: validator,
-          style: GoogleFonts.openSans(fontSize: 14, color: readOnly ? Colors.grey.shade600 : Colors.black87),
+          style: GoogleFonts.inriaSerif(fontSize: 16, color: readOnly ? Colors.grey.shade600 : Colors.black87),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.openSans(fontSize: 14, color: Colors.grey.shade400),
+            hintStyle: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey.shade400),
             suffixIcon: suffix,
             filled: true,
             fillColor: readOnly ? Colors.grey.shade50 : const Color(0xFFF8F8F8),
@@ -469,16 +469,16 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         Row(children: [
           const Icon(Icons.lock_outline, size: 14, color: Color(0xFF8936A8)),
           const SizedBox(width: 5),
-          Text(label, style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+          Text(label, style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
         ]),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           obscureText: obscure,
-          style: GoogleFonts.openSans(fontSize: 14),
+          style: GoogleFonts.inriaSerif(fontSize: 16),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.openSans(fontSize: 13, color: Colors.grey.shade400),
+            hintStyle: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey.shade400),
             suffixIcon: GestureDetector(
               onTap: onToggle,
               child: Icon(

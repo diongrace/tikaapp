@@ -275,35 +275,6 @@ class NotificationService {
     return true;
   }
 
-  /// Marquer plusieurs notifications comme lues
-  static Future<bool> markMultipleAsRead(List<int> notificationIds) async {
-    if (!isAuthenticated) {
-      for (var id in notificationIds) {
-        await StorageService.markNotificationAsRead(id.toString());
-      }
-      return true;
-    }
-
-    try {
-      final response = await http.post(
-        Uri.parse(Endpoints.notificationsMarkMultipleRead),
-        headers: _headers,
-        body: jsonEncode({'notification_ids': notificationIds}),
-      );
-
-      if (response.statusCode == 200) {
-        return true;
-      }
-    } catch (e) {
-      print('❌ Erreur markMultipleAsRead: $e');
-    }
-
-    for (var id in notificationIds) {
-      await StorageService.markNotificationAsRead(id.toString());
-    }
-    return true;
-  }
-
   /// Marquer toutes les notifications comme lues
   static Future<bool> markAllAsRead() async {
     if (!isAuthenticated) {
@@ -354,38 +325,6 @@ class NotificationService {
 
     await StorageService.deleteNotification(notificationId.toString());
     return true;
-  }
-
-  /// Supprimer toutes les notifications lues
-  static Future<int> clearReadNotifications() async {
-    if (!isAuthenticated) {
-      final notifications = await StorageService.getNotifications();
-      final readIds = notifications
-          .where((n) => n['isRead'] == true)
-          .map((n) => n['id'].toString())
-          .toList();
-
-      for (var id in readIds) {
-        await StorageService.deleteNotification(id);
-      }
-      return readIds.length;
-    }
-
-    try {
-      final response = await http.delete(
-        Uri.parse(Endpoints.notificationsClearRead),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['data']['deleted_count'] ?? 0;
-      }
-    } catch (e) {
-      print('❌ Erreur clearReadNotifications: $e');
-    }
-
-    return 0;
   }
 
   // ============================================================

@@ -59,8 +59,8 @@ void showSuccessModal(BuildContext context, String message) {
               // Message
               Text(
                 message,
-                style: GoogleFonts.openSans(
-                  fontSize: 18,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 20,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -97,8 +97,8 @@ void showSuccessModal(BuildContext context, String message) {
                       child: Center(
                         child: Text(
                           'OK',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -174,8 +174,8 @@ void showErrorModal(BuildContext context, String message) {
               // Message
               Text(
                 message,
-                style: GoogleFonts.openSans(
-                  fontSize: 18,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 20,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -212,8 +212,8 @@ void showErrorModal(BuildContext context, String message) {
                       child: Center(
                         child: Text(
                           'OK',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -289,8 +289,8 @@ void showWarningModal(BuildContext context, String message) {
               // Message
               Text(
                 message,
-                style: GoogleFonts.openSans(
-                  fontSize: 18,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 20,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -327,8 +327,8 @@ void showWarningModal(BuildContext context, String message) {
                       child: Center(
                         child: Text(
                           'OK',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -404,8 +404,8 @@ void showInfoModal(BuildContext context, String message) {
               // Message
               Text(
                 message,
-                style: GoogleFonts.openSans(
-                  fontSize: 18,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 20,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -442,8 +442,8 @@ void showInfoModal(BuildContext context, String message) {
                       child: Center(
                         child: Text(
                           'OK',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),

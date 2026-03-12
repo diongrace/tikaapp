@@ -41,8 +41,8 @@ class FavoritesLoadingScreen extends StatelessWidget {
           // Texte de chargement
           Text(
             'Chargement des favoris...',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF2D2D2D),
             ),
@@ -50,8 +50,8 @@ class FavoritesLoadingScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Veuillez patienter',
-            style: GoogleFonts.openSans(
-              fontSize: 14,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 16,
               color: Colors.grey.shade600,
             ),
           ),

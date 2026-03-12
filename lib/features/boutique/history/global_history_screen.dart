@@ -14,6 +14,9 @@ import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/storage_service.dart';
 import '../commande/order_tracking_api_page.dart';
 import '../commande/receipt_view_page.dart';
+import '../commande/commande_screen.dart';
+import '../panier/cart_manager.dart';
+import '../home/home_online_screen.dart';
 
 /// Écran d'historique global de toutes les commandes du client
 /// Utilise l'API pour récupérer les commandes via device_fingerprint
@@ -92,15 +95,23 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
     });
 
     try {
-      // Récupérer le device fingerprint
-      final deviceFingerprint = await DeviceService.getDeviceFingerprint();
-      print('📱 [GlobalHistory] Device Fingerprint: $deviceFingerprint');
+      final Map<String, dynamic> response;
 
-      // Appeler l'API pour récupérer les commandes par appareil
-      final response = await OrderService.getOrdersByDevice(
-        deviceFingerprint: deviceFingerprint,
-        page: loadMore ? _currentPage + 1 : 1,
-      );
+      if (AuthService.isAuthenticated) {
+        // Utilisateur connecté → GET /client/orders (endpoint officiel)
+        print('📱 [GlobalHistory] Chargement via token auth');
+        response = await OrderService.getOrders(
+          page: loadMore ? _currentPage + 1 : 1,
+        );
+      } else {
+        // Non connecté → fallback par device fingerprint
+        final deviceFingerprint = await DeviceService.getDeviceFingerprint();
+        print('📱 [GlobalHistory] Device Fingerprint: $deviceFingerprint');
+        response = await OrderService.getOrdersByDevice(
+          deviceFingerprint: deviceFingerprint,
+          page: loadMore ? _currentPage + 1 : 1,
+        );
+      }
 
       print('📦 [GlobalHistory] Response type: ${response.runtimeType}');
       print('📦 [GlobalHistory] Orders type: ${response['orders'].runtimeType}');
@@ -192,8 +203,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
         builder: (context) => AlertDialog(
           title: Text(
             'Numéro de téléphone requis',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -203,7 +214,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             children: [
               Text(
                 'Pour suivre votre commande, veuillez entrer le numéro de téléphone utilisé lors de la commande :',
-                style: GoogleFonts.openSans(fontSize: 14),
+                style: GoogleFonts.inriaSerif(fontSize: 16),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -226,7 +237,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'Annuler',
-                style: GoogleFonts.openSans(
+                style: GoogleFonts.inriaSerif(
                   color: Colors.grey.shade600,
                 ),
               ),
@@ -243,7 +254,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               ),
               child: Text(
                 'Confirmer',
-                style: GoogleFonts.openSans(
+                style: GoogleFonts.inriaSerif(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -281,8 +292,10 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
   /// Recommander une commande
   /// Vérifier si une commande est annulable
   bool _canCancel(Order order) {
-    if (order.status == 'annulée' || order.status == 'livrée' || order.status == 'prete') return false;
-    if (order.status == 'recue') return true;
+    if (order.status == 'annulee' || order.status == 'annulée' ||
+        order.status == 'livree' || order.status == 'livrée' ||
+        order.status == 'prete' || order.status == 'prête') return false;
+    if (order.status == 'recue' || order.status == 'reçue') return true;
     if (order.status == 'en_traitement') {
       final elapsed = DateTime.now().difference(order.createdAt);
       return elapsed.inMinutes < 20;
@@ -307,23 +320,123 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Recommander', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        content: Text(
-          'Voulez-vous passer la meme commande #${order.orderNumber} ?',
-          style: GoogleFonts.openSans(fontSize: 14),
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Header gradient vert ─────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 28),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.replay_rounded, color: Colors.white, size: 40),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Recommander',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '#${order.orderNumber}',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Corps ────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+              child: Column(
+                children: [
+                  Text(
+                    'Voulez-vous repasser la même commande ?',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Les mêmes articles seront ajoutés à votre panier.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 13,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          child: Text('Annuler',
+                            style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF10B981), Color(0xFF059669)],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withOpacity(0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                            child: Text('Oui, commander',
+                              style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
-            child: Text('Oui, recommander', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
-          ),
-        ],
       ),
     );
 
@@ -331,79 +444,24 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
 
     try {
       final token = AuthService.authToken!;
-      // Étape 1: Vérifier la disponibilité
       final checkResult = await OrderService.reorder(order.id, token);
-      print('📋 REORDER checkResult: $checkResult');
 
       if (!mounted) return;
 
-      // Étape 2: Afficher le récapitulatif
       final reorderData = checkResult['data'];
-      final items = reorderData?['items'] as List? ?? [];
-      final total = reorderData?['total'] ?? reorderData?['total_amount'] ?? order.totalAmount;
+      final shopData = reorderData?['shop'];
+      final shopId = shopData?['id'] as int? ?? order.shopId;
 
-      final confirmReorder = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Récapitulatif', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Commande #${order.orderNumber}', style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey)),
-              const SizedBox(height: 12),
-              if (items.isNotEmpty)
-                ...items.map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child: Text(
-                        '${item['quantity'] ?? 1}x ${item['product_name'] ?? item['name'] ?? 'Produit'}',
-                        style: GoogleFonts.openSans(fontSize: 13),
-                      )),
-                      Text('${item['price'] ?? ''} F', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                ))
-              else
-                Text('${order.itemsCount > 0 ? order.itemsCount : order.items.length} article(s)', style: GoogleFonts.openSans(fontSize: 13)),
-              const Divider(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Total', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                  Text('$total F', style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey))),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
-              child: Text('Confirmer', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
-            ),
-          ],
+      // Rediriger vers la boutique sans pré-remplir le panier
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(shopId: shopId),
         ),
       );
 
-      if (confirmReorder != true || !mounted) return;
-
-      // Étape 3: Confirmer la recommande
-      final result = await OrderService.confirmReorder(orderId: order.id, token: token);
-      print('📋 CONFIRM REORDER result: $result');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Commande recréée !', textAlign: TextAlign.center),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
-        await Future.delayed(const Duration(milliseconds: 800));
-        if (mounted) await _loadOrders();
-      }
+      // Rafraîchir la liste à la fermeture
+      if (mounted) await _loadOrders();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -431,13 +489,13 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
     final dialogResult = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Annuler la commande', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text('Annuler la commande', style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Voulez-vous annuler #${order.orderNumber} ?',
-              style: GoogleFonts.openSans(fontSize: 14),
+              style: GoogleFonts.inriaSerif(fontSize: 16),
             ),
             if (minutesLeft > 0) ...[
               const SizedBox(height: 8),
@@ -449,7 +507,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 ),
                 child: Text(
                   'Temps restant: $minutesLeft min',
-                  style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -460,7 +518,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               maxLength: 500,
               decoration: InputDecoration(
                 hintText: 'Raison (optionnel)',
-                hintStyle: GoogleFonts.openSans(fontSize: 13),
+                hintStyle: GoogleFonts.inriaSerif(fontSize: 15),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -469,12 +527,12 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Non', style: GoogleFonts.openSans(color: Colors.grey)),
+            child: Text('Non', style: GoogleFonts.inriaSerif(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, {'reason': reasonController.text}),
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
-            child: Text('Oui, annuler', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text('Oui, annuler', style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -522,60 +580,174 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text('Noter la commande', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '#${order.orderNumber}',
-                style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) {
-                  return GestureDetector(
-                    onTap: () => setDialogState(() => selectedRating = index + 1),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Icon(
-                        index < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
-                        color: const Color(0xFFF59E0B),
-                        size: 36,
-                      ),
+        builder: (ctx, setDialogState) {
+          final labels = ['Mauvais', 'Passable', 'Bien', 'Très bien', 'Excellent !'];
+          final label = labels[selectedRating - 1];
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Header gradient ──────────────────────────────
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 28),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: commentController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Commentaire global (optionnel)',
-                  hintStyle: GoogleFonts.openSans(fontSize: 13),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.star_rounded, color: Colors.white, size: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Notez votre commande',
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '#${order.orderNumber}',
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.85),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey)),
+
+                // ── Corps ────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                  child: Column(
+                    children: [
+                      // Étoiles
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (i) => GestureDetector(
+                          onTap: () => setDialogState(() => selectedRating = i + 1),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Icon(
+                              i < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                              color: i < selectedRating ? const Color(0xFFF59E0B) : Colors.grey.shade300,
+                              size: 38,
+                            ),
+                          ),
+                        )),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Label dynamique
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Text(
+                          label,
+                          key: ValueKey(label),
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFF59E0B),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Commentaire
+                      TextField(
+                        controller: commentController,
+                        maxLines: 3,
+                        style: GoogleFonts.inriaSerif(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Partagez votre expérience... (optionnel)',
+                          hintStyle: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade400),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          contentPadding: const EdgeInsets.all(14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Boutons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                side: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              child: Text('Annuler',
+                                style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFF59E0B).withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.pop(ctx, {
+                                  'rating': selectedRating,
+                                  'comment': commentController.text,
+                                }),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                child: Text('Envoyer mon avis',
+                                  style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, {
-                'rating': selectedRating,
-                'comment': commentController.text,
-              }),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B)),
-              child: Text('Envoyer', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
 
@@ -583,15 +755,11 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
 
     try {
       final token = AuthService.authToken!;
-      final rateItems = order.items.map((item) => {
-        'order_item_id': item.id,
-        'rating': result['rating'],
-      }).toList();
       final response = await OrderService.rateOrder(
         orderId: order.id,
         token: token,
-        items: rateItems,
-        globalComment: result['comment']?.toString(),
+        rating: result['rating'] as int,
+        comment: result['comment']?.toString(),
       );
 
       if (mounted) {
@@ -641,7 +809,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             children: [
               const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3)),
               const SizedBox(height: 16),
-              Text('Chargement du recu...', style: GoogleFonts.poppins(fontSize: 14)),
+              Text('Chargement du recu...', style: GoogleFonts.inriaSerif(fontSize: 16)),
             ],
           ),
         ),
@@ -914,16 +1082,20 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
   // Obtenir la couleur du statut
   Color _getStatusColor(String status) {
     switch (status) {
+      case 'recue':
       case 'reçue':
         return const Color(0xFFFFA726);
       case 'en_traitement':
         return const Color(0xFF42A5F5);
+      case 'prete':
       case 'prête':
         return const Color(0xFF9C27B0);
       case 'en_livraison':
         return const Color(0xFFFF9800);
+      case 'livree':
       case 'livrée':
         return const Color(0xFF4CAF50);
+      case 'annulee':
       case 'annulée':
         return const Color(0xFFE91E63);
       default:
@@ -934,16 +1106,20 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
   // Obtenir le label et l'icône du statut
   Map<String, dynamic> _getStatusInfo(String status) {
     switch (status) {
+      case 'recue':
       case 'reçue':
         return {'label': 'Reçue', 'icon': '📥'};
       case 'en_traitement':
         return {'label': 'En préparation', 'icon': '⏳'};
+      case 'prete':
       case 'prête':
         return {'label': 'Prête', 'icon': '✅'};
       case 'en_livraison':
         return {'label': 'En livraison', 'icon': '🚚'};
+      case 'livree':
       case 'livrée':
         return {'label': 'Livrée', 'icon': '✅'};
+      case 'annulee':
       case 'annulée':
         return {'label': 'Annulée', 'icon': '❌'};
       default:
@@ -1043,16 +1219,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
           children: [
             Text(
               'Historique',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E1E2E),
               ),
             ),
             Text(
               'Vos commandes',
-              style: GoogleFonts.inter(
-                fontSize: 12,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Colors.grey[500],
               ),
@@ -1125,16 +1301,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               const SizedBox(height: 16),
               Text(
                 'Erreur de chargement',
-                style: GoogleFonts.openSans(
-                  fontSize: 20,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 _errorMessage ?? 'Une erreur est survenue',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
@@ -1148,8 +1324,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 ),
                 child: Text(
                   'Réessayer',
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -1183,8 +1359,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   ),
                   child: Text(
                     'Charger plus',
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -1286,8 +1462,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         children: [
                           Text(
                             order.shopName ?? 'Boutique #${order.shopId}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF1E1E2E),
                             ),
@@ -1308,6 +1484,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF4B5563),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -1331,8 +1509,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           const SizedBox(width: 6),
                           Text(
                             statusInfo['label'],
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: statusColor,
                             ),
@@ -1373,8 +1551,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     Expanded(
                       child: Text(
                         _formatDateTime(order.createdAt),
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF374151),
                         ),
@@ -1391,8 +1569,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       ),
                       child: Text(
                         '${order.itemsCount > 0 ? order.itemsCount : order.items.length} art.',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF374151),
                         ),
@@ -1402,8 +1580,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     // Total
                     Text(
                       '${order.totalAmount.toInt()} F',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: const Color.fromARGB(255, 49, 49, 49),
                       ),
@@ -1421,16 +1599,20 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
   // Obtenir l'icône du statut
   IconData _getStatusIcon(String status) {
     switch (status) {
+      case 'recue':
       case 'reçue':
         return Icons.inbox_rounded;
       case 'en_traitement':
         return Icons.hourglass_top_rounded;
+      case 'prete':
       case 'prête':
         return Icons.check_circle_rounded;
       case 'en_livraison':
         return Icons.local_shipping_rounded;
+      case 'livree':
       case 'livrée':
         return Icons.check_circle_rounded;
+      case 'annulee':
       case 'annulée':
         return Icons.cancel_rounded;
       default:
@@ -1493,8 +1675,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -1504,8 +1686,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Quantité: $quantity',
-                  style: GoogleFonts.openSans(
-                    fontSize: 12,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 14,
                     color: Colors.grey[600],
                   ),
                 ),
@@ -1518,8 +1700,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             children: [
               Text(
                 '${(price * quantity).toInt()} F',
-                style: GoogleFonts.openSans(
-                  fontSize: 15,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF8936A8),
                 ),
@@ -1527,8 +1709,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               if (quantity > 1)
                 Text(
                   '${price.toInt()} F/unité',
-                  style: GoogleFonts.openSans(
-                    fontSize: 11,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 13,
                     color: Colors.grey[500],
                   ),
                 ),
@@ -1642,8 +1824,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 children: [
                                   Text(
                                     order.shopName ?? 'Boutique #${order.shopId}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -1659,8 +1841,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                     ),
                                     child: Text(
                                       '#${order.orderNumber}',
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 12,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
                                       ),
@@ -1695,7 +1877,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                       child: Center(
                                         child: Text(
                                           statusInfo['icon'],
-                                          style: const TextStyle(fontSize: 12),
+                                          style: const TextStyle(fontSize: 14),
                                         ),
                                       ),
                                     ),
@@ -1706,16 +1888,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                         children: [
                                           Text(
                                             'Statut',
-                                            style: GoogleFonts.openSans(
-                                              fontSize: 9,
+                                            style: GoogleFonts.inriaSerif(
+                                              fontSize: 11,
                                               color: Colors.grey[500],
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                           Text(
                                             statusInfo['label'],
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 11,
+                                            style: GoogleFonts.inriaSerif(
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w600,
                                               color: statusColor,
                                             ),
@@ -1760,16 +1942,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                         children: [
                                           Text(
                                             'Date',
-                                            style: GoogleFonts.openSans(
-                                              fontSize: 9,
+                                            style: GoogleFonts.inriaSerif(
+                                              fontSize: 11,
                                               color: Colors.grey[500],
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                           Text(
                                             _formatDate(order.createdAt),
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 11,
+                                            style: GoogleFonts.inriaSerif(
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.black87,
                                             ),
@@ -1814,8 +1996,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       const SizedBox(width: 10),
                       Text(
                         'Produits commandés',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -1829,8 +2011,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         ),
                         child: Text(
                           '${hasProductDetails ? productsDetails.length : order.items.length} article${(hasProductDetails ? productsDetails.length : order.items.length) > 1 ? 's' : ''}',
-                          style: GoogleFonts.openSans(
-                            fontSize: 12,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF8936A8),
                           ),
@@ -1885,8 +2067,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Détails des produits non disponibles',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 13,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 15,
                                     color: Colors.grey[500],
                                   ),
                                 ),
@@ -1913,8 +2095,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       const SizedBox(width: 10),
                       Text(
                         'Informations',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -1982,16 +2164,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               children: [
                                 Text(
                                   'Adresse de livraison',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 9,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 11,
                                     color: Colors.grey[600],
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 Text(
                                   order.deliveryAddress!,
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 11,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black87,
                                   ),
@@ -2031,16 +2213,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           children: [
                             Text(
                               'Total de la commande',
-                              style: GoogleFonts.openSans(
-                                fontSize: 12,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 14,
                                 color: Colors.grey[600],
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '${order.totalAmount.toInt()} FCFA',
-                              style: GoogleFonts.poppins(
-                                fontSize: 22,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF8936A8),
                               ),
@@ -2082,8 +2264,10 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Noter (seulement si livrée ou prete)
-                      if (order.status == 'livrée' || order.status == 'prete')
+                      const SizedBox(width: 8),
+                      // Noter (seulement si livree ou prete)
+                      if (order.status == 'livree' || order.status == 'livrée' ||
+                          order.status == 'prete' || order.status == 'prête')
                         Expanded(
                           child: _buildActionChip(
                             icon: Icons.star_rounded,
@@ -2135,8 +2319,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               child: Center(
                                 child: Text(
                                   'Fermer',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.grey[700],
                                   ),
@@ -2170,8 +2354,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     'Recu',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
@@ -2222,8 +2406,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   const SizedBox(width: 6),
                                   Text(
                                     'Suivre',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
@@ -2271,8 +2455,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: GoogleFonts.openSans(
-                  fontSize: 11,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: color,
                 ),
@@ -2320,16 +2504,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.openSans(
-                    fontSize: 9,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 11,
                     color: Colors.grey[500],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   value,
-                  style: GoogleFonts.openSans(
-                    fontSize: 11,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -2404,8 +2588,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -2421,8 +2605,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   ),
                   child: Text(
                     'Qté: $quantity',
-                    style: GoogleFonts.openSans(
-                      fontSize: 11,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Colors.grey[700],
                     ),
@@ -2438,8 +2622,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             children: [
               Text(
                 '${(price * quantity).toInt()} F',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF8936A8),
                 ),
@@ -2447,8 +2631,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               if (quantity > 1)
                 Text(
                   '${price.toInt()} F/u',
-                  style: GoogleFonts.openSans(
-                    fontSize: 11,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 13,
                     color: Colors.grey[500],
                   ),
                 ),
@@ -2488,8 +2672,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             const SizedBox(height: 28),
             Text(
               'Aucune commande',
-              style: GoogleFonts.poppins(
-                fontSize: 22,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -2498,8 +2682,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             Text(
               'Vous n\'avez pas encore passé de commande sur cet appareil',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey[500],
                 height: 1.6,
               ),
@@ -2526,8 +2710,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   Flexible(
                     child: Text(
                       'Scannez un QR code pour commander',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: primaryColor.withOpacity(0.8),
                       ),

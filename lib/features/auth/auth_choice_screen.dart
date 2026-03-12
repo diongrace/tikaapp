@@ -35,8 +35,8 @@ class AuthChoiceScreen extends StatelessWidget {
               // Titre
               Text(
                 'Bienvenue sur TIKA',
-                style: GoogleFonts.openSans(
-                  fontSize: 28,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -47,8 +47,8 @@ class AuthChoiceScreen extends StatelessWidget {
               // Sous-titre
               Text(
                 'Connectez-vous pour profiter de toutes les fonctionnalités',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
@@ -71,8 +71,8 @@ class AuthChoiceScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Avantages d\'un compte',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF8936A8),
                       ),
@@ -118,8 +118,8 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                   child: Text(
                     'Se connecter',
-                    style: GoogleFonts.openSans(
-                      fontSize: 16,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -157,8 +157,8 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                   child: Text(
                     'Créer un compte',
-                    style: GoogleFonts.openSans(
-                      fontSize: 16,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -175,8 +175,8 @@ class AuthChoiceScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'ou',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         color: Colors.grey.shade500,
                       ),
                     ),
@@ -203,8 +203,8 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                   child: Text(
                     'Continuer sans compte',
-                    style: GoogleFonts.openSans(
-                      fontSize: 16,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -231,8 +231,8 @@ class AuthChoiceScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Vous pouvez créer un compte à tout moment depuis votre profil.',
-                        style: GoogleFonts.openSans(
-                          fontSize: 12,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 14,
                           color: Colors.grey.shade600,
                         ),
                       ),
@@ -268,8 +268,8 @@ class AuthChoiceScreen extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.openSans(
-              fontSize: 14,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 16,
               color: Colors.black87,
             ),
           ),

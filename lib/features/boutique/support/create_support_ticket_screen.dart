@@ -68,7 +68,7 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
           SnackBar(
             content: Text(
               'Votre demande a été envoyée !',
-              style: GoogleFonts.openSans(color: Colors.white),
+              style: GoogleFonts.inriaSerif(color: Colors.white),
             ),
             backgroundColor: const Color(0xFF4CAF50),
             behavior: SnackBarBehavior.floating,
@@ -87,7 +87,7 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg, style: GoogleFonts.openSans(color: Colors.white)),
+        content: Text(msg, style: GoogleFonts.inriaSerif(color: Colors.white)),
         backgroundColor: Colors.red.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -125,8 +125,8 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                         const Spacer(),
                         Text(
                           'Nous contacter',
-                          style: GoogleFonts.openSans(
-                            fontSize: 20,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -138,8 +138,8 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                     const SizedBox(height: 6),
                     Text(
                       'Dites-nous comment on peut vous aider',
-                      style: GoogleFonts.openSans(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         color: Colors.white.withOpacity(0.85),
                       ),
                     ),
@@ -174,13 +174,13 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                       children: [
                         Row(
                           children: [
-                            const Text('✏️', style: TextStyle(fontSize: 18)),
+                            const Text('✏️', style: TextStyle(fontSize: 20)),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'En quelques mots, c\'est quoi le souci ?',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 14,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black87,
                                 ),
@@ -191,11 +191,11 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                         const SizedBox(height: 12),
                         TextField(
                           controller: _subjectController,
-                          style: GoogleFonts.openSans(fontSize: 14),
+                          style: GoogleFonts.inriaSerif(fontSize: 16),
                           decoration: InputDecoration(
                             hintText: 'Ex: Ma commande n\'est pas arrivée',
-                            hintStyle: GoogleFonts.openSans(
-                              fontSize: 14,
+                            hintStyle: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               color: Colors.grey.shade400,
                             ),
                             filled: true,
@@ -240,12 +240,12 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                       children: [
                         Row(
                           children: [
-                            const Text('💬', style: TextStyle(fontSize: 18)),
+                            const Text('💬', style: TextStyle(fontSize: 20)),
                             const SizedBox(width: 8),
                             Text(
                               'Expliquez-nous un peu plus',
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.black87,
                               ),
@@ -256,11 +256,11 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                         TextField(
                           controller: _messageController,
                           maxLines: 6,
-                          style: GoogleFonts.openSans(fontSize: 14),
+                          style: GoogleFonts.inriaSerif(fontSize: 16),
                           decoration: InputDecoration(
                             hintText: 'Donnez-nous plus de détails pour qu\'on puisse mieux vous aider...',
-                            hintStyle: GoogleFonts.openSans(
-                              fontSize: 14,
+                            hintStyle: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               color: Colors.grey.shade400,
                             ),
                             filled: true,
@@ -305,12 +305,12 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                       children: [
                         Row(
                           children: [
-                            const Text('📷', style: TextStyle(fontSize: 18)),
+                            const Text('📷', style: TextStyle(fontSize: 20)),
                             const SizedBox(width: 8),
                             Text(
                               'Ajouter des photos',
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.black87,
                               ),
@@ -318,8 +318,8 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                             const SizedBox(width: 6),
                             Text(
                               '(pas obligatoire)',
-                              style: GoogleFonts.openSans(
-                                fontSize: 13,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 15,
                                 color: Colors.grey.shade400,
                               ),
                             ),
@@ -328,8 +328,8 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                         const SizedBox(height: 6),
                         Text(
                           'Une capture d\'écran peut nous aider à comprendre votre problème',
-                          style: GoogleFonts.openSans(
-                            fontSize: 12,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 14,
                             color: Colors.grey.shade500,
                           ),
                         ),
@@ -358,8 +358,8 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                                       const SizedBox(height: 6),
                                       Text(
                                         'Touchez ici pour choisir des photos',
-                                        style: GoogleFonts.openSans(
-                                          fontSize: 13,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 15,
                                           color: Colors.grey.shade400,
                                         ),
                                       ),
@@ -447,8 +447,8 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                                   const SizedBox(width: 10),
                                   Text(
                                     'Envoyer',
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 16,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -463,8 +463,8 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
 
                   Text(
                     'Nous répondons généralement sous 24h',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade400,
                     ),
                   ),

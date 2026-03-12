@@ -38,8 +38,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   Expanded(
                     child: Text(
                       'Securite et confidentialite',
-                      style: GoogleFonts.openSans(
-                        fontSize: 20,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -58,8 +58,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     // Section Securite du compte
                     Text(
                       'Securite du compte',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
@@ -131,8 +131,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     // Section Confidentialite
                     Text(
                       'Confidentialite des donnees',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
@@ -204,8 +204,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     // Section Actions sur les donnees
                     Text(
                       'Gestion des donnees',
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
@@ -287,8 +287,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.openSans(
-                          fontSize: 15,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -296,8 +296,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: GoogleFonts.openSans(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           color: Colors.grey.shade600,
                         ),
                       ),
@@ -335,7 +335,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         builder: (context, setDialogState) => AlertDialog(
           title: Text(
             'Changer le mot de passe',
-            style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+            style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -346,7 +346,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   obscureText: obscureCurrent,
                   decoration: InputDecoration(
                     labelText: 'Mot de passe actuel',
-                    labelStyle: GoogleFonts.openSans(),
+                    labelStyle: GoogleFonts.inriaSerif(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -368,7 +368,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   obscureText: obscureNew,
                   decoration: InputDecoration(
                     labelText: 'Nouveau mot de passe',
-                    labelStyle: GoogleFonts.openSans(),
+                    labelStyle: GoogleFonts.inriaSerif(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -390,7 +390,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   obscureText: obscureConfirm,
                   decoration: InputDecoration(
                     labelText: 'Confirmer le mot de passe',
-                    labelStyle: GoogleFonts.openSans(),
+                    labelStyle: GoogleFonts.inriaSerif(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -414,7 +414,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               onPressed: isSubmitting ? null : () => Navigator.pop(context),
               child: Text(
                 'Annuler',
-                style: GoogleFonts.openSans(color: Colors.grey),
+                style: GoogleFonts.inriaSerif(color: Colors.grey),
               ),
             ),
             ElevatedButton(
@@ -426,7 +426,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           SnackBar(
                             content: Text(
                               'Les mots de passe ne correspondent pas',
-                              style: GoogleFonts.openSans(),
+                              style: GoogleFonts.inriaSerif(),
                             ),
                             backgroundColor: Colors.red,
                           ),
@@ -439,7 +439,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           SnackBar(
                             content: Text(
                               'Le mot de passe doit contenir au moins 8 caracteres',
-                              style: GoogleFonts.openSans(),
+                              style: GoogleFonts.inriaSerif(),
                             ),
                             backgroundColor: Colors.red,
                           ),
@@ -467,7 +467,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                             SnackBar(
                               content: Text(
                                 result['message'] ?? 'Erreur',
-                                style: GoogleFonts.openSans(),
+                                style: GoogleFonts.inriaSerif(),
                               ),
                               backgroundColor: Colors.red,
                             ),
@@ -488,7 +488,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       height: 20,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : Text('Confirmer', style: GoogleFonts.openSans()),
+                  : Text('Confirmer', style: GoogleFonts.inriaSerif()),
             ),
           ],
         ),
@@ -502,7 +502,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Appareils connectes',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -513,7 +513,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Fermer', style: GoogleFonts.openSans()),
+            child: Text('Fermer', style: GoogleFonts.inriaSerif()),
           ),
         ],
       ),
@@ -541,23 +541,23 @@ class _SecurityScreenState extends State<SecurityScreen> {
               children: [
                 Text(
                   device,
-                  style: GoogleFonts.openSans(
+                  style: GoogleFonts.inriaSerif(
                     fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontSize: 16,
                   ),
                 ),
                 if (location.isNotEmpty)
                   Text(
                     location,
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),
                 Text(
                   lastActive,
-                  style: GoogleFonts.openSans(
-                    fontSize: 11,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 13,
                     color: isActive ? Colors.green : Colors.grey,
                   ),
                 ),
@@ -583,7 +583,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Politique de confidentialite',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
           child: Text(
@@ -593,13 +593,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
             '3. Protection des donnees\n'
             '4. Vos droits\n'
             '5. Modifications de la politique',
-            style: GoogleFonts.openSans(fontSize: 14),
+            style: GoogleFonts.inriaSerif(fontSize: 16),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Fermer', style: GoogleFonts.openSans()),
+            child: Text('Fermer', style: GoogleFonts.inriaSerif()),
           ),
         ],
       ),
@@ -612,7 +612,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Conditions d\'utilisation',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
           child: Text(
@@ -622,13 +622,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
             '3. Paiements et remboursements\n'
             '4. Propriete intellectuelle\n'
             '5. Limitation de responsabilite',
-            style: GoogleFonts.openSans(fontSize: 14),
+            style: GoogleFonts.inriaSerif(fontSize: 16),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Fermer', style: GoogleFonts.openSans()),
+            child: Text('Fermer', style: GoogleFonts.inriaSerif()),
           ),
         ],
       ),
@@ -641,18 +641,18 @@ class _SecurityScreenState extends State<SecurityScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Telecharger mes donnees',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Nous allons preparer une archive de toutes vos donnees personnelles. Vous recevrez un email avec un lien de telechargement dans les 48 heures.',
-          style: GoogleFonts.openSans(),
+          style: GoogleFonts.inriaSerif(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Annuler',
-              style: GoogleFonts.openSans(color: Colors.grey),
+              style: GoogleFonts.inriaSerif(color: Colors.grey),
             ),
           ),
           ElevatedButton(
@@ -664,7 +664,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               backgroundColor: const Color(0xFF2196F3),
               foregroundColor: Colors.white,
             ),
-            child: Text('Confirmer', style: GoogleFonts.openSans()),
+            child: Text('Confirmer', style: GoogleFonts.inriaSerif()),
           ),
         ],
       ),
@@ -683,7 +683,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         builder: (context, setDialogState) => AlertDialog(
           title: Text(
             'Supprimer mon compte',
-            style: GoogleFonts.openSans(
+            style: GoogleFonts.inriaSerif(
               fontWeight: FontWeight.bold,
               color: Colors.red,
             ),
@@ -696,7 +696,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Cette action est irreversible. Toutes vos donnees seront definitivement supprimees :',
-                  style: GoogleFonts.openSans(),
+                  style: GoogleFonts.inriaSerif(),
                 ),
                 const SizedBox(height: 12),
                 Align(
@@ -706,7 +706,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     '- Historique des commandes\n'
                     '- Cartes de fidelite\n'
                     '- Adresses et moyens de paiement',
-                    style: GoogleFonts.openSans(fontSize: 13),
+                    style: GoogleFonts.inriaSerif(fontSize: 15),
                   ),
                 ),
                 if (AuthService.isAuthenticated) ...[
@@ -716,7 +716,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Mot de passe',
-                      labelStyle: GoogleFonts.openSans(),
+                      labelStyle: GoogleFonts.inriaSerif(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -738,7 +738,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     maxLines: 2,
                     decoration: InputDecoration(
                       labelText: 'Raison (optionnel)',
-                      labelStyle: GoogleFonts.openSans(),
+                      labelStyle: GoogleFonts.inriaSerif(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -753,7 +753,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               onPressed: isDeleting ? null : () => Navigator.pop(context),
               child: Text(
                 'Annuler',
-                style: GoogleFonts.openSans(color: Colors.grey),
+                style: GoogleFonts.inriaSerif(color: Colors.grey),
               ),
             ),
             ElevatedButton(
@@ -766,7 +766,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                             SnackBar(
                               content: Text(
                                 'Veuillez entrer votre mot de passe',
-                                style: GoogleFonts.openSans(),
+                                style: GoogleFonts.inriaSerif(),
                               ),
                               backgroundColor: Colors.red,
                             ),
@@ -798,7 +798,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                             SnackBar(
                               content: Text(
                                 result['message'] ?? 'Erreur',
-                                style: GoogleFonts.openSans(),
+                                style: GoogleFonts.inriaSerif(),
                               ),
                               backgroundColor: Colors.red,
                             ),
@@ -819,7 +819,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       height: 20,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : Text('Supprimer', style: GoogleFonts.openSans()),
+                  : Text('Supprimer', style: GoogleFonts.inriaSerif()),
             ),
           ],
         ),
@@ -833,7 +833,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         SnackBar(
           content: Text(
             message,
-            style: GoogleFonts.openSans(),
+            style: GoogleFonts.inriaSerif(),
           ),
           backgroundColor: const Color(0xFF4CAF50),
           behavior: SnackBarBehavior.floating,

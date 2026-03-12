@@ -49,9 +49,9 @@ class OnboardingScreen1 extends StatelessWidget {
                   Text(
                     'Trouver\nDes Boutiques\nAdaptées À Vos Besoins',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.openSans(
+                    style: GoogleFonts.inriaSerif(
                       color: Color(0xFF670C88),
-                      fontSize: 24,
+                      fontSize: 26,
                       fontWeight: FontWeight.w600,
                       height: 1.3,
                     ),
@@ -100,7 +100,7 @@ class OnboardingScreen1 extends StatelessWidget {
                                 child: const Text(
                                   'suivant',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
                                   ),

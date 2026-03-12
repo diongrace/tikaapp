@@ -119,8 +119,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   Expanded(
                     child: Text(
                       'Mes tickets',
-                      style: GoogleFonts.openSans(
-                        fontSize: 20,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -157,7 +157,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           'Nouveau ticket',
-          style: GoogleFonts.openSans(
+          style: GoogleFonts.inriaSerif(
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
@@ -188,8 +188,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             const SizedBox(height: 24),
             Text(
               'Aucun ticket',
-              style: GoogleFonts.openSans(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -198,8 +198,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             Text(
               'Vous n\'avez pas encore cree de ticket de support.\nBesoin d\'aide ? Creez un nouveau ticket !',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -220,8 +220,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             const SizedBox(height: 16),
             Text(
               'Erreur de chargement',
-              style: GoogleFonts.openSans(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -229,8 +229,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             Text(
               _error ?? '',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -241,7 +241,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                 backgroundColor: const Color(0xFF8936A8),
                 foregroundColor: Colors.white,
               ),
-              child: Text('Reessayer', style: GoogleFonts.openSans()),
+              child: Text('Reessayer', style: GoogleFonts.inriaSerif()),
             ),
           ],
         ),
@@ -293,8 +293,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                 if (ticket.reference != null) ...[
                   Text(
                     '#${ticket.reference}',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.grey.shade500,
                     ),
@@ -315,8 +315,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                       const SizedBox(width: 4),
                       Text(
                         ticket.statusLabel,
-                        style: GoogleFonts.openSans(
-                          fontSize: 12,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: statusColor,
                         ),
@@ -332,8 +332,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             // Sujet
             Text(
               ticket.subject,
-              style: GoogleFonts.openSans(
-                fontSize: 16,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
@@ -346,8 +346,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             // Message preview
             Text(
               ticket.message,
-              style: GoogleFonts.openSans(
-                fontSize: 13,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 15,
                 color: Colors.grey.shade600,
               ),
               maxLines: 2,
@@ -368,8 +368,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                     ),
                     child: Text(
                       ticket.category,
-                      style: GoogleFonts.openSans(
-                        fontSize: 11,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF8936A8),
                       ),
@@ -381,8 +381,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                 const SizedBox(width: 4),
                 Text(
                   _formatDate(ticket.createdAt),
-                  style: GoogleFonts.openSans(
-                    fontSize: 12,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 14,
                     color: Colors.grey.shade500,
                   ),
                 ),
@@ -398,8 +398,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   const SizedBox(width: 4),
                   Text(
                     'Reponse disponible',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.green.shade600,
                     ),

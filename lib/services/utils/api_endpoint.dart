@@ -118,9 +118,7 @@ class Endpoints {
   static const String notificationsUnreadCount = '$baseUrl/client/notifications/unread-count';
   static const String notificationsRecent = '$baseUrl/client/notifications/recent';
   static String notificationMarkRead(int id) => '$baseUrl/client/notifications/$id/read';
-  static const String notificationsMarkMultipleRead = '$baseUrl/client/notifications/read';
   static const String notificationsMarkAllRead = '$baseUrl/client/notifications/read-all';
-  static const String notificationsClearRead = '$baseUrl/client/notifications/clear-read';
   static const String notificationsSettings = '$baseUrl/client/notifications/settings';
   static const String notificationsRegisterDevice = '$baseUrl/client/notifications/register-device';
 

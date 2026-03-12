@@ -124,8 +124,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     const Spacer(),
                     Text(
                       'Support',
-                      style: GoogleFonts.openSans(
-                        fontSize: 20,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -169,8 +169,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             children: [
                               Text(
                                 'Besoin d\'aide ?',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 15,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                   color: const Color(0xFF8936A8),
                                 ),
@@ -178,8 +178,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 'Notre équipe est là pour vous aider',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 13,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 15,
                                   color: const Color(0xFF8936A8).withOpacity(0.8),
                                 ),
                               ),
@@ -230,8 +230,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               children: [
                                 Text(
                                   'Nouvelle demande',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 15,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
@@ -239,8 +239,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                 const SizedBox(height: 2),
                                 Text(
                                   'Signalez un problème ou posez une question',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 12,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 14,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
@@ -260,8 +260,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     padding: const EdgeInsets.only(left: 2, bottom: 10),
                     child: Text(
                       'CONTACT RAPIDE',
-                      style: GoogleFonts.openSans(
-                        fontSize: 12,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade500,
                         letterSpacing: 0.8,
@@ -312,16 +312,16 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                       children: [
                                         Text(
                                           'WhatsApp',
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 13,
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.black87,
                                           ),
                                         ),
                                         Text(
                                           'Réponse rapide',
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 11,
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 13,
                                             color: Colors.grey.shade500,
                                           ),
                                         ),
@@ -362,16 +362,16 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                       children: [
                                         Text(
                                           'Téléphone',
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 13,
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.black87,
                                           ),
                                         ),
                                         Text(
                                           'Appel direct',
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 11,
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 13,
                                             color: Colors.grey.shade500,
                                           ),
                                         ),
@@ -396,8 +396,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                         padding: const EdgeInsets.only(left: 2, bottom: 10),
                         child: Text(
                           'Mes demandes',
-                          style: GoogleFonts.openSans(
-                            fontSize: 17,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
@@ -411,8 +411,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             padding: const EdgeInsets.only(bottom: 10),
                             child: Text(
                               'Voir tout',
-                              style: GoogleFonts.openSans(
-                                fontSize: 13,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF8936A8),
                               ),
@@ -458,8 +458,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           const SizedBox(height: 16),
                           Text(
                             'Aucune demande',
-                            style: GoogleFonts.openSans(
-                              fontSize: 16,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -468,8 +468,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           Text(
                             'Vous n\'avez pas encore contacté le support',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.openSans(
-                              fontSize: 13,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 15,
                               color: Colors.grey.shade500,
                             ),
                           ),
@@ -493,8 +493,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     'Faire une demande',
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 14,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
@@ -546,8 +546,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                     children: [
                                       Text(
                                         ticket.subject,
-                                        style: GoogleFonts.openSans(
-                                          fontSize: 14,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.black87,
                                         ),
@@ -557,8 +557,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                       const SizedBox(height: 2),
                                       Text(
                                         ticket.message,
-                                        style: GoogleFonts.openSans(
-                                          fontSize: 12,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 14,
                                           color: Colors.grey.shade500,
                                         ),
                                         maxLines: 1,
@@ -567,8 +567,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                       const SizedBox(height: 4),
                                       Text(
                                         _formatRelativeDate(ticket.createdAt),
-                                        style: GoogleFonts.openSans(
-                                          fontSize: 11,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 13,
                                           color: Colors.grey.shade400,
                                         ),
                                       ),
@@ -594,8 +594,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                       const SizedBox(width: 4),
                                       Text(
                                         ticket.statusLabel,
-                                        style: GoogleFonts.openSans(
-                                          fontSize: 12,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: statusColor,
                                         ),

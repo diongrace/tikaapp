@@ -8,62 +8,149 @@ import '../../commande/orders_list_api_page.dart';
 
 /// Dialogues pour l'écran d'accueil
 class HomeDialogs {
-  /// Afficher le dialogue de recherche
+  /// Afficher le dialogue de recherche avec résultats inline
   static void showSearchDialog({
     required BuildContext context,
     required Shop? currentShop,
     required TextEditingController searchController,
     required Function(String) onSearchChanged,
+    List<Map<String, dynamic>> products = const [],
+    Function(Map<String, dynamic>)? onProductTap,
   }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Poignée de glissement
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final query = searchController.text.toLowerCase();
+          final filtered = query.isEmpty
+              ? <Map<String, dynamic>>[]
+              : products
+                  .where((p) =>
+                      (p['name'] as String? ?? '').toLowerCase().contains(query))
+                  .toList();
 
-              // Titre
-              Text(
-                'Rechercher un produit',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx).size.height * 0.75,
               ),
-              const SizedBox(height: 20),
-
-              // Barre de recherche
-              SearchBarWidget(
-                controller: searchController,
-                onSearchChanged: onSearchChanged,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + MediaQuery.of(ctx).padding.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Poignée
+                  Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
+                  // Titre
+                  Text(
+                    'Rechercher un produit',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Barre de recherche
+                  SearchBarWidget(
+                    controller: searchController,
+                    onSearchChanged: (q) {
+                      setModalState(() {});
+                      onSearchChanged(q);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Résultats
+                  if (query.isNotEmpty) ...[
+                    if (filtered.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Column(
+                          children: [
+                            Icon(Icons.search_off_rounded, size: 40, color: Colors.grey.shade400),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Aucun produit trouvé',
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 15,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade100),
+                          itemBuilder: (_, i) {
+                            final p = filtered[i];
+                            final image = p['image'] as String?;
+                            return ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: image != null && image.isNotEmpty
+                                    ? Image.network(image, width: 48, height: 48, fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          width: 48, height: 48,
+                                          color: Colors.grey.shade100,
+                                          child: Icon(Icons.image_not_supported_outlined, color: Colors.grey.shade400),
+                                        ))
+                                    : Container(
+                                        width: 48, height: 48,
+                                        color: Colors.grey.shade100,
+                                        child: Icon(Icons.shopping_bag_outlined, color: Colors.grey.shade400),
+                                      ),
+                              ),
+                              title: Text(
+                                p['name'] ?? '',
+                                style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                '${p['price']} F',
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 13,
+                                  color: currentShop?.theme?.primary ?? const Color(0xFF8936A8),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                onProductTap?.call(p);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -100,8 +187,8 @@ class HomeDialogs {
             // Titre
             Text(
               'Actions rapides',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -231,8 +318,8 @@ class _ActionButton extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               label,
-              style: GoogleFonts.openSans(
-                fontSize: 13,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),

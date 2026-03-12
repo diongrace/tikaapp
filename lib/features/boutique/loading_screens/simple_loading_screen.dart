@@ -62,8 +62,8 @@ class SimpleLoadingScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
                   title!,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF2D2D2D),
                   ),
@@ -78,8 +78,8 @@ class SimpleLoadingScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
                   subtitle!,
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     color: Colors.grey.shade600,
                   ),
                   textAlign: TextAlign.center,

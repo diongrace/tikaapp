@@ -10,6 +10,9 @@ import '../../../services/models/order_model.dart';
 import '../../../services/utils/api_endpoint.dart';
 import 'order_tracking_api_page.dart';
 import 'receipt_view_page.dart';
+import 'commande_screen.dart';
+import '../panier/cart_manager.dart';
+import '../home/home_online_screen.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../loading_screens/loading_screens.dart';
@@ -82,9 +85,11 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
   /// Vérifier si une commande est annulable
   bool _canCancel(Order order) {
-    if (order.status == 'annulée' || order.status == 'livrée' || order.status == 'prete') return false;
+    if (order.status == 'annulee' || order.status == 'annulée' ||
+        order.status == 'livree' || order.status == 'livrée' ||
+        order.status == 'prete' || order.status == 'prête') return false;
     // Toutes les boutiques: annulable si statut = recue
-    if (order.status == 'recue') return true;
+    if (order.status == 'recue' || order.status == 'reçue') return true;
     // Boutiques non-restaurant: aussi annulable si en_traitement ET < 20 min
     if (order.status == 'en_traitement') {
       final elapsed = DateTime.now().difference(order.createdAt);
@@ -110,17 +115,123 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Recommander', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        content: Text('Voulez-vous passer la meme commande #${order.orderNumber} ?', style: GoogleFonts.openSans(fontSize: 14)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey))),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
-            child: Text('Oui', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
-          ),
-        ],
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Header gradient vert ─────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 28),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.replay_rounded, color: Colors.white, size: 40),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Recommander',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '#${order.orderNumber}',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Corps ────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+              child: Column(
+                children: [
+                  Text(
+                    'Voulez-vous repasser la même commande ?',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Les mêmes articles seront ajoutés à votre panier.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 13,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          child: Text('Annuler',
+                            style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF10B981), Color(0xFF059669)],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withOpacity(0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                            child: Text('Oui, commander',
+                              style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -128,76 +239,23 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
     try {
       final token = AuthService.authToken!;
-      // Étape 1: Vérifier la disponibilité
       final checkResult = await OrderService.reorder(order.id, token);
-      print('📋 REORDER checkResult: $checkResult');
 
       if (!mounted) return;
 
-      // Étape 2: Afficher le récapitulatif
       final reorderData = checkResult['data'];
-      final items = reorderData?['items'] as List? ?? [];
-      final total = reorderData?['total'] ?? reorderData?['total_amount'] ?? order.totalAmount;
+      final shopData = reorderData?['shop'];
+      final shopId = shopData?['id'] as int? ?? order.shopId;
 
-      final confirmReorder = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Récapitulatif', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Commande #${order.orderNumber}', style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey)),
-              const SizedBox(height: 12),
-              if (items.isNotEmpty)
-                ...items.map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child: Text(
-                        '${item['quantity'] ?? 1}x ${item['product_name'] ?? item['name'] ?? 'Produit'}',
-                        style: GoogleFonts.openSans(fontSize: 13),
-                      )),
-                      Text('${item['price'] ?? ''} F', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                ))
-              else
-                Text('${order.itemsCount > 0 ? order.itemsCount : order.items.length} article(s)', style: GoogleFonts.openSans(fontSize: 13)),
-              const Divider(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Total', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                  Text('$total F', style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey))),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
-              child: Text('Confirmer', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
-            ),
-          ],
+      // Rediriger vers la boutique sans pré-remplir le panier
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(shopId: shopId),
         ),
       );
 
-      if (confirmReorder != true || !mounted) return;
-
-      // Étape 3: Confirmer la recommande
-      final result = await OrderService.confirmReorder(orderId: order.id, token: token);
-      print('📋 CONFIRM REORDER result: $result');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? 'Commande recréée !', textAlign: TextAlign.center), backgroundColor: const Color(0xFF10B981)),
-        );
-        await Future.delayed(const Duration(milliseconds: 800));
-        if (mounted) await _loadOrders();
-      }
+      if (mounted) await _loadOrders();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -221,11 +279,11 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Annuler la commande', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text('Annuler la commande', style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Voulez-vous annuler #${order.orderNumber} ?', style: GoogleFonts.openSans(fontSize: 14)),
+            Text('Voulez-vous annuler #${order.orderNumber} ?', style: GoogleFonts.inriaSerif(fontSize: 16)),
             if (minutesLeft > 0) ...[
               const SizedBox(height: 8),
               Container(
@@ -236,7 +294,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 ),
                 child: Text(
                   'Temps restant: $minutesLeft min',
-                  style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -247,18 +305,18 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               maxLength: 500,
               decoration: InputDecoration(
                 hintText: 'Raison (optionnel)',
-                hintStyle: GoogleFonts.openSans(fontSize: 13),
+                hintStyle: GoogleFonts.inriaSerif(fontSize: 15),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Non', style: GoogleFonts.openSans(color: Colors.grey))),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Non', style: GoogleFonts.inriaSerif(color: Colors.grey))),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, {'reason': reasonController.text}),
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
-            child: Text('Oui, annuler', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text('Oui, annuler', style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -301,48 +359,171 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text('Noter', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('#${order.orderNumber}', style: GoogleFonts.openSans(fontSize: 13, color: Colors.grey)),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) => GestureDetector(
-                  onTap: () => setDialogState(() => selectedRating = i + 1),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(
-                      i < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: const Color(0xFFF59E0B), size: 36,
+        builder: (ctx, setDialogState) {
+          final labels = ['Mauvais', 'Passable', 'Bien', 'Très bien', 'Excellent !'];
+          final label = labels[selectedRating - 1];
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Header gradient ──────────────────────────────
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 28),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                   ),
-                )),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: commentController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Commentaire global (optionnel)',
-                  hintStyle: GoogleFonts.openSans(fontSize: 13),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.star_rounded, color: Colors.white, size: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Notez votre commande',
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '#${order.orderNumber}',
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.85),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey))),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, {'rating': selectedRating, 'comment': commentController.text}),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B)),
-              child: Text('Envoyer', style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.w600)),
+
+                // ── Corps ────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                  child: Column(
+                    children: [
+                      // Étoiles
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (i) => GestureDetector(
+                          onTap: () => setDialogState(() => selectedRating = i + 1),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Icon(
+                              i < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                              color: i < selectedRating ? const Color(0xFFF59E0B) : Colors.grey.shade300,
+                              size: 38,
+                            ),
+                          ),
+                        )),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Label dynamique
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Text(
+                          label,
+                          key: ValueKey(label),
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFF59E0B),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Commentaire
+                      TextField(
+                        controller: commentController,
+                        maxLines: 3,
+                        style: GoogleFonts.inriaSerif(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Partagez votre expérience... (optionnel)',
+                          hintStyle: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade400),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          contentPadding: const EdgeInsets.all(14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Boutons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                side: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              child: Text('Annuler',
+                                style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFF59E0B).withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.pop(ctx, {'rating': selectedRating, 'comment': commentController.text}),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                child: Text('Envoyer mon avis',
+                                  style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
 
@@ -351,27 +532,11 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
     try {
       final token = AuthService.authToken!;
 
-      // Récupérer les items de la commande si la liste ne les contient pas
-      List<OrderItem> orderItems = order.items;
-      if (orderItems.isEmpty) {
-        try {
-          final fullOrder = await OrderService.getOrderDetails(order.id, token);
-          orderItems = fullOrder.items;
-        } catch (_) {}
-      }
-
-      final rateItems = orderItems.map((item) => {
-        'order_item_id': item.id,
-        'rating': result['rating'],
-        if (result['comment'] != null && (result['comment'] as String).isNotEmpty)
-          'comment': result['comment'],
-      }).toList();
-
       final response = await OrderService.rateOrder(
         orderId: order.id,
         token: token,
-        items: rateItems,
-        globalComment: result['comment']?.toString(),
+        rating: result['rating'] as int,
+        comment: result['comment']?.toString(),
       );
       if (mounted) {
         final alreadyRated = response['already_rated'] == true;
@@ -415,7 +580,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             children: [
               const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3)),
               const SizedBox(height: 16),
-              Text('Chargement du recu...', style: GoogleFonts.poppins(fontSize: 14)),
+              Text('Chargement du recu...', style: GoogleFonts.inriaSerif(fontSize: 16)),
             ],
           ),
         ),
@@ -610,12 +775,21 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
     });
 
     try {
-      final deviceFingerprint = await DeviceService.getDeviceFingerprint();
+      final Map<String, dynamic> response;
 
-      final response = await OrderService.getOrdersByDevice(
-        deviceFingerprint: deviceFingerprint,
-        page: loadMore ? _currentPage + 1 : 1,
-      );
+      if (AuthService.isAuthenticated) {
+        // Utilisateur connecté → GET /client/orders (endpoint officiel)
+        response = await OrderService.getOrders(
+          page: loadMore ? _currentPage + 1 : 1,
+        );
+      } else {
+        // Non connecté → fallback par device fingerprint
+        final deviceFingerprint = await DeviceService.getDeviceFingerprint();
+        response = await OrderService.getOrdersByDevice(
+          deviceFingerprint: deviceFingerprint,
+          page: loadMore ? _currentPage + 1 : 1,
+        );
+      }
 
       final orders = response['orders'] as List<Order>;
       final pagination = response['pagination'] as Map<String, dynamic>;
@@ -694,8 +868,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 children: [
                   Text(
                     'Mes commandes',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1E293B),
                     ),
@@ -703,8 +877,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   if (_orders.isNotEmpty)
                     Text(
                       '${_orders.length} commande${_orders.length > 1 ? 's' : ''}',
-                      style: GoogleFonts.openSans(
-                        fontSize: 10,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 12,
                         color: Colors.grey.shade500,
                         fontWeight: FontWeight.w500,
                       ),
@@ -800,8 +974,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             const SizedBox(height: 24),
             Text(
               'Connexion impossible',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E293B),
               ),
@@ -809,8 +983,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? 'Vérifiez votre connexion internet',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade600,
               ),
               textAlign: TextAlign.center,
@@ -821,8 +995,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               icon: const Icon(Icons.refresh_rounded, size: 20),
               label: Text(
                 'Réessayer',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -863,8 +1037,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             const SizedBox(height: 24),
             Text(
               'Aucune commande',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E293B),
               ),
@@ -873,8 +1047,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             Text(
               'Vos commandes apparaîtront ici\naprès votre premier achat',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade600,
                 height: 1.5,
               ),
@@ -885,8 +1059,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               icon: const Icon(Icons.storefront_outlined, size: 20),
               label: Text(
                 'Découvrir la boutique',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -928,8 +1102,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   const SizedBox(width: 8),
                   Text(
                     'Voir plus de commandes',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.grey.shade600,
                     ),
@@ -995,8 +1169,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                         children: [
                           Text(
                             '#${order.orderNumber}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF1E293B),
                               letterSpacing: -0.3,
@@ -1009,8 +1183,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                               const SizedBox(width: 4),
                               Text(
                                 _formatDate(order.createdAt),
-                                style: GoogleFonts.openSans(
-                                  fontSize: 11.5,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 13.5,
                                   color: Colors.grey.shade500,
                                 ),
                               ),
@@ -1040,8 +1214,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           const SizedBox(width: 5),
                           Text(
                             statusInfo['label'],
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: statusColor,
                             ),
@@ -1073,16 +1247,16 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                               children: [
                                 Text(
                                   'Total',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 10,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 12,
                                     color: Colors.grey.shade500,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 Text(
                                   '${_formatAmount(order.totalAmount)} F',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF1E293B),
                                   ),
@@ -1100,26 +1274,32 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           children: [
                             Icon(Icons.shopping_bag_outlined, size: 17, color: Colors.grey.shade500),
                             const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Articles',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 10,
-                                    color: Colors.grey.shade500,
-                                    fontWeight: FontWeight.w500,
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Articles',
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                Text(
-                                  '$itemCount produit${itemCount > 1 ? 's' : ''}',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF1E293B),
+                                  Text(
+                                    '$itemCount produit${itemCount > 1 ? 's' : ''}',
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF1E293B),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -1137,8 +1317,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           children: [
                             Text(
                               'Suivre',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade700,
                               ),
@@ -1169,7 +1349,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       isDestructive: false,
                       onTap: () => _reorder(order),
                     ),
-                    if (order.status == 'livrée' || order.status == 'prete') ...[
+                    if (order.status == 'livree' || order.status == 'livrée' ||
+                        order.status == 'prete' || order.status == 'prête') ...[
                       const SizedBox(width: 8),
                       _buildActionChip(
                         icon: Icons.star_outline_rounded,
@@ -1236,8 +1417,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 Flexible(
                   child: Text(
                     label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 10.5,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                       color: fg,
                     ),
@@ -1255,6 +1436,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
   Map<String, dynamic> _getStatusInfo(String status) {
     switch (status) {
+      case 'recue':
       case 'reçue':
         return {
           'color': const Color(0xFFF59E0B),
@@ -1267,6 +1449,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
           'label': 'En préparation',
           'icon': Icons.sync_rounded,
         };
+      case 'prete':
       case 'prête':
         return {
           'color': const Color(0xFF8B5CF6),
@@ -1279,12 +1462,14 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
           'label': 'En livraison',
           'icon': Icons.local_shipping_rounded,
         };
+      case 'livree':
       case 'livrée':
         return {
           'color': const Color(0xFF10B981),
           'label': 'Livrée',
           'icon': Icons.check_circle_rounded,
         };
+      case 'annulee':
       case 'annulée':
         return {
           'color': const Color(0xFFEF4444),

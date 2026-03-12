@@ -220,7 +220,7 @@ class OrderService {
   }) async {
     final body = {
       'order_number': orderNumber,
-      'customer_phone': customerPhone,
+      'phone': customerPhone,
     };
 
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -247,10 +247,14 @@ class OrderService {
           throw Exception(data['message'] ?? 'Commande introuvable');
         }
 
-        final orderData = data['data']?['order'];
+        final orderData = data['data']?['order'] as Map<String, dynamic>?;
         if (orderData == null) {
           throw Exception('Commande introuvable');
         }
+
+        // Injecter la timeline dans l'objet order pour qu'elle soit parsée par Order.fromJson
+        final timeline = data['data']?['timeline'];
+        if (timeline != null) orderData['timeline'] = timeline;
 
         print('✅ Commande trouvée');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -297,6 +301,69 @@ class OrderService {
       } else {
         final data = jsonDecode(response.body);
         throw Exception(data['message'] ?? 'Commande introuvable');
+      }
+    } catch (e) {
+      print('❌ Erreur: $e');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      rethrow;
+    }
+  }
+
+  /// Récupérer les commandes de l'utilisateur authentifié
+  /// GET /client/orders
+  static Future<Map<String, dynamic>> getOrders({
+    String status = 'all',
+    String sort = 'newest',
+    int perPage = 20,
+    int page = 1,
+  }) async {
+    final headers = Map<String, String>.from(_headers);
+    if (AuthService.authToken != null) {
+      headers['Authorization'] = 'Bearer ${AuthService.authToken}';
+    }
+
+    final uri = Uri.parse(Endpoints.orders).replace(queryParameters: {
+      'status': status,
+      'sort': sort,
+      'per_page': perPage.toString(),
+      'page': page.toString(),
+    });
+
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    print('📤 GET ORDERS (authentifié)');
+    print('🔗 Endpoint: $uri');
+    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    try {
+      final response = await http.get(uri, headers: headers);
+
+      print('📥 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] != true) {
+          throw Exception(data['message'] ?? 'Erreur lors du chargement des commandes');
+        }
+
+        final ordersData = data['data']?['orders'] as List? ?? [];
+        final orders = ordersData.map((e) => Order.fromJson(e as Map<String, dynamic>)).toList();
+
+        print('✅ ${orders.length} commandes chargées');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        return {
+          'orders': orders,
+          'pagination': data['data']?['pagination'] ?? {
+            'current_page': page,
+            'last_page': page,
+            'per_page': perPage,
+            'total': orders.length,
+          },
+        };
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Erreur lors du chargement des commandes');
       }
     } catch (e) {
       print('❌ Erreur: $e');
@@ -433,55 +500,6 @@ class OrderService {
     }
   }
 
-  /// Lister les commandes (nécessite authentification)
-  /// GET /client/orders
-  static Future<Map<String, dynamic>> getOrders({
-    String? status,
-    int page = 1,
-    required String token,
-  }) async {
-    final queryParams = <String, String>{
-      if (status != null && status.isNotEmpty) 'status': status,
-      'page': page.toString(),
-    };
-
-    final headers = Map<String, String>.from(_headers);
-    headers['Authorization'] = 'Bearer $token';
-
-    final uri = Uri.parse(Endpoints.orders).replace(queryParameters: queryParams);
-
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📤 GET ORDERS');
-    print('🔗 Endpoint: $uri');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    try {
-      final response = await http.get(uri, headers: headers);
-
-      print('📥 Response Status: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        final ordersData = data['data']?['orders'] as List? ?? [];
-        final orders = ordersData.map((e) => Order.fromJson(e)).toList();
-
-        print('✅ ${orders.length} commandes chargées');
-        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-        return {
-          'orders': orders,
-          'pagination': data['data']?['pagination'],
-        };
-      } else {
-        throw Exception('Erreur lors du chargement des commandes');
-      }
-    } catch (e) {
-      print('❌ Erreur: $e');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      rethrow;
-    }
-  }
 
   /// Détails d'une commande (nécessite authentification)
   /// GET /client/orders/{id}
@@ -662,6 +680,7 @@ class OrderService {
     String? deliveryAddress,
     int? deliveryZoneId,
     String? notes,
+    String? deviceFingerprint,
   }) async {
     final headers = Map<String, String>.from(_headers);
     headers['Authorization'] = 'Bearer $token';
@@ -672,6 +691,7 @@ class OrderService {
       if (deliveryAddress != null && deliveryAddress.isNotEmpty) 'delivery_address': deliveryAddress,
       if (deliveryZoneId != null) 'delivery_zone_id': deliveryZoneId,
       if (notes != null && notes.isNotEmpty) 'notes': notes,
+      if (deviceFingerprint != null && deviceFingerprint.isNotEmpty) 'device_fingerprint': deviceFingerprint,
     };
 
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -715,25 +735,29 @@ class OrderService {
   /// POST /client/orders/{id}/rate
   /// Statut requis: livree ou prete
   ///
-  /// Body: {items: [{order_item_id, rating: 1-5, comment?}], global_comment?}
+  /// Body: {rating: 1-5, comment?, delivery_rating?: 1-5, food_rating?: 1-5}
   static Future<Map<String, dynamic>> rateOrder({
     required int orderId,
     required String token,
-    required List<Map<String, dynamic>> items,
-    String? globalComment,
+    required int rating,
+    String? comment,
+    int? deliveryRating,
+    int? foodRating,
   }) async {
     final headers = Map<String, String>.from(_headers);
     headers['Authorization'] = 'Bearer $token';
 
     final body = {
-      'items': items,
-      if (globalComment != null && globalComment.isNotEmpty) 'global_comment': globalComment,
+      'rating': rating,
+      if (comment != null && comment.isNotEmpty) 'comment': comment,
+      if (deliveryRating != null) 'delivery_rating': deliveryRating,
+      if (foodRating != null) 'food_rating': foodRating,
     };
 
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     print('📤 POST RATE ORDER');
     print('🔗 Endpoint: ${Endpoints.orderRate(orderId)}');
-    print('📦 Items: ${items.length}');
+    print('⭐ Rating: $rating');
     print('📦 Body: ${jsonEncode(body)}');
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 

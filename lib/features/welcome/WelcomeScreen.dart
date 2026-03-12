@@ -53,9 +53,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     child: Text(
                       'Bienvenue Sur TIKA',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.openSans(
+                      style: GoogleFonts.inriaSerif(
                         color: Colors.white,
-                        fontSize: 25,
+                        fontSize: 27,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
                       ),
@@ -75,9 +75,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     child: Text(
                       'L\'App Qui Vous Simplifie La Vie.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.openSans(
+                      style: GoogleFonts.inriaSerif(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w400,
                         fontStyle: FontStyle.italic,
                         letterSpacing: 0.3,

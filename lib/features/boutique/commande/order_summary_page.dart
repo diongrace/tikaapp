@@ -79,8 +79,8 @@ class OrderSummaryPage extends StatelessWidget {
                   const SizedBox(width: 14),
                   Text(
                     'Résumé de la commande',
-                    style: GoogleFonts.poppins(
-                      fontSize: 17,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 19,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0D0D26),
                     ),
@@ -144,8 +144,8 @@ class OrderSummaryPage extends StatelessWidget {
                                   child: Center(
                                     child: Text(
                                       'x${item['quantity']}',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                         color: Colors.grey.shade700,
                                       ),
@@ -161,8 +161,8 @@ class OrderSummaryPage extends StatelessWidget {
                                     children: [
                                       Text(
                                         item['name'] ?? 'Produit',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: const Color(0xFF1A1A2E),
                                         ),
@@ -170,8 +170,8 @@ class OrderSummaryPage extends StatelessWidget {
                                       if (item['size'] != null)
                                         Text(
                                           'Taille : ${item['size']}',
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 12,
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 14,
                                             color: Colors.grey.shade500,
                                           ),
                                         ),
@@ -181,8 +181,8 @@ class OrderSummaryPage extends StatelessWidget {
                                 // Prix
                                 Text(
                                   '${itemTotal.toStringAsFixed(0)} FCFA',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF0D0D26),
                                   ),
@@ -239,8 +239,8 @@ class OrderSummaryPage extends StatelessWidget {
                                   deliveryMode == 'Livraison'
                                       ? 'Livraison à domicile'
                                       : 'Récupération en boutique',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: const Color(0xFF1A1A2E),
                                   ),
@@ -249,8 +249,8 @@ class OrderSummaryPage extends StatelessWidget {
                                     deliveryAddress!.isNotEmpty)
                                   Text(
                                     deliveryAddress!,
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 12,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 14,
                                       color: Colors.grey.shade500,
                                     ),
                                     maxLines: 1,
@@ -269,8 +269,8 @@ class OrderSummaryPage extends StatelessWidget {
                             ),
                             child: Text(
                               'Frais variables',
-                              style: GoogleFonts.openSans(
-                                fontSize: 11,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade600,
                               ),
@@ -317,8 +317,8 @@ class OrderSummaryPage extends StatelessWidget {
                           const SizedBox(width: 12),
                           Text(
                             _paymentLabel(paymentMethod),
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1A1A2E),
                             ),
@@ -387,8 +387,8 @@ class OrderSummaryPage extends StatelessWidget {
                         children: [
                           Text(
                             'Total à payer',
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 17,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey.shade600,
                             ),
@@ -398,8 +398,8 @@ class OrderSummaryPage extends StatelessWidget {
                             children: [
                               Text(
                                 '${total.toStringAsFixed(0)}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 26,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 28,
                                   fontWeight: FontWeight.w800,
                                   color: const Color(0xFF0D0D26),
                                   height: 1,
@@ -410,8 +410,8 @@ class OrderSummaryPage extends StatelessWidget {
                                 padding: const EdgeInsets.only(bottom: 2),
                                 child: Text(
                                   'FCFA',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.grey.shade500,
                                   ),
@@ -472,8 +472,8 @@ class OrderSummaryPage extends StatelessWidget {
                         const SizedBox(width: 10),
                         Text(
                           'Confirmer la commande',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
                             letterSpacing: 0.3,
@@ -493,8 +493,8 @@ class OrderSummaryPage extends StatelessWidget {
 
   Widget _sectionLabel(String label) => Text(
         label,
-        style: GoogleFonts.poppins(
-          fontSize: 12,
+        style: GoogleFonts.inriaSerif(
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color: Colors.grey.shade500,
           letterSpacing: 0.8,
@@ -513,8 +513,8 @@ class OrderSummaryPage extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF1A1A2E),
               ),

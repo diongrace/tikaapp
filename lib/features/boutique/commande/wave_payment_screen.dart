@@ -354,7 +354,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
             Expanded(
               child: Text(
                 'Validation échouée',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
+                style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold, fontSize: 20),
               ),
             ),
           ],
@@ -366,7 +366,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
             children: [
               Text(
                 e.message,
-                style: GoogleFonts.openSans(fontSize: 14),
+                style: GoogleFonts.inriaSerif(fontSize: 16),
               ),
               if (e.details.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -375,8 +375,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('• ', style: GoogleFonts.openSans(color: Colors.red)),
-                          Expanded(child: Text(d, style: GoogleFonts.openSans(fontSize: 13))),
+                          Text('• ', style: GoogleFonts.inriaSerif(color: Colors.red)),
+                          Expanded(child: Text(d, style: GoogleFonts.inriaSerif(fontSize: 15))),
                         ],
                       ),
                     )),
@@ -394,11 +394,11 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                     children: [
                       Text(
                         'Attendu: ${e.expected!['amount']} FCFA',
-                        style: GoogleFonts.openSans(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600),
                       ),
                       Text(
                         'Trouvé: ${e.found!['amount']} FCFA',
-                        style: GoogleFonts.openSans(fontWeight: FontWeight.w600, color: Colors.red),
+                        style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600, color: Colors.red),
                       ),
                     ],
                   ),
@@ -410,7 +410,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Réessayer', style: GoogleFonts.openSans(fontWeight: FontWeight.w600)),
+            child: Text('Réessayer', style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -431,14 +431,14 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
             Expanded(
               child: Text(
                 'Commande envoyée !',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
               ),
             ),
           ],
         ),
         content: Text(
           'Votre paiement Wave et votre commande ont été envoyés avec succès. Votre commande est en cours de traitement.',
-          style: GoogleFonts.openSans(),
+          style: GoogleFonts.inriaSerif(),
         ),
         actions: [
           ElevatedButton(
@@ -450,7 +450,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
               backgroundColor: waveColor,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('Continuer', style: GoogleFonts.openSans(fontWeight: FontWeight.bold)),
+            child: Text('Continuer', style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -470,13 +470,13 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
             const SizedBox(width: 8),
             Text(
               'Paiement approuvé!',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+              style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
             ),
           ],
         ),
         content: Text(
           'Votre paiement Wave a été validé par le vendeur. Votre commande est confirmée.',
-          style: GoogleFonts.openSans(),
+          style: GoogleFonts.inriaSerif(),
         ),
         actions: [
           ElevatedButton(
@@ -488,7 +488,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
               backgroundColor: Colors.green,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('Continuer', style: GoogleFonts.openSans(fontWeight: FontWeight.bold)),
+            child: Text('Continuer', style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -508,7 +508,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
             Expanded(
               child: Text(
                 'Paiement rejeté',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                style: GoogleFonts.inriaSerif(fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -519,7 +519,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
           children: [
             Text(
               'Votre paiement Wave a été rejeté par le vendeur.',
-              style: GoogleFonts.openSans(),
+              style: GoogleFonts.inriaSerif(),
             ),
             if (reason != null) ...[
               const SizedBox(height: 12),
@@ -536,7 +536,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                     Expanded(
                       child: Text(
                         'Raison: $reason',
-                        style: GoogleFonts.openSans(color: Colors.red.shade700),
+                        style: GoogleFonts.inriaSerif(color: Colors.red.shade700),
                       ),
                     ),
                   ],
@@ -555,14 +555,14 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                 _paymentStatus = null;
               });
             },
-            child: Text('Réessayer', style: GoogleFonts.openSans()),
+            child: Text('Réessayer', style: GoogleFonts.inriaSerif()),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context, false);
             },
-            child: Text('Annuler', style: GoogleFonts.openSans(color: Colors.grey)),
+            child: Text('Annuler', style: GoogleFonts.inriaSerif(color: Colors.grey)),
           ),
         ],
       ),
@@ -590,7 +590,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         ),
         title: Text(
           'Paiement Wave',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.inriaSerif(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -670,16 +670,16 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         children: [
           Text(
             'Montant à payer',
-            style: GoogleFonts.openSans(
-              fontSize: 14,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 16,
               color: Colors.white.withOpacity(0.9),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '${widget.amount.toStringAsFixed(0)} FCFA',
-            style: GoogleFonts.poppins(
-              fontSize: 36,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 38,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -712,8 +712,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
               _waveOpened
                   ? 'Apres avoir payé, prenez une capture d\'écran de la confirmation Wave et envoyez-la ci-dessous.'
                   : 'Vous allez être redirigé vers Wave pour effectuer le paiement.',
-              style: GoogleFonts.openSans(
-                fontSize: 13,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 15,
                 color: _waveOpened ? Colors.green.shade800 : Colors.blue.shade800,
                 height: 1.4,
               ),
@@ -762,8 +762,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                         ? Icon(Icons.check, color: Colors.green, size: 24)
                         : Text(
                             '1',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: waveColor,
                             ),
@@ -777,8 +777,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                     children: [
                       Text(
                         _waveOpened ? 'Wave ouvert' : 'Ouvrir Wave et payer',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -787,8 +787,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                         _waveOpened
                             ? 'Effectuez le paiement puis revenez ici'
                             : 'Redirection vers Wave...',
-                        style: GoogleFonts.openSans(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           color: _waveOpened ? Colors.green : Colors.grey.shade600,
                         ),
                       ),
@@ -800,8 +800,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                     onPressed: _openWaveApp,
                     child: Text(
                       'Réouvrir',
-                      style: GoogleFonts.openSans(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: waveColor,
                       ),
@@ -859,8 +859,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                         ? Icon(Icons.check, color: Colors.green, size: 24)
                         : Text(
                             '2',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: waveColor,
                             ),
@@ -874,8 +874,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                     children: [
                       Text(
                         'Capture d\'écran de confirmation',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -884,8 +884,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                         _screenshot != null
                             ? 'Capture sélectionnée'
                             : 'Sélectionnez ou prenez une photo',
-                        style: GoogleFonts.openSans(
-                          fontSize: 13,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
                           color: _screenshot != null ? Colors.green : Colors.grey.shade600,
                         ),
                       ),
@@ -912,7 +912,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'Galerie',
-                            style: GoogleFonts.openSans(
+                            style: GoogleFonts.inriaSerif(
                               fontWeight: FontWeight.w600,
                               color: waveColor,
                             ),
@@ -938,7 +938,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'Caméra',
-                            style: GoogleFonts.openSans(
+                            style: GoogleFonts.inriaSerif(
                               fontWeight: FontWeight.w600,
                               color: waveColor,
                             ),
@@ -1012,9 +1012,9 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
           Expanded(
             child: Text(
               _errorMessage!,
-              style: GoogleFonts.openSans(
+              style: GoogleFonts.inriaSerif(
                 color: Colors.red.shade700,
-                fontSize: 13,
+                fontSize: 15,
               ),
             ),
           ),
@@ -1079,7 +1079,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
               children: [
                 Text(
                   statusText,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.inriaSerif(
                     fontWeight: FontWeight.w600,
                     color: statusColor,
                   ),
@@ -1087,8 +1087,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                 if (status == 'pending_verification')
                   Text(
                     'Le vendeur vérifie votre paiement...',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -1096,8 +1096,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Score de confiance: ${_response!.validation!.score}/5',
-                    style: GoogleFonts.openSans(
-                      fontSize: 12,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -1139,8 +1139,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                 const SizedBox(width: 12),
                 Text(
                   'Envoi en cours...',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -1149,8 +1149,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
             )
           : Text(
               _response != null ? 'Preuve envoyée' : 'Envoyer la preuve de paiement',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),

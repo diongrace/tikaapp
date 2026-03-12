@@ -331,8 +331,8 @@ class _PanierScreenState extends State<PanierScreen> {
                           children: [
                             Text(
                               'Mon panier',
-                              style: GoogleFonts.poppins(
-                                fontSize: 22,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 24,
                                 fontWeight: FontWeight.w800,
                                 color: const Color(0xFF0D0D26),
                                 letterSpacing: -0.5,
@@ -340,8 +340,8 @@ class _PanierScreenState extends State<PanierScreen> {
                             ),
                             Text(
                               '$itemCount article${itemCount > 1 ? 's' : ''}',
-                              style: GoogleFonts.openSans(
-                                fontSize: 12,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 14,
                                 color: Colors.grey.shade500,
                               ),
                             ),
@@ -390,8 +390,8 @@ class _PanierScreenState extends State<PanierScreen> {
                           const SizedBox(height: 24),
                           Text(
                             'Votre panier est vide',
-                            style: GoogleFonts.openSans(
-                              fontSize: 20,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -399,8 +399,8 @@ class _PanierScreenState extends State<PanierScreen> {
                           const SizedBox(height: 12),
                           Text(
                             'Ajoutez des produits pour commencer vos achats',
-                            style: GoogleFonts.openSans(
-                              fontSize: 14,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 16,
                               color: Colors.grey.shade600,
                             ),
                             textAlign: TextAlign.center,
@@ -431,8 +431,8 @@ class _PanierScreenState extends State<PanierScreen> {
                               ),
                               child: Text(
                                 'Continuer mes achats',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 17,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
@@ -492,8 +492,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       'Code promo',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 17,
                                         fontWeight: FontWeight.w700,
                                         color: const Color(0xFF1A1A2E),
                                       ),
@@ -508,29 +508,29 @@ class _PanierScreenState extends State<PanierScreen> {
                                         controller: _promoController,
                                         decoration: InputDecoration(
                                           hintText: 'Entrez votre code...',
-                                          hintStyle: GoogleFonts.openSans(
-                                            fontSize: 13,
-                                            color: Colors.grey.shade400,
+                                          hintStyle: GoogleFonts.inriaSerif(
+                                            fontSize: 15,
+                                            color: Colors.grey.shade500,
                                           ),
                                           filled: true,
-                                          fillColor: Colors.grey.shade50,
+                                          fillColor: Colors.grey.shade100,
                                           contentPadding: const EdgeInsets.symmetric(
                                             horizontal: 14,
                                             vertical: 12,
                                           ),
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(10),
-                                            borderSide: BorderSide(color: Colors.grey.shade200),
+                                            borderSide: BorderSide(color: Colors.grey.shade400),
                                           ),
                                           enabledBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(10),
-                                            borderSide: BorderSide(color: Colors.grey.shade200),
+                                            borderSide: BorderSide(color: Colors.grey.shade400),
                                           ),
                                           focusedBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(10),
                                             borderSide: BorderSide(
                                               color: _primaryColor,
-                                              width: 1.5,
+                                              width: 2,
                                             ),
                                           ),
                                         ),
@@ -544,23 +544,15 @@ class _PanierScreenState extends State<PanierScreen> {
                                         height: 48,
                                         padding: const EdgeInsets.symmetric(horizontal: 20),
                                         decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: _isValidatingCoupon
-                                                ? [Colors.grey.shade300, Colors.grey.shade400]
-                                                : [_primaryColor, _theme.gradientEnd],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
+                                          color: _primaryColor,
                                           borderRadius: BorderRadius.circular(12),
-                                          boxShadow: _isValidatingCoupon
-                                              ? []
-                                              : [
-                                                  BoxShadow(
-                                                    color: _primaryColor.withOpacity(0.36),
-                                                    blurRadius: 10,
-                                                    offset: const Offset(0, 4),
-                                                  ),
-                                                ],
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: _primaryColor.withOpacity(0.35),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
                                         ),
                                         child: Center(
                                           child: _isValidatingCoupon
@@ -570,7 +562,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                                 )
                                               : Text(
                                                   'Appliquer',
-                                                  style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+                                                  style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
                                                 ),
                                         ),
                                       ),
@@ -594,7 +586,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                         Expanded(
                                           child: Text(
                                             'Code "${_appliedCoupon!.code}" appliqué — ${_appliedCoupon!.discountType == 'percentage' ? '-${_appliedCoupon!.discountValue.toInt()}%' : '-${_appliedCoupon!.discountValue.toInt()} FCFA'}',
-                                            style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFF15803D), fontWeight: FontWeight.w600),
+                                            style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF15803D), fontWeight: FontWeight.w600),
                                           ),
                                         ),
                                         GestureDetector(
@@ -622,7 +614,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                         Expanded(
                                           child: Text(
                                             _couponError!,
-                                            style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFFDC2626)),
+                                            style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFFDC2626)),
                                           ),
                                         ),
                                       ],
@@ -671,7 +663,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       'Carte de fidélité',
-                                      style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF1A1A2E)),
+                                      style: GoogleFonts.inriaSerif(fontSize: 17, fontWeight: FontWeight.w700, color: const Color(0xFF1A1A2E)),
                                     ),
                                   ],
                                 ),
@@ -706,11 +698,11 @@ class _PanierScreenState extends State<PanierScreen> {
                                           children: [
                                             Text(
                                               'Pas encore de carte fidélité',
-                                              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
+                                              style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                                             ),
                                             Text(
                                               'Gagnez des points à chaque commande',
-                                              style: GoogleFonts.openSans(fontSize: 11, color: Colors.grey.shade500),
+                                              style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade500),
                                             ),
                                           ],
                                         ),
@@ -744,7 +736,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                       icon: Icon(Icons.add_card_rounded, size: 18, color: _primaryColor),
                                       label: Text(
                                         'Créer ma carte de fidélité',
-                                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: _primaryColor),
+                                        style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600, color: _primaryColor),
                                       ),
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: _primaryColor,
@@ -760,13 +752,13 @@ class _PanierScreenState extends State<PanierScreen> {
                                 else if (_verifiedLoyaltyCard == null) ...[
                                   Text(
                                     'Utilisez vos points de fidélité',
-                                    style: GoogleFonts.openSans(fontSize: 12, color: Colors.grey.shade600),
+                                    style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade600),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'Vous avez ${_autoLoadedCard!.points} points disponibles (${_autoLoadedCard!.pointsValue} FCFA)',
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 13,
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w700,
                                       color: const Color(0xFF1A1A2E),
                                     ),
@@ -799,7 +791,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                           Icon(Icons.info_outline, size: 14, color: Colors.grey.shade600),
                                           const SizedBox(width: 6),
                                           Expanded(
-                                            child: Text(hint, style: GoogleFonts.openSans(fontSize: 12, color: Colors.grey.shade700)),
+                                            child: Text(hint, style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade700)),
                                           ),
                                         ],
                                       ),
@@ -814,13 +806,13 @@ class _PanierScreenState extends State<PanierScreen> {
                                     decoration: InputDecoration(
                                       hintText: 'Code PIN (4 chiffres)',
                                       counterText: '',
-                                      hintStyle: GoogleFonts.openSans(fontSize: 13, color: Colors.grey.shade400),
+                                      hintStyle: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey.shade500),
                                       filled: true,
-                                      fillColor: Colors.grey.shade50,
+                                      fillColor: Colors.grey.shade100,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
-                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
-                                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: _primaryColor, width: 1.5)),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400)),
+                                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: _primaryColor, width: 2)),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -831,28 +823,21 @@ class _PanierScreenState extends State<PanierScreen> {
                                       width: double.infinity,
                                       height: 52,
                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: _isVerifyingLoyalty
-                                              ? [Colors.grey.shade300, Colors.grey.shade400]
-                                              : [_primaryColor, _theme.gradientEnd],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
+                                        color: Colors.white,
                                         borderRadius: BorderRadius.circular(14),
-                                        boxShadow: _isVerifyingLoyalty
-                                            ? []
-                                            : [
-                                                BoxShadow(
-                                                  color: _primaryColor.withOpacity(0.38),
-                                                  blurRadius: 14,
-                                                  offset: const Offset(0, 5),
-                                                ),
-                                              ],
+                                        border: Border.all(color: Colors.grey.shade300),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.08),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
                                       child: Center(
                                         child: _isVerifyingLoyalty
-                                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                            : Text('Valider le code PIN', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                                            ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.grey.shade600, strokeWidth: 2))
+                                            : Text('Valider le code PIN', style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
                                       ),
                                     ),
                                   ),
@@ -866,7 +851,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                         children: [
                                           const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 16),
                                           const SizedBox(width: 8),
-                                          Expanded(child: Text(_loyaltyError!, style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFFDC2626)))),
+                                          Expanded(child: Text(_loyaltyError!, style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFFDC2626)))),
                                         ],
                                       ),
                                     ),
@@ -891,11 +876,11 @@ class _PanierScreenState extends State<PanierScreen> {
                                             children: [
                                               Text(
                                                 'Carte vérifiée ✓',
-                                                style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF2E7D32)),
+                                                style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF2E7D32)),
                                               ),
                                               Text(
                                                 '${_verifiedLoyaltyCard!.points} pts${_loyaltyDiscount > 0 ? ' · −$_loyaltyDiscount FCFA appliqué' : ' utilisés'}',
-                                                style: GoogleFonts.openSans(fontSize: 12, color: const Color(0xFF4CAF50)),
+                                                style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF4CAF50)),
                                               ),
                                             ],
                                           ),
@@ -953,8 +938,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                     const SizedBox(width: 12),
                                     Text(
                                       'Résumé de la commande',
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 16,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black87,
                                       ),
@@ -968,15 +953,15 @@ class _PanierScreenState extends State<PanierScreen> {
                                   children: [
                                     Text(
                                       'Sous-total',
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 14,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 16,
                                         color: Colors.grey.shade600,
                                       ),
                                     ),
                                     Text(
                                       '$total FCFA',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.black87,
                                       ),
@@ -991,11 +976,11 @@ class _PanierScreenState extends State<PanierScreen> {
                                     children: [
                                       Text(
                                         'Réduction (${_appliedCoupon!.code})',
-                                        style: GoogleFonts.openSans(fontSize: 13, color: const Color(0xFF16A34A)),
+                                        style: GoogleFonts.inriaSerif(fontSize: 15, color: const Color(0xFF16A34A)),
                                       ),
                                       Text(
                                         '-${_calculateDiscount(total)} FCFA',
-                                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF16A34A)),
+                                        style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF16A34A)),
                                       ),
                                     ],
                                   ),
@@ -1008,11 +993,11 @@ class _PanierScreenState extends State<PanierScreen> {
                                     children: [
                                       Text(
                                         'Fidélité (${_verifiedLoyaltyCard!.points} pts)',
-                                        style: GoogleFonts.openSans(fontSize: 13, color: const Color(0xFF16A34A)),
+                                        style: GoogleFonts.inriaSerif(fontSize: 15, color: const Color(0xFF16A34A)),
                                       ),
                                       Text(
                                         '-$_loyaltyDiscount FCFA',
-                                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF16A34A)),
+                                        style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF16A34A)),
                                       ),
                                     ],
                                   ),
@@ -1026,21 +1011,21 @@ class _PanierScreenState extends State<PanierScreen> {
                                   children: [
                                     Text(
                                       'Total',
-                                      style: GoogleFonts.openSans(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                                      style: GoogleFonts.inriaSerif(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
                                     ),
                                     Row(
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
                                         Text(
                                           '${_totalAfterDiscounts(total)}',
-                                          style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: const Color(0xFF0D0D26), height: 1),
+                                          style: GoogleFonts.inriaSerif(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF0D0D26), height: 1),
                                         ),
                                         const SizedBox(width: 4),
                                         Padding(
                                           padding: const EdgeInsets.only(bottom: 2),
                                           child: Text(
                                             'FCFA',
-                                            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
+                                            style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
                                           ),
                                         ),
                                       ],
@@ -1136,8 +1121,8 @@ class _PanierScreenState extends State<PanierScreen> {
                     child: Center(
                       child: Text(
                         'Commander maintenant',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -1153,7 +1138,10 @@ class _PanierScreenState extends State<PanierScreen> {
   Widget _buildCartItem(int index, Map<String, dynamic> item) {
     final String? imageUrl = _getFullImageUrl(item['image']?.toString());
     final int? discount = _getDiscount(item);
-    final int subtotal = (item['price'] as int) * (item['quantity'] as int);
+    final p = item['price'];
+    final q = item['quantity'];
+    final int subtotal = (p is int ? p : (p is num ? p.toInt() : int.tryParse(p?.toString() ?? '0') ?? 0))
+        * (q is int ? q : (q is num ? q.toInt() : int.tryParse(q?.toString() ?? '1') ?? 1));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -1224,9 +1212,7 @@ class _PanierScreenState extends State<PanierScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFF43F5E), Color(0xFFEC4899)],
-                          ),
+                          color: const Color(0xFFCC0000),
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(16),
                             bottomRight: Radius.circular(12),
@@ -1239,8 +1225,8 @@ class _PanierScreenState extends State<PanierScreen> {
                             const SizedBox(width: 4),
                             Text(
                               '-$discount%',
-                              style: GoogleFonts.poppins(
-                                fontSize: 10,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
@@ -1262,8 +1248,8 @@ class _PanierScreenState extends State<PanierScreen> {
                     // Nom du produit
                     Text(
                       item['name'],
-                      style: GoogleFonts.openSans(
-                        fontSize: 15,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 17,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
@@ -1281,8 +1267,8 @@ class _PanierScreenState extends State<PanierScreen> {
                         ),
                         child: Text(
                           'Taille : ${item['size']}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade700,
                           ),
@@ -1297,8 +1283,8 @@ class _PanierScreenState extends State<PanierScreen> {
                       children: [
                         Text(
                           '${item['price']}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 26,
                             fontWeight: FontWeight.bold,
                             color: const Color.fromARGB(255, 9, 9, 9),
                           ),
@@ -1308,8 +1294,8 @@ class _PanierScreenState extends State<PanierScreen> {
                           padding: const EdgeInsets.only(bottom: 3),
                           child: Text(
                             'FCFA',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: const Color.fromARGB(255, 162, 160, 166),
                             ),
@@ -1341,15 +1327,20 @@ class _PanierScreenState extends State<PanierScreen> {
                                 height: 36,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: item['quantity'] > 1
-                                      ? Colors.grey.shade100
-                                      : Colors.grey.shade100,
+                                  color: Colors.white,
                                   border: Border.all(
                                     color: item['quantity'] > 1
                                         ? Colors.grey.shade400
                                         : Colors.grey.shade300,
                                     width: 1.5,
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.10),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: Icon(
                                   Icons.remove_rounded,
@@ -1367,8 +1358,8 @@ class _PanierScreenState extends State<PanierScreen> {
                               child: Center(
                                 child: Text(
                                   '${item['quantity']}',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF0D0D26),
                                   ),
@@ -1435,6 +1426,13 @@ class _PanierScreenState extends State<PanierScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFFEE2E2),
                               borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.18),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: const Icon(
                               Icons.delete_rounded,
@@ -1469,15 +1467,15 @@ class _PanierScreenState extends State<PanierScreen> {
               children: [
                 Text(
                   'Sous-total',
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     color: Colors.grey.shade600,
                   ),
                 ),
                 Text(
                   '${subtotal.toStringAsFixed(0)} FCFA',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),

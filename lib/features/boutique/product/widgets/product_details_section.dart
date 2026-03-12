@@ -102,8 +102,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                   children: [
                     Text(
                       'Temps de préparation',
-                      style: GoogleFonts.openSans(
-                        fontSize: 12,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 14,
                         color: Colors.grey.shade600,
                         fontWeight: FontWeight.w500,
                       ),
@@ -111,8 +111,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     const SizedBox(height: 2),
                     Text(
                       prepTime,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: BoutiqueThemeProvider.of(context).primary,
                       ),
@@ -131,8 +131,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
           if (_hasPortions()) ...[
             Text(
               'Portions disponibles',
-              style: GoogleFonts.openSans(
-                fontSize: 17,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 19,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -144,8 +144,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
 
           Text(
             'Préférences',
-            style: GoogleFonts.openSans(
-              fontSize: 17,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 19,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF2D2D2D),
             ),
@@ -166,8 +166,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
           // Note pour le restaurant
           Text(
             'Note pour le restaurant',
-            style: GoogleFonts.openSans(
-              fontSize: 15,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 17,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF2D2D2D),
             ),
@@ -225,8 +225,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             const SizedBox(width: 8),
             Text(
               label,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade700,
               ),
@@ -303,8 +303,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                 child: Text(
                   name,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight:
                         isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: outOfStock
@@ -333,8 +333,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             if (price == null) return const SizedBox.shrink();
             return Text(
               '$price FCFA',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: primary,
               ),
@@ -406,8 +406,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     const SizedBox(width: 8),
                     Text(
                       portion['name'] as String,
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade700,
                       ),
@@ -420,8 +420,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     padding: const EdgeInsets.only(left: 28),
                     child: Text(
                       '${portion['price']} FCFA',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: BoutiqueThemeProvider.of(context).primary,
                       ),
@@ -434,8 +434,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     padding: const EdgeInsets.only(left: 28),
                     child: Text(
                       portion['description'] as String,
-                      style: GoogleFonts.openSans(
-                        fontSize: 12,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 14,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -447,8 +447,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     padding: const EdgeInsets.only(left: 28),
                     child: Text(
                       'Rupture de stock',
-                      style: GoogleFonts.openSans(
-                        fontSize: 11,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 13,
                         color: Colors.red.shade400,
                         fontWeight: FontWeight.w600,
                       ),
@@ -470,8 +470,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
       controller: _customRequestController,
       decoration: InputDecoration(
         hintText: 'Ex: Sans oignons, bien cuit, sauce à part...',
-        hintStyle: GoogleFonts.openSans(
-          fontSize: 13,
+        hintStyle: GoogleFonts.inriaSerif(
+          fontSize: 15,
           color: Colors.grey.shade500,
         ),
         prefixIcon: Icon(
@@ -494,8 +494,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      style: GoogleFonts.openSans(
-        fontSize: 14,
+      style: GoogleFonts.inriaSerif(
+        fontSize: 16,
         color: Colors.grey.shade800,
       ),
       maxLines: 3,
@@ -577,8 +577,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
         const SizedBox(width: 10),
         Text(
           title,
-          style: GoogleFonts.poppins(
-            fontSize: 16,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 18,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF1A1A2E),
           ),
@@ -646,8 +646,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             child: Text(
               size,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.grey.shade700,
               ),
@@ -725,8 +725,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                   children: [
                     Text(
                       'Durée du service',
-                      style: GoogleFonts.openSans(
-                        fontSize: 12,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 14,
                         color: Colors.grey.shade600,
                         fontWeight: FontWeight.w500,
                       ),
@@ -734,8 +734,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     const SizedBox(height: 2),
                     Text(
                       duration,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: BoutiqueThemeProvider.of(context).primary,
                       ),
@@ -783,15 +783,15 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             children: [
               Text(
                 label,
-                style: GoogleFonts.openSans(
-                  fontSize: 11,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 13,
                   color: Colors.grey.shade600,
                 ),
               ),
               Text(
                 value,
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF2D2D2D),
                 ),
@@ -917,8 +917,8 @@ class _DetailRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: GoogleFonts.openSans(
-                  fontSize: 12,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                   fontWeight: FontWeight.w500,
                 ),
@@ -926,8 +926,8 @@ class _DetailRow extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 value,
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: const Color(0xFF2D2D2D),
                   fontWeight: FontWeight.w500,
                 ),

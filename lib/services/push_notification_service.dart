@@ -9,12 +9,123 @@ import './notification_service.dart';
 
 /// Handler pour les messages en arriere-plan (doit etre une fonction top-level)
 /// Quand l'app est fermee, Flutter cree un isolate separe - Firebase doit etre reinitialise
+/// IMPORTANT: Doit etre enregistre via FirebaseMessaging.onBackgroundMessage()
+/// AVANT Firebase.initializeApp() dans main() pour eviter "duplicate background isolate"
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('[Push] Message en arriere-plan: ${message.messageId}');
-  print('[Push] Titre: ${message.notification?.title}');
-  print('[Push] Body: ${message.notification?.body}');
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('[BG] ════════════════════════════════════');
+  print('[BG] Handler arriere-plan declenche !');
+  print('[BG] messageId: ${message.messageId}');
+  print('[BG] notification null? ${message.notification == null}');
+  print('[BG] notification title: ${message.notification?.title}');
+  print('[BG] notification body: ${message.notification?.body}');
+  print('[BG] data: ${message.data}');
+  print('[BG] ════════════════════════════════════');
+
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    }
+    print('[BG] Firebase initialise');
+  } catch (e) {
+    print('[BG] Firebase deja initialise ou erreur: $e');
+  }
+
+  // Construire titre et body (depuis notification OU data)
+  final notif = message.notification;
+  final data  = message.data;
+
+  final String title = notif?.title ?? data['title'] ?? _buildTitleFromData(data);
+  final String body  = notif?.body  ?? data['body']  ?? data['message'] ?? _buildBodyFromData(data);
+
+  print('[BG] titre construit: "$title"');
+  print('[BG] body construit: "$body"');
+
+  if (body.isEmpty && title == 'Tika') {
+    print('[BG] Aucun contenu utile, notification ignoree');
+    return;
+  }
+
+  try {
+    final localNotifications = FlutterLocalNotificationsPlugin();
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final initialized = await localNotifications.initialize(
+      const InitializationSettings(android: androidSettings),
+    );
+    print('[BG] FlutterLocalNotifications initialise: $initialized');
+
+    await localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(const AndroidNotificationChannel(
+          'tika_notifications',
+          'Notifications Tika',
+          description: 'Notifications de commandes, promotions et fidelite',
+          importance: Importance.high,
+        ));
+    print('[BG] Canal Android cree');
+
+    final notifId = message.messageId?.hashCode
+        ?? DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+    await localNotifications.show(
+      notifId,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'tika_notifications',
+          'Notifications Tika',
+          channelDescription: 'Notifications de commandes, promotions et fidelite',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+    );
+    print('[BG] Notification affichee avec id: $notifId');
+  } catch (e, stack) {
+    print('[BG] ERREUR affichage notification: $e');
+    print('[BG] Stack: $stack');
+  }
+}
+
+/// Construit le titre depuis les champs data du backend Tika
+/// Payload: { type, order_id, order_number, status, click_action }
+String _buildTitleFromData(Map<String, dynamic> data) {
+  final type   = data['type']   ?? '';
+  final status = data['status'] ?? '';
+
+  if (type == 'order_status') {
+    switch (status) {
+      case 'en_traitement': return 'Commande en préparation';
+      case 'prete':         return 'Commande prête 🎉';
+      case 'livree':        return 'Commande livrée ✅';
+      case 'annulee':       return 'Commande annulée';
+      default:              return 'Mise à jour de commande';
+    }
+  }
+  if (type == 'loyalty')  return 'Points de fidélité ⭐';
+  if (type == 'promo')    return 'Nouvelle promotion 🎁';
+  if (type == 'payment')  return 'Paiement confirmé 💳';
+  return 'Tika';
+}
+
+/// Construit le body depuis les champs data du backend Tika
+String _buildBodyFromData(Map<String, dynamic> data) {
+  final type        = data['type']         ?? '';
+  final status      = data['status']       ?? '';
+  final orderNumber = data['order_number'] ?? '';
+
+  if (type == 'order_status' && orderNumber.isNotEmpty) {
+    switch (status) {
+      case 'en_traitement': return 'Votre commande $orderNumber est en préparation.';
+      case 'prete':         return 'Votre commande $orderNumber est prête à être retirée.';
+      case 'livree':        return 'Votre commande $orderNumber a été livrée.';
+      case 'annulee':       return 'Votre commande $orderNumber a été annulée.';
+      default:              return 'Votre commande $orderNumber a été mise à jour.';
+    }
+  }
+  return '';
 }
 
 /// Verifie si la plateforme supporte les notifications locales (Android/iOS uniquement)
@@ -52,6 +163,7 @@ class PushNotificationService {
   /// Initialiser le service de push notifications
   static Future<void> initialize() async {
     // 1. Demander la permission FCM
+    // NOTE: firebaseMessagingBackgroundHandler est enregistre dans main() avant Firebase.initializeApp()
     final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
@@ -66,9 +178,6 @@ class PushNotificationService {
       print('[Push] Notifications refusees par l\'utilisateur');
       return;
     }
-
-    // 2. Configurer le handler en arriere-plan AVANT tout
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // 3. Initialiser les notifications locales (Android/iOS uniquement)
     // IMPORTANT: Doit etre fait AVANT d'ecouter les messages pour que le canal existe
@@ -184,7 +293,7 @@ class PushNotificationService {
       print('[Push] ❌ ÉCHEC: Pas de token FCM disponible');
       return;
     }
-    print('[Push] ✅ Token FCM: ${_fcmToken!.substring(0, 20)}...');
+    print('[Push] ✅ Token FCM COMPLET: $_fcmToken');
 
     // 2. Vérifier l'authentification
     if (!NotificationService.isAuthenticated) {
@@ -250,8 +359,13 @@ class PushNotificationService {
 
   /// Gerer un message recu au premier plan
   static void _handleForegroundMessage(RemoteMessage message) {
-    print('[Push] Message au premier plan: ${message.notification?.title}');
-    print('[Push] Data: ${message.data}');
+    print('[Push] ════ MESSAGE RECU (foreground) ════');
+    print('[Push] messageId: ${message.messageId}');
+    print('[Push] notification null? ${message.notification == null}');
+    print('[Push] notification.title: ${message.notification?.title}');
+    print('[Push] notification.body:  ${message.notification?.body}');
+    print('[Push] data: ${message.data}');
+    print('[Push] ════════════════════════════════════');
 
     // Rafraichir le badge quand un push arrive
     refreshUnreadCount();

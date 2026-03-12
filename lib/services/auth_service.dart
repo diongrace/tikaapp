@@ -531,7 +531,7 @@ class AuthService {
         email: client.email,
       );
     }
-
+   
     NotificationService.setAuthToken(token);
 
     // Enregistrer le token FCM aupres du backend pour recevoir les push

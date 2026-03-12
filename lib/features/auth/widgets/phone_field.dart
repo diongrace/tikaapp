@@ -32,8 +32,8 @@ class PhoneField extends StatelessWidget {
       children: [
         Text(
           'Numéro de téléphone *',
-          style: GoogleFonts.openSans(
-            fontSize: 14,
+          style: GoogleFonts.inriaSerif(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -65,8 +65,8 @@ class PhoneField extends StatelessWidget {
             ],
             decoration: InputDecoration(
               hintText: '07 00 00 00 00',
-              hintStyle: GoogleFonts.openSans(
-                fontSize: 14,
+              hintStyle: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 color: Colors.grey.shade400,
               ),
               prefixIcon: Container(
@@ -102,8 +102,8 @@ class PhoneField extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       '+225',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),

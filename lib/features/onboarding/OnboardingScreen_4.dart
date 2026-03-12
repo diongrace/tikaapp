@@ -68,9 +68,9 @@ class OnboardingScreen4 extends StatelessWidget {
                           child: Text(
                             'Bénéficier D\'une Carte\nDe Fidélité',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.openSans(
+                            style: GoogleFonts.inriaSerif(
                               color: const Color(0xFF670C88),
-                              fontSize: 24,
+                              fontSize: 26,
                               fontWeight: FontWeight.w600,
                               height: 1.2,
                             ),
@@ -122,7 +122,7 @@ class OnboardingScreen4 extends StatelessWidget {
                                 child: Text(
                                   'suivant',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
                                   ),

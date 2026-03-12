@@ -423,19 +423,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return BoutiqueThemeProvider(
       shop: _currentShop,
       child: Scaffold(
-      backgroundColor: const Color(0xFFEEEFF6),
+      backgroundColor: Colors.white,
       body: Stack(
+        
         children: [
           // Contenu scrollable
           Column(
             children: [
               // Espace pour le header et la carte boutique
-              const SizedBox(height: 326),
+              const SizedBox(height: 220),
 
               // Zone filtres — fond blanc avec bord supérieur arrondi
               Container(
                 decoration: const BoxDecoration(
-                  color: Color(0xFFEEEFF6),
+                  color: Colors.white,
                 ),
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child: Column(
@@ -484,6 +485,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             .map((p) => {
                                   'id': p.id,
                                   'name': p.name,
+                                  'description': p.description,
                                   'price': p.price,
                                   'oldPrice': p.comparePrice,
                                   'discount': p.discountPercentage,
@@ -574,10 +576,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       context: context,
       currentShop: _currentShop,
       searchController: _searchController,
+      products: _products.map((p) => {
+        'id': p.id,
+        'name': p.name,
+        'price': p.price,
+        'image': p.primaryImageUrl,
+      }).toList(),
+      onProductTap: (productMap) {
+        Navigator.pop(context);
+        final product = _products.firstWhere((p) => p.id == productMap['id']);
+        _navigateToProduct(product);
+      },
       onSearchChanged: (query) {
-        setState(() {
-          _searchQuery = query;
-        });
+        setState(() => _searchQuery = query);
         _loadProducts();
       },
     );

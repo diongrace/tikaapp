@@ -19,29 +19,27 @@ class SearchBarWidget extends StatelessWidget {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade300, width: 1.5),
       ),
       child: TextField(
         controller: controller,
         onChanged: onSearchChanged ?? onChanged,
+        style: GoogleFonts.inriaSerif(
+          color: Colors.black87,
+          fontSize: 15,
+        ),
         decoration: InputDecoration(
           hintText: 'Rechercher un produit...',
-          hintStyle: GoogleFonts.openSans(
-            color: Colors.grey.shade400,
-            fontSize: 13,
+          hintStyle: GoogleFonts.inriaSerif(
+            color: Colors.grey.shade600,
+            fontSize: 15,
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: Colors.grey.shade400,
-            size: 20,
+            color: Colors.grey.shade800,
+            size: 22,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(

@@ -112,8 +112,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               // Titre
               Text(
                 'Commande confirmee !',
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -121,8 +121,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               const SizedBox(height: 8),
               Text(
                 'Merci pour votre commande',
-                style: GoogleFonts.openSans(
-                  fontSize: 15,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 17,
                   color: Colors.grey.shade600,
                 ),
               ),
@@ -143,8 +143,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                   children: [
                     Text(
                       'Numero de commande',
-                      style: GoogleFonts.openSans(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -153,8 +153,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                       fit: BoxFit.scaleDown,
                       child: Text(
                         orderNumber,
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF3B82F6),
                           letterSpacing: 0.5,
@@ -176,8 +176,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 ),
                 child: Text(
                   'Votre commande est en cours de preparation.',
-                  style: GoogleFonts.openSans(
-                    fontSize: 13,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 15,
                     color: const Color(0xFF059669),
                     fontWeight: FontWeight.w500,
                   ),
@@ -212,8 +212,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                         const SizedBox(height: 6),
                         Text(
                           'Carte de fidélité détectée !',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF5B21B6),
                           ),
@@ -226,7 +226,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                             const SizedBox(width: 6),
                             RichText(
                               text: TextSpan(
-                                style: GoogleFonts.openSans(fontSize: 13, color: const Color(0xFF5B21B6)),
+                                style: GoogleFonts.inriaSerif(fontSize: 15, color: const Color(0xFF5B21B6)),
                                 children: [
                                   const TextSpan(text: 'Vous gagnerez '),
                                   TextSpan(
@@ -241,8 +241,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                         const SizedBox(height: 4),
                         Text(
                           'Points ajoutés après livraison',
-                          style: GoogleFonts.openSans(
-                            fontSize: 11,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 13,
                             color: const Color(0xFF7C3AED).withOpacity(0.7),
                           ),
                         ),
@@ -329,8 +329,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     ),
                     child: Text(
                       'Retour a la boutique',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 17,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -370,8 +370,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
             const SizedBox(width: 10),
             Text(
               label,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -615,16 +615,16 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                   children: [
                     pw.Text(
                       shop['name']?.toString() ?? 'Boutique',
-                      style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
                     ),
                     if (shop['address'] != null)
-                      pw.Text(shop['address'].toString(), style: const pw.TextStyle(fontSize: 11)),
+                      pw.Text(shop['address'].toString(), style: const pw.TextStyle(fontSize: 13)),
                     if (shop['phone'] != null)
-                      pw.Text(shop['phone'].toString(), style: const pw.TextStyle(fontSize: 11)),
+                      pw.Text(shop['phone'].toString(), style: const pw.TextStyle(fontSize: 13)),
                     pw.SizedBox(height: 8),
                     pw.Text(
                       'RECU DE COMMANDE',
-                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -636,7 +636,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               _pdfInfoRow('Date', receipt['date']?.toString() ?? '-'),
               _pdfInfoRow('Statut', receipt['status']?.toString() ?? '-'),
               pw.SizedBox(height: 12),
-              pw.Text('CLIENT', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+              pw.Text('CLIENT', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 4),
               _pdfInfoRow('Nom', customer['name']?.toString() ?? '-'),
               _pdfInfoRow('Telephone', customer['phone']?.toString() ?? '-'),
@@ -686,10 +686,10 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('TOTAL', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('TOTAL', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
                     pw.Text(
                       '${receipt['total'] ?? '0'} FCFA',
-                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -703,7 +703,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               pw.Center(
                 child: pw.Text(
                   'Merci pour votre commande !',
-                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
                 ),
               ),
             ],
@@ -722,10 +722,10 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
         children: [
           pw.SizedBox(
             width: 120,
-            child: pw.Text(label, style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+            child: pw.Text(label, style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
           ),
           pw.Expanded(
-            child: pw.Text(value, style: const pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.right),
+            child: pw.Text(value, style: const pw.TextStyle(fontSize: 12), textAlign: pw.TextAlign.right),
           ),
         ],
       ),
@@ -738,7 +738,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
       child: pw.Text(
         text,
         style: pw.TextStyle(
-          fontSize: 10,
+          fontSize: 12,
           fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
         ),
         textAlign: center ? pw.TextAlign.center : pw.TextAlign.left,
@@ -822,8 +822,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 const SizedBox(height: 12),
                 Text(
                   message,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -849,8 +849,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                       ),
                       child: Text(
                         actionLabel,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -863,8 +863,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     onTap: () => Navigator.of(ctx).pop(),
                     child: Text(
                       'OK',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.white70,
                       ),
@@ -913,8 +913,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 const SizedBox(height: 16),
                 Text(
                   message,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -1039,8 +1039,8 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
               // Titre
               Text(
                 'Commande enregistree !',
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -1048,8 +1048,8 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
               const SizedBox(height: 8),
               Text(
                 'Votre commande a ete enregistree avec succes',
-                style: GoogleFonts.openSans(
-                  fontSize: 15,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 17,
                   color: Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
@@ -1075,8 +1075,8 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                         const SizedBox(width: 10),
                         Text(
                           'Recuperation en boutique',
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 17,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF059669),
                           ),
@@ -1102,8 +1102,8 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                                 widget.orderData!['pickupDate'],
                                 widget.orderData!['pickupTime'],
                               ),
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade800,
                               ),
@@ -1145,7 +1145,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                       icon: const Icon(Icons.card_giftcard, size: 20),
                       label: Text(
                         'Creer une carte de fidelite',
-                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFD946EF),
@@ -1177,8 +1177,8 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                     ),
                     child: Text(
                       'Retour a la boutique',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

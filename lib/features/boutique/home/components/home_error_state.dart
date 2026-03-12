@@ -24,8 +24,8 @@ class HomeErrorState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Erreur de chargement',
-              style: GoogleFonts.openSans(
-                fontSize: 18,
+              style: GoogleFonts.inriaSerif(
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -34,8 +34,8 @@ class HomeErrorState extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
                 errorMessage ?? 'Une erreur est survenue',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 16,
                   color: Colors.grey[600],
                 ),
                 textAlign: TextAlign.center,
