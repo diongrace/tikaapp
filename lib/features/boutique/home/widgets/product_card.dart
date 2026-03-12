@@ -68,25 +68,18 @@ class _ProductCardState extends State<ProductCard> {
         scale: _pressed ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 130),
         curve: Curves.easeInOut,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Zone image (~63% hauteur) ──────────────────────────
-              Expanded(
-                flex: 63,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Cadre image séparé ─────────────────────────────────
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                clipBehavior: Clip.hardEdge,
                 child: Stack(
                   children: [
                     // Image plein-bleed
@@ -97,10 +90,7 @@ class _ProductCardState extends State<ProductCard> {
                                 Colors.grey, BlendMode.saturation)
                             : const ColorFilter.mode(
                                 Colors.transparent, BlendMode.multiply),
-                        child: Container(
-                          color: const Color(0xFFF5F5F5),
-                          child: _buildImage(imgUrl),
-                        ),
+                        child: _buildImage(imgUrl),
                       ),
                     ),
 
@@ -190,89 +180,88 @@ class _ProductCardState extends State<ProductCard> {
                   ],
                 ),
               ),
+            ),
 
-              // ── Zone texte (~37% hauteur) ──────────────────────────
-              Expanded(
-                flex: 37,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Prix
-                      if (hasOldPrice && !outOfStock)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              '${_fmt(p['price'])} F',
-                              style: GoogleFonts.inriaSerif(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              '${_fmt(p['oldPrice'])} F',
-                              style: GoogleFonts.inriaSerif(
-                                fontSize: 11,
-                                color: Colors.grey.shade400,
-                                decoration: TextDecoration.lineThrough,
-                                decorationColor: Colors.grey.shade400,
-                              ),
-                            ),
-                          ],
-                        )
-                      else
+            // ── Infos texte libres sous le cadre ──────────────────
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 2, right: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Prix
+                  if (hasOldPrice && !outOfStock)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
                         Text(
                           '${_fmt(p['price'])} F',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: outOfStock
-                                ? Colors.grey.shade400
-                                : Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xFFE53935),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-
-                      const SizedBox(height: 2),
-
-                      // Nom
-                      Text(
-                        p['name'] ?? '',
-                        style: GoogleFonts.inriaSerif(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1C1C1E),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                      // Description / poids
-                      if (description != null && description.isNotEmpty) ...[
-                        const SizedBox(height: 2),
+                        const SizedBox(width: 6),
                         Text(
-                          description,
+                          '${_fmt(p['oldPrice'])} F',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 11,
-                            color: Colors.grey.shade500,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                            decoration: TextDecoration.lineThrough,
+                            decorationColor: Colors.grey.shade600,
+                            decorationThickness: 2.0,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ],
+                    )
+                  else
+                    Text(
+                      '${_fmt(p['price'])} F',
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: outOfStock
+                            ? Colors.grey.shade400
+                            : Colors.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                  const SizedBox(height: 2),
+
+                  // Nom
+                  Text(
+                    p['name'] ?? '',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color.fromARGB(255, 6, 6, 6),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+
+                  // Description / poids
+                  if (description != null && description.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey.shade500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
