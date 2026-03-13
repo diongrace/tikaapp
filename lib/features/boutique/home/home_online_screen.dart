@@ -404,12 +404,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // Afficher un indicateur de chargement élégant
     if (_isLoading) {
       return const ShopLoadingScreen();
     }
 
-    // Afficher un message d'erreur
     if (_hasError) {
       return HomeErrorState(
         errorMessage: _errorMessage,
@@ -417,7 +415,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Obtenir le thème de la boutique
     final shopTheme = _currentShop?.theme ?? ShopTheme.defaultTheme();
 
     return BoutiqueThemeProvider(
@@ -425,15 +422,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       child: Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
-        
         children: [
-          // Contenu scrollable
           Column(
             children: [
-              // Espace pour le header et la carte boutique
               const SizedBox(height: 220),
-
-              // Zone filtres — fond blanc avec bord supérieur arrondi
               Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -470,8 +462,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-
-              // Grille de produits
               Expanded(
                 child: _products.isEmpty
                     ? HomeEmptyState(
@@ -517,8 +507,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-
-          // Header fixe avec image de fond
           Positioned(
             top: 0,
             left: 0,
@@ -537,8 +525,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               },
             ),
           ),
-
-          // Carte d'informations boutique - Chevauche l'image
           Positioned(
             top: 110,
             left: 16,
@@ -553,11 +539,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               totalReviews: _currentShop?.totalReviews ?? 0,
             ),
           ),
-
         ],
       ),
-
-      // Bottom Navigation Bar
       bottomNavigationBar: HomeBottomNavigation(
         selectedIndex: _selectedNavIndex,
         currentShop: _currentShop,
@@ -677,3 +660,4 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 }
+

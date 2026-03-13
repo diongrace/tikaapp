@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/boutique_theme_provider.dart';
@@ -38,7 +38,7 @@ class FormFieldWidget extends StatelessWidget {
         Text(
           required ? '$label *' : label,
           style: GoogleFonts.inriaSerif(
-            fontSize: 16,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -67,10 +67,10 @@ class FormFieldWidget extends StatelessWidget {
                     return Text(
                       '$currentLength/$maxLength',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: currentLength == maxLength
                             ? const Color(0xFF4CAF50)
-                            : Colors.grey.shade600,
+                            : Colors.grey.shade800,
                       ),
                     );
                   }
@@ -78,8 +78,8 @@ class FormFieldWidget extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade400,
+                fontSize: 12,
+                color: Colors.grey.shade900,
               ),
               prefixIcon: Icon(icon, color: Colors.grey.shade600, size: 22),
               filled: true,
@@ -178,16 +178,16 @@ class StepIndicator extends StatelessWidget {
               child: Icon(
                 isActive ? Icons.check : _getIconForStep(step),
                 size: 24,
-                color: isActive ? Colors.white : Colors.grey.shade500,
+                color: isActive ? Colors.white : Colors.grey.shade800,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: GoogleFonts.inriaSerif(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                color: isActive ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade600,
+                color: isActive ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade800,
               ),
               textAlign: TextAlign.center,
             ),
@@ -250,8 +250,8 @@ class SummaryRow extends StatelessWidget {
               Text(
                 label,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                  color: Colors.grey.shade800,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -259,7 +259,7 @@ class SummaryRow extends StatelessWidget {
               Text(
                 value,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 12,
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
                 ),

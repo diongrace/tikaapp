@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -141,7 +141,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   Text(
                     'Recommander',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -150,7 +150,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   Text(
                     '#${order.orderNumber}',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Colors.white.withOpacity(0.85),
                     ),
                   ),
@@ -167,8 +167,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                     'Voulez-vous repasser la même commande ?',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
-                      color: Colors.grey.shade700,
+                      fontSize: 12,
+                      color: Colors.grey.shade900,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -176,8 +176,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                     'Les mêmes articles seront ajoutés à votre panier.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 13,
-                      color: Colors.grey.shade400,
+                      fontSize: 12,
+                      color: Colors.grey.shade900,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -192,7 +192,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                             side: BorderSide(color: Colors.grey.shade300),
                           ),
                           child: Text('Annuler',
-                            style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                            style: GoogleFonts.inriaSerif(color: Colors.grey.shade800, fontWeight: FontWeight.w500)),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -221,7 +221,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             ),
                             child: Text('Oui, commander',
-                              style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                              style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                         ),
                       ),
@@ -283,7 +283,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Voulez-vous annuler #${order.orderNumber} ?', style: GoogleFonts.inriaSerif(fontSize: 16)),
+            Text('Voulez-vous annuler #${order.orderNumber} ?', style: GoogleFonts.inriaSerif(fontSize: 12)),
             if (minutesLeft > 0) ...[
               const SizedBox(height: 8),
               Container(
@@ -294,7 +294,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 ),
                 child: Text(
                   'Temps restant: $minutesLeft min',
-                  style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inriaSerif(fontSize: 12, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -305,7 +305,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               maxLength: 500,
               decoration: InputDecoration(
                 hintText: 'Raison (optionnel)',
-                hintStyle: GoogleFonts.inriaSerif(fontSize: 15),
+                hintStyle: GoogleFonts.inriaSerif(fontSize: 12),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -389,7 +389,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       Text(
                         'Notez votre commande',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 18,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -398,7 +398,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       Text(
                         '#${order.orderNumber}',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: Colors.white.withOpacity(0.85),
                         ),
                       ),
@@ -435,7 +435,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           label,
                           key: ValueKey(label),
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 16,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFFF59E0B),
                           ),
@@ -447,10 +447,10 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       TextField(
                         controller: commentController,
                         maxLines: 3,
-                        style: GoogleFonts.inriaSerif(fontSize: 14),
+                        style: GoogleFonts.inriaSerif(fontSize: 12),
                         decoration: InputDecoration(
                           hintText: 'Partagez votre expérience... (optionnel)',
-                          hintStyle: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade400),
+                          hintStyle: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade900),
                           filled: true,
                           fillColor: Colors.grey.shade50,
                           contentPadding: const EdgeInsets.all(14),
@@ -482,7 +482,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                                 side: BorderSide(color: Colors.grey.shade300),
                               ),
                               child: Text('Annuler',
-                                style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                                style: GoogleFonts.inriaSerif(color: Colors.grey.shade800, fontWeight: FontWeight.w500)),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -511,7 +511,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 ),
                                 child: Text('Envoyer mon avis',
-                                  style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                  style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                               ),
                             ),
                           ),
@@ -580,7 +580,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             children: [
               const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3)),
               const SizedBox(height: 16),
-              Text('Chargement du recu...', style: GoogleFonts.inriaSerif(fontSize: 16)),
+              Text('Chargement du recu...', style: GoogleFonts.inriaSerif(fontSize: 12)),
             ],
           ),
         ),
@@ -869,7 +869,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   Text(
                     'Mes commandes',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1E293B),
                     ),
@@ -879,7 +879,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       '${_orders.length} commande${_orders.length > 1 ? 's' : ''}',
                       style: GoogleFonts.inriaSerif(
                         fontSize: 12,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade800,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -975,7 +975,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             Text(
               'Connexion impossible',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E293B),
               ),
@@ -984,8 +984,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             Text(
               _errorMessage ?? 'Vérifiez votre connexion internet',
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+                fontSize: 12,
+                color: Colors.grey.shade800,
               ),
               textAlign: TextAlign.center,
             ),
@@ -996,7 +996,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               label: Text(
                 'Réessayer',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1031,14 +1031,14 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               child: Icon(
                 Icons.receipt_long_rounded,
                 size: 56,
-                color: Colors.grey.shade400,
+                color: Colors.grey.shade900,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'Aucune commande',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E293B),
               ),
@@ -1048,8 +1048,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               'Vos commandes apparaîtront ici\naprès votre premier achat',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+                fontSize: 12,
+                color: Colors.grey.shade800,
                 height: 1.5,
               ),
             ),
@@ -1060,7 +1060,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               label: Text(
                 'Découvrir la boutique',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1103,9 +1103,9 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   Text(
                     'Voir plus de commandes',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],
@@ -1159,7 +1159,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       child: Icon(
                         statusInfo['icon'],
                         size: 20,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1170,7 +1170,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           Text(
                             '#${order.orderNumber}',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF1E293B),
                               letterSpacing: -0.3,
@@ -1184,8 +1184,8 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                               Text(
                                 _formatDate(order.createdAt),
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 13.5,
-                                  color: Colors.grey.shade500,
+                                  fontSize: 12,
+                                  color: Colors.grey.shade800,
                                 ),
                               ),
                             ],
@@ -1215,7 +1215,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           Text(
                             statusInfo['label'],
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: statusColor,
                             ),
@@ -1249,14 +1249,14 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                                   'Total',
                                   style: GoogleFonts.inriaSerif(
                                     fontSize: 12,
-                                    color: Colors.grey.shade500,
+                                    color: Colors.grey.shade800,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 Text(
                                   '${_formatAmount(order.totalAmount)} F',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 16,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF1E293B),
                                   ),
@@ -1282,7 +1282,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                                     'Articles',
                                     style: GoogleFonts.inriaSerif(
                                       fontSize: 12,
-                                      color: Colors.grey.shade500,
+                                      color: Colors.grey.shade800,
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,
@@ -1291,7 +1291,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                                   Text(
                                     '$itemCount produit${itemCount > 1 ? 's' : ''}',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: const Color(0xFF1E293B),
                                     ),
@@ -1318,9 +1318,9 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                             Text(
                               'Suivre',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade700,
+                                color: Colors.grey.shade900,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -1388,7 +1388,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
   }) {
     final Color fg = isDestructive
         ? const Color(0xFFEF4444)
-        : Colors.grey.shade600;
+        : Colors.grey.shade800;
     final Color bg = isDestructive
         ? const Color(0xFFFEF2F2)
         : Colors.grey.shade50;
@@ -1418,7 +1418,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   child: Text(
                     label,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 12.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: fg,
                     ),

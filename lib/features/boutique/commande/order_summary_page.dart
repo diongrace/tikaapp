@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../panier/cart_manager.dart';
 import '../../../core/services/boutique_theme_provider.dart';
+import '../../../core/utils/format_utils.dart';
 
 /// Page de résumé de commande avant confirmation finale
 class OrderSummaryPage extends StatelessWidget {
@@ -11,6 +12,8 @@ class OrderSummaryPage extends StatelessWidget {
   final String deliveryMode;
   final String? deliveryAddress;
   final String? paymentMethod;
+  final String? deliveryLabel;
+  final String? deliveryFeeLabel;
   final VoidCallback onConfirm;
   final VoidCallback onBack;
 
@@ -22,6 +25,8 @@ class OrderSummaryPage extends StatelessWidget {
     required this.deliveryMode,
     this.deliveryAddress,
     this.paymentMethod,
+    this.deliveryLabel,
+    this.deliveryFeeLabel,
     required this.onConfirm,
     required this.onBack,
   });
@@ -80,7 +85,7 @@ class OrderSummaryPage extends StatelessWidget {
                   Text(
                     'Résumé de la commande',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 19,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0D0D26),
                     ),
@@ -145,9 +150,9 @@ class OrderSummaryPage extends StatelessWidget {
                                     child: Text(
                                       'x${item['quantity']}',
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 14,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.grey.shade700,
+                                        color: Colors.grey.shade900,
                                       ),
                                     ),
                                   ),
@@ -162,7 +167,7 @@ class OrderSummaryPage extends StatelessWidget {
                                       Text(
                                         item['name'] ?? 'Produit',
                                         style: GoogleFonts.inriaSerif(
-                                          fontSize: 16,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w600,
                                           color: const Color(0xFF1A1A2E),
                                         ),
@@ -171,8 +176,8 @@ class OrderSummaryPage extends StatelessWidget {
                                         Text(
                                           'Taille : ${item['size']}',
                                           style: GoogleFonts.inriaSerif(
-                                            fontSize: 14,
-                                            color: Colors.grey.shade500,
+                                            fontSize: 12,
+                                            color: Colors.grey.shade800,
                                           ),
                                         ),
                                     ],
@@ -180,9 +185,9 @@ class OrderSummaryPage extends StatelessWidget {
                                 ),
                                 // Prix
                                 Text(
-                                  '${itemTotal.toStringAsFixed(0)} FCFA',
+                                  '${fmtAmount(itemTotal)} FCFA',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 16,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF0D0D26),
                                   ),
@@ -226,7 +231,7 @@ class OrderSummaryPage extends StatelessWidget {
                               deliveryMode == 'Livraison'
                                   ? Icons.local_shipping_outlined
                                   : Icons.storefront_outlined,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade800,
                               size: 20,
                             ),
                           ),
@@ -236,11 +241,12 @@ class OrderSummaryPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  deliveryMode == 'Livraison'
-                                      ? 'Livraison à domicile'
-                                      : 'Récupération en boutique',
+                                  deliveryLabel ??
+                                      (deliveryMode == 'Livraison'
+                                          ? 'Livraison à domicile'
+                                          : 'Récupération en boutique'),
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 16,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: const Color(0xFF1A1A2E),
                                   ),
@@ -250,8 +256,8 @@ class OrderSummaryPage extends StatelessWidget {
                                   Text(
                                     deliveryAddress!,
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 14,
-                                      color: Colors.grey.shade500,
+                                      fontSize: 12,
+                                      color: Colors.grey.shade800,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -260,22 +266,27 @@ class OrderSummaryPage extends StatelessWidget {
                             ),
                           ),
                           // Badge frais
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Frais variables',
-                              style: GoogleFonts.inriaSerif(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade600,
+                          if (deliveryFeeLabel != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: deliveryFeeLabel == 'Gratuit'
+                                    ? Colors.green.shade50
+                                    : Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                deliveryFeeLabel!,
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: deliveryFeeLabel == 'Gratuit'
+                                      ? Colors.green.shade700
+                                      : Colors.grey.shade800,
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -310,7 +321,7 @@ class OrderSummaryPage extends StatelessWidget {
                             ),
                             child: Icon(
                               _paymentIcon(paymentMethod),
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade800,
                               size: 20,
                             ),
                           ),
@@ -318,7 +329,7 @@ class OrderSummaryPage extends StatelessWidget {
                           Text(
                             _paymentLabel(paymentMethod),
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1A1A2E),
                             ),
@@ -388,18 +399,18 @@ class OrderSummaryPage extends StatelessWidget {
                           Text(
                             'Total à payer',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 17,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade800,
                             ),
                           ),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '${total.toStringAsFixed(0)}',
+                                fmtAmount(total),
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 28,
+                                  fontSize: sp(26, MediaQuery.of(context).size.width),
                                   fontWeight: FontWeight.w800,
                                   color: const Color(0xFF0D0D26),
                                   height: 1,
@@ -411,9 +422,9 @@ class OrderSummaryPage extends StatelessWidget {
                                 child: Text(
                                   'FCFA',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 15,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.grey.shade500,
+                                    color: Colors.grey.shade800,
                                   ),
                                 ),
                               ),
@@ -473,7 +484,7 @@ class OrderSummaryPage extends StatelessWidget {
                         Text(
                           'Confirmer la commande',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 18,
+                            fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
                             letterSpacing: 0.3,
@@ -494,9 +505,9 @@ class OrderSummaryPage extends StatelessWidget {
   Widget _sectionLabel(String label) => Text(
         label,
         style: GoogleFonts.inriaSerif(
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: Colors.grey.shade500,
+          color: Colors.grey.shade800,
           letterSpacing: 0.8,
         ),
       );
@@ -514,7 +525,7 @@ class OrderSummaryPage extends StatelessWidget {
             child: Text(
               text,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF1A1A2E),
               ),

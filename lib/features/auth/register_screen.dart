@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../core/messages/message_modal.dart';
@@ -174,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Text(
                     'Creer un compte',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 28,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -188,8 +188,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Text(
                     'Inscrivez-vous pour profiter de toutes les fonctionnalites',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
-                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -339,15 +339,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: RichText(
                           text: TextSpan(
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 15,
-                              color: Colors.grey.shade700,
+                              fontSize: 13,
+                              color: Colors.grey.shade900,
                             ),
                             children: [
                               const TextSpan(text: 'J\'accepte les '),
                               TextSpan(
                                 text: 'conditions d\'utilisation',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   color: const Color(0xFF8936A8),
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -356,7 +356,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               TextSpan(
                                 text: 'politique de confidentialite',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   color: const Color(0xFF8936A8),
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -397,7 +397,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         : Text(
                             'Creer mon compte',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 18,
+                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -413,8 +413,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       'Deja un compte ?',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                     TextButton(
@@ -431,7 +431,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Text(
                         'Se connecter',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 16,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF8936A8),
                         ),
@@ -464,7 +464,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Text(
           required ? '$label *' : '$label (optionnel)',
           style: GoogleFonts.inriaSerif(
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -488,8 +488,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade400,
+                fontSize: 13,
+                color: Colors.grey.shade900,
               ),
               prefixIcon: Icon(icon, color: Colors.grey.shade600, size: 22),
               filled: true,
@@ -539,7 +539,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Text(
           '$label *',
           style: GoogleFonts.inriaSerif(
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -563,18 +563,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade400,
+                fontSize: 13,
+                color: Colors.grey.shade900,
               ),
               prefixIcon: Icon(
                 Icons.lock_outline,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade800,
                 size: 22,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
                   obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade800,
                   size: 22,
                 ),
                 onPressed: onToggleObscure,

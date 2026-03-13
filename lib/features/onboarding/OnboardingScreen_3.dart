@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class OnboardingScreen3 extends StatelessWidget {
@@ -58,7 +58,7 @@ class OnboardingScreen3 extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inriaSerif(
                               color: Color(0xFF670C88),
-                              fontSize: 26,
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                               height: 1.0,
                             ),
@@ -102,7 +102,7 @@ class OnboardingScreen3 extends StatelessWidget {
                                 child: const Text(
                                   'suivant',
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
                                   ),

@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../services/models/shop_model.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../widgets/search_bar_widget.dart';
 import '../../commande/orders_list_api_page.dart';
 
@@ -61,7 +62,7 @@ class HomeDialogs {
                   Text(
                     'Rechercher un produit',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -90,8 +91,8 @@ class HomeDialogs {
                             Text(
                               'Aucun produit trouvé',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 15,
-                                color: Colors.grey.shade500,
+                                fontSize: 14,
+                                color: Colors.grey.shade800,
                               ),
                             ),
                           ],
@@ -125,12 +126,12 @@ class HomeDialogs {
                               ),
                               title: Text(
                                 p['name'] ?? '',
-                                style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600),
+                                style: GoogleFonts.inriaSerif(fontSize: 13, fontWeight: FontWeight.w600),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               subtitle: Text(
-                                '${p['price']} F',
+                                '${fmtAmount(p['price'])} F',
                                 style: GoogleFonts.inriaSerif(
                                   fontSize: 13,
                                   color: currentShop?.theme?.primary ?? const Color(0xFF8936A8),
@@ -188,7 +189,7 @@ class HomeDialogs {
             Text(
               'Actions rapides',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -319,7 +320,7 @@ class _ActionButton extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.inriaSerif(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),

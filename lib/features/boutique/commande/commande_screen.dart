@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -79,6 +79,14 @@ class _CommandeScreenState extends State<CommandeScreen> {
   DateTime? _selectedPickupDate; // Date de récupération (pour À emporter)
   TimeOfDay? _selectedPickupTime; // Heure de récupération (pour À emporter)
 
+  // Zones de livraison du vendeur
+  List<DeliveryZone> _deliveryZones = [];
+  DeliveryZone? _selectedZone;
+  bool _isLoadingZones = false;
+
+  // Sous-mode de livraison : 'yango' ou 'vendeur'
+  String? _selectedLivraisonProvider;
+
   // Étape 3 - Méthode de paiement
   String _selectedPaymentMethod = 'especes'; // "especes", "mobile_money", "carte"
 
@@ -90,6 +98,9 @@ class _CommandeScreenState extends State<CommandeScreen> {
 
   /// Charger les infos client et adresses enregistrées
   Future<void> _loadSavedData() async {
+    // Charger les zones de livraison du vendeur
+    _loadDeliveryZones();
+
     // Charger le nom et téléphone sauvegardés
     final savedName = await StorageService.getCustomerName();
     final savedPhone = await StorageService.getCustomerPhone();
@@ -143,7 +154,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           children: [
             Text(
               'Choisir une adresse',
-              style: GoogleFonts.inriaSerif(fontSize: 20, fontWeight: FontWeight.bold),
+              style: GoogleFonts.inriaSerif(fontSize: 12, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ...addresses.map((addr) {
@@ -173,12 +184,12 @@ class _CommandeScreenState extends State<CommandeScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text('Par défaut',
-                            style: GoogleFonts.inriaSerif(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600)),
+                            style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ],
                 ),
-                subtitle: Text(address, style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade600)),
+                subtitle: Text(address, style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade800)),
                 onTap: () {
                   setState(() {
                     _addressController.text = address;
@@ -206,9 +217,9 @@ class _CommandeScreenState extends State<CommandeScreen> {
     if (_currentStep == 0) {
       // Valider le formulaire étape 1
       if (_formKey.currentState!.validate()) {
-        setState(() {
-          _currentStep++;
-        });
+        setState(() { _currentStep++; });
+        // Recharger les zones si pas encore disponibles
+        if (_deliveryZones.isEmpty && !_isLoadingZones) _loadDeliveryZones();
       }
     } else if (_currentStep == 1) {
       // Vérifier qu'un mode de livraison est sélectionné
@@ -217,22 +228,12 @@ class _CommandeScreenState extends State<CommandeScreen> {
         return;
       }
 
-      // Si Livraison, vérifier l'adresse
-      if (_selectedDeliveryMode == 'Livraison' && _addressController.text.isEmpty) {
-        showErrorModal(context, 'Veuillez entrer votre adresse de livraison');
+      // Si Livraison avec zones disponibles, vérifier le sous-mode
+      if (_selectedDeliveryMode == 'Livraison' &&
+          _deliveryZones.isNotEmpty &&
+          _selectedLivraisonProvider == null) {
+        showErrorModal(context, 'Veuillez choisir un mode de livraison (Yango ou zone vendeur)');
         return;
-      }
-
-      // Si À emporter, vérifier date/heure puis passer à l'étape paiement
-      if (_selectedDeliveryMode == 'À emporter') {
-        if (_selectedPickupDate == null) {
-          showErrorModal(context, 'Veuillez sélectionner la date de récupération');
-          return;
-        }
-        if (_selectedPickupTime == null) {
-          showErrorModal(context, 'Veuillez sélectionner l\'heure de récupération');
-          return;
-        }
       }
 
       // Passer à l'étape 3 (paiement) — pour Livraison ET À emporter
@@ -411,6 +412,22 @@ class _CommandeScreenState extends State<CommandeScreen> {
             deliveryMode: _selectedDeliveryMode ?? 'Livraison',
             deliveryAddress: _addressController.text.isNotEmpty ? _addressController.text : null,
             paymentMethod: _selectedPaymentMethod,
+            deliveryLabel: _selectedDeliveryMode == 'À emporter'
+                ? 'Récupération en boutique'
+                : _selectedLivraisonProvider == 'yango'
+                    ? 'Yango Livraison'
+                    : _selectedZone != null
+                        ? _selectedZone!.name
+                        : 'Livraison à domicile',
+            deliveryFeeLabel: _selectedDeliveryMode == 'À emporter'
+                ? 'Gratuit'
+                : _selectedLivraisonProvider == 'yango'
+                    ? 'Frais variables'
+                    : _selectedZone != null
+                        ? (_selectedZone!.deliveryFee == 0
+                            ? 'Gratuit'
+                            : '${_selectedZone!.deliveryFee.toInt()} F CFA')
+                        : null,
             onConfirm: () {
               // Fermer la page de résumé
               Navigator.of(context).pop();
@@ -449,7 +466,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
       final totalAmount = _cartManager.totalPrice.toDouble();
 
       String? deliveryAddress;
-      if (_selectedDeliveryMode == 'Livraison' && _addressController.text.isNotEmpty) {
+      if (_selectedDeliveryMode == 'Livraison' &&
+          _addressController.text.isNotEmpty) {
         deliveryAddress = _addressController.text;
       }
 
@@ -497,6 +515,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
               pickupTime: _selectedPickupTime != null
                   ? '${_selectedPickupTime!.hour.toString().padLeft(2, '0')}:${_selectedPickupTime!.minute.toString().padLeft(2, '0')}'
                   : null,
+              deliveryZoneId: (_selectedLivraisonProvider?.startsWith('vendeur_') == true) ? _selectedZone?.id : null,
               onPaymentSuccess: (waveResponse) {
                 print('✅ Wave: commande créée + preuve soumise');
               },
@@ -580,6 +599,20 @@ class _CommandeScreenState extends State<CommandeScreen> {
     }
   }
 
+  /// Charger les zones de livraison
+  Future<void> _loadDeliveryZones() async {
+    if (!mounted) return;
+    setState(() => _isLoadingZones = true);
+    try {
+      final zones = await ShopService.getDeliveryZones(widget.shopId);
+      print('🚚 Zones: ${zones.length} → ${zones.map((z) => z.name).toList()}');
+      if (mounted) setState(() { _deliveryZones = zones; _isLoadingZones = false; });
+    } catch (e) {
+      print('❌ Erreur zones: $e');
+      if (mounted) setState(() => _isLoadingZones = false);
+    }
+  }
+
   /// Créer la commande via l'API
   /// LOGIQUE EXACTE: AVEC payment_method (docs-api-flutter)
   void _createOrder() async {
@@ -605,7 +638,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
 
       // Adresse de livraison (si applicable)
       String? deliveryAddress;
-      if (_selectedDeliveryMode == 'Livraison' && _addressController.text.isNotEmpty) {
+      if (_selectedDeliveryMode == 'Livraison' &&
+          _addressController.text.isNotEmpty) {
         deliveryAddress = _addressController.text;
         print('📍 Adresse: $deliveryAddress');
       }
@@ -644,6 +678,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         loyaltyDiscount: widget.loyaltyDiscount,
         pickupDate: pickupDate,
         pickupTime: pickupTime,
+        deliveryZoneId: (_selectedLivraisonProvider?.startsWith('vendeur_') == true) ? _selectedZone?.id : null,
       );
 
       print('✅ Commande créée !');
@@ -762,7 +797,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   Text(
                     'Finaliser la commande',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 22,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -859,9 +894,9 @@ class _CommandeScreenState extends State<CommandeScreen> {
                               Text(
                                 'Retour',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 17,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade700,
+                                  color: Colors.grey.shade900,
                                 ),
                               ),
                             ],
@@ -893,7 +928,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                                 ? 'Valider la commande'
                                 : 'Continuer',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 17,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -936,9 +971,9 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 : Text(
                     '$step',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isActive ? Colors.white : Colors.grey.shade500,
+                      color: isActive ? Colors.white : Colors.grey.shade800,
                     ),
                   ),
           ),
@@ -947,9 +982,9 @@ class _CommandeScreenState extends State<CommandeScreen> {
         Text(
           label,
           style: GoogleFonts.inriaSerif(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-            color: isActive ? _primaryColor : Colors.grey.shade500,
+            color: isActive ? _primaryColor : Colors.grey.shade800,
           ),
         ),
       ],
@@ -966,7 +1001,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           Text(
             'Vos informations',
             style: GoogleFonts.inriaSerif(
-              fontSize: 22,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1045,18 +1080,18 @@ class _CommandeScreenState extends State<CommandeScreen> {
         Text(
           'Mode de livraison',
           style: GoogleFonts.inriaSerif(
-            fontSize: 22,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 20),
 
-        // Option Livraison à domicile
+        // Option Livraison
         _buildDeliveryOption(
           id: 'Livraison',
           icon: Icons.delivery_dining,
-          title: 'Livraison à domicile',
-          description: 'Nous livrons à votre adresse',
+          title: 'Livraison',
+          description: 'Livraison à votre adresse',
         ),
         const SizedBox(height: 12),
 
@@ -1068,162 +1103,123 @@ class _CommandeScreenState extends State<CommandeScreen> {
           description: 'Récupérer en boutique',
         ),
 
-        // Si Livraison sélectionnée, afficher champ adresse
-        if (_selectedDeliveryMode == 'Livraison') ...[
+        // ── Sous-options Livraison (seulement si le vendeur a des zones) ───
+        if (_selectedDeliveryMode == 'Livraison' &&
+            (_isLoadingZones || _deliveryZones.isNotEmpty)) ...[
           const SizedBox(height: 20),
-          _buildAddressField(required: true),
-        ],
-
-        // Si À emporter sélectionné, afficher date/heure de récupération
-        if (_selectedDeliveryMode == 'À emporter') ...[
-          const SizedBox(height: 28),
           Text(
-            'Quand souhaitez-vous récupérer votre commande ?',
+            'Choisissez votre livreur',
             style: GoogleFonts.inriaSerif(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          // Sélection de date
-          GestureDetector(
-            onTap: () => _selectPickupDate(),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _selectedPickupDate != null
-                      ? _primaryColor
-                      : Colors.grey.shade300,
-                  width: _selectedPickupDate != null ? 2 : 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    color: _selectedPickupDate != null
-                        ? _primaryColor
-                        : Colors.grey.shade600,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Date de récupération',
-                          style: GoogleFonts.inriaSerif(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatDate(_selectedPickupDate),
-                          style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: _selectedPickupDate != null
-                                ? Colors.black87
-                                : Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey.shade400,
-                  ),
-                ],
-              ),
-            ),
+          // ── Yango ──────────────────────────────────────────────────────────
+          _buildLivraisonProviderCard(
+            id: 'yango',
+            icon: Icons.two_wheeler_rounded,
+            title: 'Livraison Yango',
+            subtitle: 'Frais variables · selon le chauffeur',
+            color: const Color(0xFFFFD600),
+            iconColor: Colors.black87,
           ),
+          const SizedBox(height: 10),
+
+          // ── Zones vendeur ──────────────────────────────────────────────────
+          if (_isLoadingZones)
+            Center(child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: _primaryColor)),
+            ))
+          else ...[
+            ..._deliveryZones.map((zone) {
+              final fee = zone.deliveryFee == 0
+                  ? 'Livraison gratuite'
+                  : '${zone.deliveryFee.toInt()} F CFA';
+              final sub = zone.estimatedTime != null ? '$fee · ${zone.estimatedTime}' : fee;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildLivraisonProviderCard(
+                  id: 'vendeur_${zone.id}',
+                  icon: Icons.location_on_rounded,
+                  title: zone.name,
+                  subtitle: sub,
+                  color: _primaryColor,
+                  iconColor: Colors.white,
+                  onTap: () => setState(() {
+                    _selectedLivraisonProvider = 'vendeur_${zone.id}';
+                    _selectedZone = zone;
+                    _addressController.text = zone.name;
+                  }),
+                ),
+              );
+            }),
+          ],
 
           const SizedBox(height: 16),
-
-          // Sélection d'heure
-          GestureDetector(
-            onTap: () => _selectPickupTime(),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _selectedPickupTime != null
-                      ? _primaryColor
-                      : Colors.grey.shade300,
-                  width: _selectedPickupTime != null ? 2 : 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.access_time_outlined,
-                    color: _selectedPickupTime != null
-                        ? _primaryColor
-                        : Colors.grey.shade600,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Heure de récupération',
-                          style: GoogleFonts.inriaSerif(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatTime(_selectedPickupTime),
-                          style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: _selectedPickupTime != null
-                                ? Colors.black87
-                                : Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey.shade400,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildAddressField(required: false),
         ],
+
       ],
+    );
+  }
+
+  Widget _buildLivraisonProviderCard({
+    required String id,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required Color iconColor,
+    VoidCallback? onTap,
+  }) {
+    final isSelected = _selectedLivraisonProvider == id;
+    return GestureDetector(
+      onTap: onTap ?? () => setState(() {
+        _selectedLivraisonProvider = id;
+        if (id == 'yango') {
+          _selectedZone = null;
+          _addressController.clear();
+        }
+      }),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.08) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: isSelected ? color : Colors.grey.shade200, width: isSelected ? 2 : 1),
+          boxShadow: [BoxShadow(color: isSelected ? color.withOpacity(0.15) : Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 3))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(color: isSelected ? color : Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
+              child: Icon(icon, color: isSelected ? iconColor : Colors.grey.shade700, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: GoogleFonts.inriaSerif(fontSize: 13, fontWeight: FontWeight.w700, color: isSelected ? color : Colors.black87)),
+                  Text(subtitle, style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade600)),
+                ],
+              ),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: isSelected
+                  ? Icon(Icons.check_circle_rounded, color: color, size: 22, key: ValueKey('sel_$id'))
+                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 22, key: ValueKey('unsel_$id')),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1235,7 +1231,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         Text(
           'Méthode de paiement',
           style: GoogleFonts.inriaSerif(
-            fontSize: 22,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -1383,7 +1379,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                       Text(
                         title,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 17,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: isSelected ? color : Colors.black87,
                         ),
@@ -1412,8 +1408,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   Text(
                     description,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],
@@ -1438,88 +1434,47 @@ class _CommandeScreenState extends State<CommandeScreen> {
     required String description,
   }) {
     final isSelected = _selectedDeliveryMode == id;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedDeliveryMode = id;
-        });
-      },
+      onTap: () => setState(() {
+        _selectedDeliveryMode = id;
+        _selectedLivraisonProvider = null;
+        _selectedZone = null;
+      }),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
-                  colors: [
-                    _primaryColor.withOpacity(0.10),
-                    _primaryColor.withOpacity(0.04),
-                  ],
+                  colors: [_primaryColor.withOpacity(0.10), _primaryColor.withOpacity(0.04)],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 )
               : null,
           color: isSelected ? null : Colors.white,
-          border: Border.all(
-            color: isSelected ? _primaryColor : Colors.grey.shade200,
-            width: isSelected ? 2 : 1,
-          ),
+          border: Border.all(color: isSelected ? _primaryColor : Colors.grey.shade200, width: isSelected ? 2 : 1),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? _primaryColor.withOpacity(0.15)
-                  : Colors.black.withOpacity(0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: isSelected ? _primaryColor.withOpacity(0.15) : Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 52, height: 52,
               decoration: BoxDecoration(
                 color: isSelected ? _primaryColor : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(14),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: _primaryColor.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ]
-                    : [],
+                boxShadow: isSelected ? [BoxShadow(color: _primaryColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))] : [],
               ),
-              child: Icon(
-                icon,
-                color: isSelected ? Colors.white : Colors.grey.shade400,
-                size: 26,
-              ),
+              child: Icon(icon, color: isSelected ? Colors.white : Colors.grey.shade900, size: 26),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? _primaryColor : Colors.black87,
-                    ),
-                  ),
+                  Text(title, style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: isSelected ? _primaryColor : Colors.black87)),
                   const SizedBox(height: 3),
-                  Text(
-                    description,
-                    style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
+                  Text(description, style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade800)),
                 ],
               ),
             ),
@@ -1563,7 +1518,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   Text(
                     'Utiliser une adresse enregistrée',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
+                      fontSize: 12,
                       color: _primaryColor,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1661,7 +1616,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
               ),
               child: Icon(
                 icon,
-                color: isSelected ? Colors.white : Colors.grey.shade400,
+                color: isSelected ? Colors.white : Colors.grey.shade900,
                 size: 26,
               ),
             ),
@@ -1673,7 +1628,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   Text(
                     title,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: isSelected ? _primaryColor : Colors.black87,
                     ),
@@ -1682,8 +1637,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                   Text(
                     description,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../services/models/shop_model.dart';
 
@@ -134,7 +134,7 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
             Text(
               'Aucun produit disponible',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -148,8 +148,8 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
                   ? 'Aucun produit ne correspond à votre recherche'
                   : '${widget.shop?.name ?? "Cette boutique"} n\'a pas encore ajouté de produits',
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey[600],
+                fontSize: 14,
+                color: Colors.grey[800],
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -182,7 +182,7 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
                     Text(
                       'Essayez une autre recherche',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: widget.primaryColor,
                       ),

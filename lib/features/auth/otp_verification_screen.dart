@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
@@ -282,7 +282,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               Text(
                 'Vérification',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 30,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -294,8 +294,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               Text(
                 'Entrez le code à 6 chiffres envoyé au',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                  color: Colors.grey.shade800,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -303,7 +303,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               Text(
                 '+225 ${widget.phone}',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 18,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF8936A8),
                 ),
@@ -350,7 +350,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                         ),
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 26,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF8936A8),
                         ),
@@ -367,8 +367,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 Text(
                   'Renvoyer le code dans $_resendSeconds s',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
+                    fontSize: 13,
+                    color: Colors.grey.shade800,
                   ),
                 ),
 
@@ -379,7 +379,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   child: Text(
                     'Renvoyer le code',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF8936A8),
                     ),
@@ -414,7 +414,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       : Text(
                           'Vérifier',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 18,
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -442,7 +442,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       child: Text(
                         'Si vous ne recevez pas le code, vérifiez vos SMS ou attendez quelques instants.',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: Colors.blue.shade700,
                         ),
                       ),

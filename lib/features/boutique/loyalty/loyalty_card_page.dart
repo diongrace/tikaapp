@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../services/loyalty_service.dart';
@@ -99,7 +99,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             const SizedBox(width: 10),
             Text(
               'Supprimer la carte ?',
-              style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -109,7 +109,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
           children: [
             Text(
               'Vous allez supprimer votre carte de fidélité pour ${_card.shopName}.',
-              style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.black87),
+              style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.black87),
             ),
             const SizedBox(height: 10),
             Container(
@@ -125,7 +125,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                   Expanded(
                     child: Text(
                       'Vos ${_card.points} points seront perdus définitivement.',
-                      style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFFEF4444)),
+                      style: GoogleFonts.inriaSerif(fontSize: 13, color: const Color(0xFFEF4444)),
                     ),
                   ),
                 ],
@@ -136,7 +136,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Annuler', style: GoogleFonts.inriaSerif(color: Colors.grey.shade600)),
+            child: Text('Annuler', style: GoogleFonts.inriaSerif(color: Colors.grey.shade800)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -265,7 +265,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                         Text(
                           'Ma carte de fidélité',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.w800,
                             color: const Color(0xFF0D0D26),
                             letterSpacing: -0.4,
@@ -274,8 +274,8 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                         Text(
                           _card.shopName,
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 14,
-                            color: Colors.grey[500],
+                            fontSize: 13,
+                            color: Colors.grey[800],
                           ),
                         ),
                       ],
@@ -393,7 +393,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                               Text(
                                 'Retour à la boutique',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
@@ -441,7 +441,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                               Text(
                                 'Supprimer la carte',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFFEF4444),
                                 ),
@@ -542,7 +542,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           Text(
                             'Tika',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 26,
+                              fontSize: 20,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                               letterSpacing: -0.5,
@@ -573,7 +573,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                             Text(
                               _card.tierLabel,
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
                               ),
@@ -589,7 +589,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                   Text(
                     'BOUTIQUE',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: Colors.white.withOpacity(0.60),
                       letterSpacing: 1.2,
                     ),
@@ -598,7 +598,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                   Text(
                     _card.shopName,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 19,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -620,7 +620,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           Text(
                             'NUMÉRO DE CARTE',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 11,
+                              fontSize: 12,
                               color: Colors.white.withOpacity(0.60),
                               letterSpacing: 1.0,
                             ),
@@ -629,7 +629,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           Text(
                             _card.cardNumber,
                             style: GoogleFonts.robotoMono(
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                               letterSpacing: 1.5,
@@ -643,7 +643,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           Text(
                             'POINTS',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 11,
+                              fontSize: 12,
                               color: Colors.white.withOpacity(0.60),
                               letterSpacing: 1.0,
                             ),
@@ -651,7 +651,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           Text(
                             '${_card.points}',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 42,
+                              fontSize: 20,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                               height: 1.0,
@@ -760,7 +760,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
           Text(
             value,
             style: GoogleFonts.inriaSerif(
-              fontSize: 19,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF0D0D26),
             ),
@@ -771,7 +771,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             label,
             style: GoogleFonts.inriaSerif(
               fontSize: 13,
-              color: Colors.grey[500],
+              color: Colors.grey[800],
             ),
           ),
         ],
@@ -822,7 +822,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               Text(
                 'Mon QR Code',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),
                 ),
@@ -861,8 +861,8 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             'Scannez ce code en boutique pour cumuler vos points',
             textAlign: TextAlign.center,
             style: GoogleFonts.inriaSerif(
-              fontSize: 14,
-              color: Colors.grey.shade500,
+              fontSize: 13,
+              color: Colors.grey.shade800,
             ),
           ),
           if (_card.pinCodeHint != null) ...[
@@ -883,7 +883,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                     child: Text(
                       _card.pinCodeHint!,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFFE65100),
                       ),
@@ -939,7 +939,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               Text(
                 'Récompenses',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),
                 ),
@@ -961,7 +961,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   'Aucune recompense disponible pour le moment',
-                  style: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey[400]),
+                  style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey[900]),
                 ),
               ),
             )
@@ -1003,7 +1003,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 Text(
                   reward.name,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1E1E2E),
                   ),
@@ -1011,7 +1011,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 if (reward.description != null)
                   Text(
                     reward.description!,
-                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey[500]),
+                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey[800]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1045,9 +1045,9 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
           Text(
             '${reward.pointsRequired} pts',
             style: GoogleFonts.inriaSerif(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+              color: Colors.grey[800],
             ),
           ),
         ],
@@ -1106,7 +1106,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               Text(
                 'Historique récent',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),
                 ),
@@ -1128,7 +1128,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   'Aucune transaction pour le moment',
-                  style: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey[400]),
+                  style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey[900]),
                 ),
               ),
             )
@@ -1170,7 +1170,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 Text(
                   tx.typeLabel.isNotEmpty ? tx.typeLabel : tx.type,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1E1E2E),
                   ),
@@ -1178,7 +1178,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 if (tx.description != null)
                   Text(
                     tx.description!,
-                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey[500]),
+                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey[800]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1191,19 +1191,19 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               Text(
                 tx.pointsDisplay.isNotEmpty ? tx.pointsDisplay : '${isPositive ? "+" : ""}${tx.points}',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
               ),
               Text(
                 tx.createdAtHuman.isNotEmpty ? tx.createdAtHuman : tx.createdAt,
-                style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey[400]),
+                style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey[900]),
               ),
               if (tx.balanceAfter > 0)
                 Text(
                   'Solde: ${tx.balanceAfter} pts',
-                  style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey[400]),
+                  style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey[900]),
                 ),
             ],
           ),
@@ -1257,7 +1257,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               Text(
                 'Statistiques globales',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),
                 ),
@@ -1344,7 +1344,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               Text(
                 'Informations',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),
                 ),
@@ -1392,8 +1392,8 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         Text(
           label,
           style: GoogleFonts.inriaSerif(
-            fontSize: 15,
-            color: Colors.grey.shade500,
+            fontSize: 14,
+            color: Colors.grey.shade800,
           ),
         ),
         Flexible(
@@ -1401,7 +1401,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             value,
             textAlign: TextAlign.right,
             style: GoogleFonts.inriaSerif(
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF1E1E2E),
             ),

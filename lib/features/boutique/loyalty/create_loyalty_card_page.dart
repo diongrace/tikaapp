@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'loyalty_card_page.dart';
 import '../../../services/loyalty_service.dart';
@@ -126,7 +126,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             Text(
               'Connexion requise',
               style: GoogleFonts.inriaSerif(
-                fontSize: 19,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E293B),
               ),
@@ -135,8 +135,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             Text(
               'Vous devez être connecté pour créer une carte de fidélité.',
               style: GoogleFonts.inriaSerif(
-                fontSize: 15,
-                color: Colors.grey.shade600,
+                fontSize: 14,
+                color: Colors.grey.shade800,
               ),
               textAlign: TextAlign.center,
             ),
@@ -151,7 +151,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             child: Text(
               'Annuler',
               style: GoogleFonts.inriaSerif(
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade800,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -303,7 +303,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             Text(
               'Carte de fidelite',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E293B),
               ),
@@ -311,8 +311,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
             Text(
               widget.boutiqueName,
               style: GoogleFonts.inriaSerif(
-                fontSize: 14,
-                color: Colors.grey.shade500,
+                fontSize: 13,
+                color: Colors.grey.shade800,
               ),
             ),
           ],
@@ -366,7 +366,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                             Text(
                               'Programme Fidelite',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
@@ -375,7 +375,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                             Text(
                               'Rejoignez-nous et profitez d\'avantages exclusifs',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
+                                fontSize: 13,
                                 color: Colors.white.withOpacity(0.7),
                               ),
                             ),
@@ -424,7 +424,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                       Text(
                         'Vos avantages',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 17,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1E293B),
                         ),
@@ -491,7 +491,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                         Text(
                           'Code PIN automatique',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1E40AF),
                           ),
@@ -544,7 +544,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                             Text(
                               'Creer ma carte',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 17,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -570,7 +570,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                     ),
                   );
                 },
-                style: TextButton.styleFrom(foregroundColor: Colors.grey.shade600),
+                style: TextButton.styleFrom(foregroundColor: Colors.grey.shade800),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -579,9 +579,9 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                     Text(
                       'Retour a la boutique',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                   ],
@@ -621,7 +621,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                         Text(
                           'Vos donnees sont protegees',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF166534),
                           ),
@@ -692,7 +692,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
               Text(
                 title,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1E293B),
                 ),
@@ -701,7 +701,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                 subtitle,
                 style: GoogleFonts.inriaSerif(
                   fontSize: 13,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade800,
                 ),
               ),
             ],

@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -113,7 +113,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               Text(
                 'Commande confirmee !',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -122,8 +122,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               Text(
                 'Merci pour votre commande',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
-                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                  color: Colors.grey.shade800,
                 ),
               ),
               const SizedBox(height: 28),
@@ -144,8 +144,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     Text(
                       'Numero de commande',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
-                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -154,7 +154,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                       child: Text(
                         orderNumber,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF3B82F6),
                           letterSpacing: 0.5,
@@ -177,7 +177,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 child: Text(
                   'Votre commande est en cours de preparation.',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 15,
+                    fontSize: 14,
                     color: const Color(0xFF059669),
                     fontWeight: FontWeight.w500,
                   ),
@@ -213,7 +213,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                         Text(
                           'Carte de fidélité détectée !',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF5B21B6),
                           ),
@@ -226,7 +226,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                             const SizedBox(width: 6),
                             RichText(
                               text: TextSpan(
-                                style: GoogleFonts.inriaSerif(fontSize: 15, color: const Color(0xFF5B21B6)),
+                                style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF5B21B6)),
                                 children: [
                                   const TextSpan(text: 'Vous gagnerez '),
                                   TextSpan(
@@ -294,9 +294,9 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 ),
                 const SizedBox(height: 12),
 
-                // Telecharger le recu
+                // Télécharger le reçu
                 _buildActionButton(
-                  label: 'Telecharger le recu',
+                  label: 'Télécharger le reçu',
                   icon: Icons.download,
                   color: const Color(0xFF10B981),
                   onPressed: () => _downloadReceipt(),
@@ -321,7 +321,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                       Navigator.of(context).pop();
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.grey.shade700,
+                      foregroundColor: Colors.grey.shade900,
                       side: BorderSide(color: Colors.grey.shade300, width: 1.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -330,7 +330,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     child: Text(
                       'Retour a la boutique',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 17,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -371,7 +371,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
             Text(
               label,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -615,7 +615,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                   children: [
                     pw.Text(
                       shop['name']?.toString() ?? 'Boutique',
-                      style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
                     ),
                     if (shop['address'] != null)
                       pw.Text(shop['address'].toString(), style: const pw.TextStyle(fontSize: 13)),
@@ -624,7 +624,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     pw.SizedBox(height: 8),
                     pw.Text(
                       'RECU DE COMMANDE',
-                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -686,10 +686,10 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('TOTAL', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('TOTAL', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
                     pw.Text(
                       '${receipt['total'] ?? '0'} FCFA',
-                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -703,7 +703,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               pw.Center(
                 child: pw.Text(
                   'Merci pour votre commande !',
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
                 ),
               ),
             ],
@@ -748,7 +748,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
 
   String _formatPaymentMethod(String? method) {
     switch (method) {
-      case 'especes': return 'Especes';
+      case 'especes': return 'Espèces';
       case 'mobile_money': return 'Mobile Money';
       case 'wave': return 'Wave';
       case 'carte': return 'Carte bancaire';
@@ -759,8 +759,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
   String _formatPaymentStatus(String? status) {
     switch (status) {
       case 'pending': return 'En attente';
-      case 'paid': return 'Paye';
-      case 'failed': return 'Echoue';
+      case 'paid': return 'Payé';
+      case 'failed': return 'Échoué';
       default: return status ?? '-';
     }
   }
@@ -823,7 +823,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 Text(
                   message,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -850,7 +850,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                       child: Text(
                         actionLabel,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -864,7 +864,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     child: Text(
                       'OK',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white70,
                       ),
@@ -914,7 +914,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 Text(
                   message,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -1040,7 +1040,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
               Text(
                 'Commande enregistree !',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -1049,8 +1049,8 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
               Text(
                 'Votre commande a ete enregistree avec succes',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
-                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                  color: Colors.grey.shade800,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1074,9 +1074,9 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                         Icon(Icons.store, color: const Color(0xFF059669), size: 22),
                         const SizedBox(width: 10),
                         Text(
-                          'Recuperation en boutique',
+                          'Récupération en boutique',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF059669),
                           ),
@@ -1103,7 +1103,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                                 widget.orderData!['pickupTime'],
                               ),
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade800,
                               ),
@@ -1145,7 +1145,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                       icon: const Icon(Icons.card_giftcard, size: 20),
                       label: Text(
                         'Creer une carte de fidelite',
-                        style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFD946EF),
@@ -1178,7 +1178,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                     child: Text(
                       'Retour a la boutique',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 17,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

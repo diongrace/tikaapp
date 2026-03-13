@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/support_service.dart';
 import '../../../services/models/support_model.dart';
@@ -120,7 +120,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                     child: Text(
                       'Mes tickets',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -189,7 +189,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             Text(
               'Aucun ticket',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -199,8 +199,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
               'Vous n\'avez pas encore cree de ticket de support.\nBesoin d\'aide ? Creez un nouveau ticket !',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+                fontSize: 14,
+                color: Colors.grey.shade800,
               ),
             ),
           ],
@@ -221,7 +221,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             Text(
               'Erreur de chargement',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -230,8 +230,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
               _error ?? '',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+                fontSize: 14,
+                color: Colors.grey.shade800,
               ),
             ),
             const SizedBox(height: 24),
@@ -294,9 +294,9 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   Text(
                     '#${ticket.reference}',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade500,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                   const Spacer(),
@@ -316,7 +316,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                       Text(
                         ticket.statusLabel,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: statusColor,
                         ),
@@ -333,7 +333,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             Text(
               ticket.subject,
               style: GoogleFonts.inriaSerif(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
@@ -347,8 +347,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             Text(
               ticket.message,
               style: GoogleFonts.inriaSerif(
-                fontSize: 15,
-                color: Colors.grey.shade600,
+                fontSize: 14,
+                color: Colors.grey.shade800,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -382,8 +382,8 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                 Text(
                   _formatDate(ticket.createdAt),
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 14,
-                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                    color: Colors.grey.shade800,
                   ),
                 ),
               ],
@@ -399,7 +399,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   Text(
                     'Reponse disponible',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Colors.green.shade600,
                     ),

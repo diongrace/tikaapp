@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/utils/api_endpoint.dart';
@@ -37,12 +37,11 @@ class _ProductCardState extends State<ProductCard> {
   String _fmt(dynamic price) {
     if (price == null) return '0';
     final n = price is num ? price : num.tryParse(price.toString()) ?? 0;
-    return n
-        .toStringAsFixed(0)
-        .replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]} ',
-        );
+    final intVal = n.round();
+    return intVal.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]} ',
+    );
   }
 
   @override
@@ -74,109 +73,118 @@ class _ProductCardState extends State<ProductCard> {
             // ── Cadre image séparé ─────────────────────────────────
             Expanded(
               child: Container(
-                width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F5F5),
                   borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.07),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                clipBehavior: Clip.hardEdge,
+                clipBehavior: Clip.antiAlias,
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     // Image plein-bleed
-                    Positioned.fill(
-                      child: ColorFiltered(
-                        colorFilter: outOfStock
-                            ? const ColorFilter.mode(
-                                Colors.grey, BlendMode.saturation)
-                            : const ColorFilter.mode(
-                                Colors.transparent, BlendMode.multiply),
-                        child: _buildImage(imgUrl),
-                      ),
+                    ColorFiltered(
+                      colorFilter: outOfStock
+                          ? const ColorFilter.mode(
+                              Colors.grey, BlendMode.saturation)
+                          : const ColorFilter.mode(
+                              Colors.transparent, BlendMode.multiply),
+                      child: _buildImage(imgUrl),
                     ),
 
-                    // Badge -X% rouge pill (haut gauche)
-                    if (discount != null && discount > 0 && !outOfStock)
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE53935),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            '-$discount%',
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    // Overlay rupture de stock
-                    if (outOfStock)
-                      Positioned.fill(
-                        child: Container(
-                          color: Colors.white.withOpacity(0.72),
-                          alignment: Alignment.center,
+                      // Badge -X% rouge pill (haut gauche)
+                      if (discount != null && discount > 0 && !outOfStock)
+                        Positioned(
+                          top: 10,
+                          left: 10,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                                horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.10),
-                                  blurRadius: 10,
-                                ),
-                              ],
+                              color: const Color(0xFFE53935),
+                              borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              'Rupture de stock',
+                              '-$discount%',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade700,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                      ),
 
-                    // Bouton + blanc (bas droite)
-                    if (!outOfStock)
-                      Positioned(
-                        bottom: 10,
-                        right: 10,
-                        child: GestureDetector(
-                          onTap: widget.onAddToCart ?? widget.onTap,
+                      // Overlay rupture de stock
+                      if (outOfStock)
+                        Positioned.fill(
                           child: Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.18),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                            color: Colors.white.withOpacity(0.72),
+                            alignment: Alignment.center,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.10),
+                                    blurRadius: 10,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Rupture de stock',
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade900,
                                 ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.add_rounded,
-                              size: 22,
-                              color: Color(0xFF1C1C1E),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+
+                      // Bouton + blanc (bas droite)
+                      if (!outOfStock)
+                        Positioned(
+                          bottom: 10,
+                          right: 10,
+                          child: GestureDetector(
+                            onTap: widget.onAddToCart ?? widget.onTap,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.20),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.add_rounded,
+                                size: 24,
+                                color: Color(0xFF1C1C1E),
+                              ),
+                            ),
+                          ),
+                        ),
                   ],
                 ),
               ),
@@ -190,27 +198,26 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   // Prix
                   if (hasOldPrice && !outOfStock)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
                       children: [
                         Text(
                           '${_fmt(p['price'])} F',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w900,
                             color: const Color(0xFFE53935),
                           ),
                         ),
-                        const SizedBox(width: 6),
                         Text(
                           '${_fmt(p['oldPrice'])} F',
                           style: GoogleFonts.inriaSerif(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade800,
                             decoration: TextDecoration.lineThrough,
-                            decorationColor: Colors.grey.shade600,
+                            decorationColor: Colors.grey.shade800,
                             decorationThickness: 2.0,
                           ),
                         ),
@@ -220,14 +227,12 @@ class _ProductCardState extends State<ProductCard> {
                     Text(
                       '${_fmt(p['price'])} F',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: outOfStock
-                            ? Colors.grey.shade400
+                            ? Colors.grey.shade900
                             : Colors.black,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
 
                   const SizedBox(height: 2),
@@ -236,7 +241,7 @@ class _ProductCardState extends State<ProductCard> {
                   Text(
                     p['name'] ?? '',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 12.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: const Color.fromARGB(255, 6, 6, 6),
                     ),
@@ -250,9 +255,9 @@ class _ProductCardState extends State<ProductCard> {
                     Text(
                       description,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade800,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -271,7 +276,7 @@ class _ProductCardState extends State<ProductCard> {
     if (url == null) return _placeholder();
     return Image.network(
       url,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       width: double.infinity,
       height: double.infinity,
       errorBuilder: (_, __, ___) {

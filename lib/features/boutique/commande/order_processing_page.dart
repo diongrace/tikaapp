@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/models/shop_model.dart';
@@ -73,7 +73,7 @@ class _OrderProcessingPageState extends State<OrderProcessingPage>
                     return Icon(
                       Icons.shopping_bag_outlined,
                       size: 100,
-                      color: Colors.grey.shade400,
+                      color: Colors.grey.shade900,
                     );
                   },
                 ),
@@ -88,7 +88,7 @@ class _OrderProcessingPageState extends State<OrderProcessingPage>
                   return Text(
                     'Traitement de votre commande$dots',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: const Color.fromARGB(255, 20, 20, 20),
                     ),

@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/dashboard_service.dart';
 import '../../services/models/dashboard_model.dart';
+import '../../core/utils/format_utils.dart';
 
 /// Ecran des statistiques du dashboard
 class DashboardStatsScreen extends StatefulWidget {
@@ -75,7 +76,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Text(
               'Statistiques',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -83,9 +84,9 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Text(
               'Mon activité',
               style: GoogleFonts.inriaSerif(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: Colors.grey[500],
+                color: Colors.grey[800],
               ),
             ),
           ],
@@ -130,7 +131,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
               const SizedBox(height: 16),
               Text(
                 _errorMessage ?? 'Une erreur est survenue',
-                style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey[600]),
+                style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey[800]),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -167,16 +168,16 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Row(
               children: [
                 _buildStatTile(
-                  icon: Icons.shopping_bag_rounded,
+                  icon: Icons.receipt_long_outlined,
                   label: 'Commandes',
                   value: '${stats.ordersThisMonth}',
                   color: const Color(0xFF42A5F5),
                 ),
                 const SizedBox(width: 12),
                 _buildStatTile(
-                  icon: Icons.payments_rounded,
+                  icon: Icons.account_balance_wallet_outlined,
                   label: 'Dépensé',
-                  value: '${stats.spentThisMonth.toInt()} F',
+                  value: '${fmtAmount(stats.spentThisMonth)} F',
                   color: const Color(0xFF4CAF50),
                 ),
               ],
@@ -189,16 +190,16 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Row(
               children: [
                 _buildStatTile(
-                  icon: Icons.receipt_long_rounded,
+                  icon: Icons.receipt_long_outlined,
                   label: 'Total commandes',
                   value: '${stats.totalOrders}',
                   color: accentColor,
                 ),
                 const SizedBox(width: 12),
                 _buildStatTile(
-                  icon: Icons.trending_up_rounded,
+                  icon: Icons.shopping_cart_outlined,
                   label: 'Panier moyen',
-                  value: '${stats.averageOrderAmount.toInt()} F',
+                  value: '${fmtAmount(stats.averageOrderAmount)} F',
                   color: const Color(0xFFFF9800),
                 ),
               ],
@@ -207,16 +208,16 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Row(
               children: [
                 _buildStatTile(
-                  icon: Icons.card_giftcard_rounded,
+                  icon: Icons.card_membership_rounded,
                   label: 'Points fidélité',
                   value: '${stats.totalLoyaltyPoints}',
                   color: const Color(0xFFE91E63),
                 ),
                 const SizedBox(width: 12),
                 _buildStatTile(
-                  icon: Icons.payments_rounded,
+                  icon: Icons.account_balance_wallet_outlined,
                   label: 'Total dépensé',
-                  value: '${stats.totalSpent.toInt()} F',
+                  value: '${fmtAmount(stats.totalSpent)} F',
                   color: const Color(0xFF00897B),
                 ),
               ],
@@ -293,15 +294,15 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
           Text(
             'Total dépensé',
             style: GoogleFonts.inriaSerif(
-              fontSize: 16,
+              fontSize: 14,
               color: Colors.white.withOpacity(0.8),
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            '${stats.totalSpent.toInt()} FCFA',
+            '${fmtAmount(stats.totalSpent)} FCFA',
             style: GoogleFonts.inriaSerif(
-              fontSize: 34,
+              fontSize: sp(26, MediaQuery.of(context).size.width),
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -318,7 +319,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
               _buildMainStatItem(
                   '${stats.totalOrders}', 'Commandes'),
               _buildMainStatItem(
-                  '${stats.averageOrderAmount.toInt()} F', 'Panier moyen'),
+                  '${fmtAmount(stats.averageOrderAmount)} F', 'Panier moyen'),
               _buildMainStatItem(
                   '${stats.totalLoyaltyPoints}', 'Points'),
             ],
@@ -334,7 +335,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
         Text(
           value,
           style: GoogleFonts.inriaSerif(
-            fontSize: 20,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -342,7 +343,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
         Text(
           label,
           style: GoogleFonts.inriaSerif(
-            fontSize: 13,
+            fontSize: 12,
             color: Colors.white.withOpacity(0.7),
           ),
         ),
@@ -354,7 +355,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
     return Text(
       title,
       style: GoogleFonts.inriaSerif(
-        fontSize: 20,
+        fontSize: 14,
         fontWeight: FontWeight.w600,
         color: const Color(0xFF1E1E2E),
       ),
@@ -397,7 +398,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Text(
               value,
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -405,8 +406,8 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Text(
               label,
               style: GoogleFonts.inriaSerif(
-                fontSize: 14,
-                color: Colors.grey[500],
+                fontSize: 13,
+                color: Colors.grey[800],
               ),
             ),
           ],
@@ -453,12 +454,12 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                 Text(
                   label,
                   style: GoogleFonts.inriaSerif(
-                      fontSize: 14, color: Colors.grey[500]),
+                      fontSize: 13, color: Colors.grey[800]),
                 ),
                 Text(
                   value,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 17,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1E1E2E),
                   ),
@@ -503,9 +504,9 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                   child: Text(
                     label,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
+                      color: Colors.grey[900],
                     ),
                   ),
                 ),
@@ -526,7 +527,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                   child: Text(
                     '${entry.value}',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151),
                     ),
@@ -575,11 +576,11 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          '${entry.value.toInt()}',
+                          fmtAmount(entry.value.toInt()),
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey[600],
+                            color: Colors.grey[800],
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -602,7 +603,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
                           _formatMonthLabel(entry.key),
                           style: GoogleFonts.inriaSerif(
                             fontSize: 12,
-                            color: Colors.grey[500],
+                            color: Colors.grey[800],
                           ),
                         ),
                       ],

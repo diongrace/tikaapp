@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../boutique/favorites/favorites_boutiques_screen.dart';
 import '../qr_scanner/qr_scanner_screen.dart';
@@ -93,7 +93,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
             Text(
               'Carte de fidelite',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -102,8 +102,8 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
               'Vous n\'avez pas encore de carte.\nScannez ou entrez le lien d\'une boutique, puis creez votre carte depuis la page de la boutique.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+                fontSize: 14,
+                color: Colors.grey.shade800,
               ),
             ),
             const SizedBox(height: 24),
@@ -207,7 +207,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
             Text(
               'Mes cartes de fidelite',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -229,13 +229,13 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                   title: Text(
                     card.shopName,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
                     '${card.points} points',
-                    style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey),
+                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey),
                   ),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                   onTap: () async {
@@ -338,7 +338,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                             child: Text(
                               'Scanner Un Qr Code',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
@@ -350,9 +350,9 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                       Text(
                         '-ou-',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.grey[500],
+                          color: Colors.grey[800],
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -377,8 +377,8 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                                 decoration: InputDecoration(
                                   hintText: 'Entrez le lien de la boutique',
                                   hintStyle: GoogleFonts.inriaSerif(
-                                    fontSize: 15,
-                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                    color: Colors.grey[900],
                                   ),
                                   prefixIcon: const Icon(
                                     Icons.link,
@@ -392,7 +392,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                                   ),
                                 ),
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 15,
+                                  fontSize: 14,
                                   color: Colors.black87,
                                 ),
                               ),
@@ -422,7 +422,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                                   child: Text(
                                     'Go',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),

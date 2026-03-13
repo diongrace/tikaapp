@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'form_widgets.dart';
@@ -31,7 +31,7 @@ class Step1ClientInfo extends StatelessWidget {
           Text(
             'Informations de contact',
             style: GoogleFonts.inriaSerif(
-              fontSize: 24,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -40,8 +40,8 @@ class Step1ClientInfo extends StatelessWidget {
           Text(
             'Veuillez remplir vos informations pour la livraison',
             style: GoogleFonts.inriaSerif(
-              fontSize: 17,
-              color: Colors.grey.shade600,
+              fontSize: 14,
+              color: Colors.grey.shade800,
               height: 1.4,
             ),
           ),
@@ -215,7 +215,7 @@ class Step2DeliveryMode extends StatelessWidget {
         Text(
           'Mode de Récupération',
           style: GoogleFonts.inriaSerif(
-            fontSize: 24,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -224,8 +224,8 @@ class Step2DeliveryMode extends StatelessWidget {
         Text(
           'Choisissez comment vous souhaitez recevoir votre commande',
           style: GoogleFonts.inriaSerif(
-            fontSize: 17,
-            color: Colors.grey.shade600,
+            fontSize: 14,
+            color: Colors.grey.shade800,
             height: 1.4,
           ),
         ),
@@ -317,7 +317,7 @@ class Step2DeliveryMode extends StatelessWidget {
           Text(
             'Quand souhaitez-vous récupérer votre commande ?',
             style: GoogleFonts.inriaSerif(
-              fontSize: 18,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
@@ -352,7 +352,7 @@ class Step2DeliveryMode extends StatelessWidget {
                     Icons.calendar_today_outlined,
                     color: selectedPickupDate != null
                         ? BoutiqueThemeProvider.of(context).primary
-                        : Colors.grey.shade600,
+                        : Colors.grey.shade800,
                     size: 22,
                   ),
                   const SizedBox(width: 16),
@@ -363,19 +363,19 @@ class Step2DeliveryMode extends StatelessWidget {
                         Text(
                           'Date de récupération',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                            color: Colors.grey.shade800,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           _formatDate(selectedPickupDate),
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: selectedPickupDate != null
                                 ? Colors.black87
-                                : Colors.grey.shade500,
+                                : Colors.grey.shade800,
                           ),
                         ),
                       ],
@@ -384,7 +384,7 @@ class Step2DeliveryMode extends StatelessWidget {
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: Colors.grey.shade400,
+                    color: Colors.grey.shade900,
                   ),
                 ],
               ),
@@ -421,7 +421,7 @@ class Step2DeliveryMode extends StatelessWidget {
                     Icons.access_time_outlined,
                     color: selectedPickupTime != null
                         ? BoutiqueThemeProvider.of(context).primary
-                        : Colors.grey.shade600,
+                        : Colors.grey.shade800,
                     size: 22,
                   ),
                   const SizedBox(width: 16),
@@ -432,19 +432,19 @@ class Step2DeliveryMode extends StatelessWidget {
                         Text(
                           'Heure de récupération',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                            color: Colors.grey.shade800,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           _formatTime(selectedPickupTime),
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: selectedPickupTime != null
                                 ? Colors.black87
-                                : Colors.grey.shade500,
+                                : Colors.grey.shade800,
                           ),
                         ),
                       ],
@@ -453,7 +453,7 @@ class Step2DeliveryMode extends StatelessWidget {
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: Colors.grey.shade400,
+                    color: Colors.grey.shade900,
                   ),
                 ],
               ),
@@ -516,7 +516,7 @@ class DeliveryOption extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade400,
+                  color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade900,
                   width: 2,
                 ),
               ),
@@ -555,7 +555,7 @@ class DeliveryOption extends StatelessWidget {
                   Text(
                     title,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -564,8 +564,8 @@ class DeliveryOption extends StatelessWidget {
                   Text(
                     description,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
-                      color: Colors.grey.shade600,
+                      fontSize: 12,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],
@@ -658,7 +658,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
         Text(
           'Mode de paiement',
           style: GoogleFonts.inriaSerif(
-            fontSize: 24,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -667,8 +667,8 @@ class Step3PaymentAndSummary extends StatelessWidget {
         Text(
           'Sélectionnez votre méthode de paiement préférée',
           style: GoogleFonts.inriaSerif(
-            fontSize: 17,
-            color: Colors.grey.shade600,
+            fontSize: 14,
+            color: Colors.grey.shade800,
             height: 1.4,
           ),
         ),
@@ -704,7 +704,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
               Text(
                 'Résumé de la commande',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 20,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -723,7 +723,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
                         child: Text(
                           '${item['name']} x${item['quantity']}',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 16,
+                            fontSize: 12,
                             color: Colors.black87,
                           ),
                         ),
@@ -731,7 +731,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
                       Text(
                         '${itemTotal.toStringAsFixed(0)} FCFA',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 16,
+                          fontSize: 12,
                           color: Colors.black87,
                         ),
                       ),
@@ -751,14 +751,14 @@ class Step3PaymentAndSummary extends StatelessWidget {
                   Text(
                     'Sous-total:',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
+                      fontSize: 14,
                       color: Colors.black87,
                     ),
                   ),
                   Text(
                     '$total FCFA',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
+                      fontSize: 14,
                       color: Colors.black87,
                     ),
                   ),
@@ -776,7 +776,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
                   Text(
                     'Total:',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 20,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -784,7 +784,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
                   Text(
                     '$total FCFA',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 22,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -831,8 +831,8 @@ class Step3PaymentAndSummary extends StatelessWidget {
               Text(
                 'Paiement',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                  color: Colors.grey.shade800,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -840,7 +840,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
               Text(
                 paymentData['name'],
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 12,
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
                 ),
@@ -909,7 +909,7 @@ class PaymentDropdown extends StatelessWidget {
                     child: Text(
                       'Choisir un mode de paiement',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 20,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: Colors.black87,
                       ),
@@ -977,7 +977,7 @@ class PaymentDropdown extends StatelessWidget {
                           child: Text(
                             option['name'],
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 17,
+                              fontSize: 14,
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                               color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.black87,
                             ),
@@ -1059,7 +1059,7 @@ class PaymentDropdown extends StatelessWidget {
                 child: Text(
                   paymentData['name'],
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 17,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color.fromARGB(221, 133, 30, 151),
                   ),
@@ -1076,7 +1076,7 @@ class PaymentDropdown extends StatelessWidget {
                 child: Text(
                   'Sélectionner un mode de paiement',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: const Color.fromARGB(255, 26, 26, 26),
                   ),
@@ -1168,7 +1168,7 @@ class PaymentOption extends StatelessWidget {
             Text(
               name,
               style: GoogleFonts.inriaSerif(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                 color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.black87,
               ),
@@ -1248,7 +1248,7 @@ class PaymentOptionHorizontal extends StatelessWidget {
               child: Text(
                 name,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                   color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.black87,
                 ),

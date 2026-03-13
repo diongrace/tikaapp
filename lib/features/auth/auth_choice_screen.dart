@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
@@ -30,13 +30,13 @@ class AuthChoiceScreen extends StatelessWidget {
                 height: 100,
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
 
               // Titre
               Text(
                 'Bienvenue sur TIKA',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 30,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -48,8 +48,8 @@ class AuthChoiceScreen extends StatelessWidget {
               Text(
                 'Connectez-vous pour profiter de toutes les fonctionnalités',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                  color: Colors.grey.shade800,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -72,7 +72,7 @@ class AuthChoiceScreen extends StatelessWidget {
                     Text(
                       'Avantages d\'un compte',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF8936A8),
                       ),
@@ -119,7 +119,7 @@ class AuthChoiceScreen extends StatelessWidget {
                   child: Text(
                     'Se connecter',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -158,7 +158,7 @@ class AuthChoiceScreen extends StatelessWidget {
                   child: Text(
                     'Créer un compte',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -176,8 +176,8 @@ class AuthChoiceScreen extends StatelessWidget {
                     child: Text(
                       'ou',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
-                        color: Colors.grey.shade500,
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                   ),
@@ -196,7 +196,7 @@ class AuthChoiceScreen extends StatelessWidget {
                     Navigator.pop(context, false);
                   },
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey.shade700,
+                    foregroundColor: Colors.grey.shade900,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -204,7 +204,7 @@ class AuthChoiceScreen extends StatelessWidget {
                   child: Text(
                     'Continuer sans compte',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -224,7 +224,7 @@ class AuthChoiceScreen extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade800,
                       size: 18,
                     ),
                     const SizedBox(width: 10),
@@ -232,8 +232,8 @@ class AuthChoiceScreen extends StatelessWidget {
                       child: Text(
                         'Vous pouvez créer un compte à tout moment depuis votre profil.',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
+                          fontSize: 13,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ),
@@ -269,7 +269,7 @@ class AuthChoiceScreen extends StatelessWidget {
           child: Text(
             text,
             style: GoogleFonts.inriaSerif(
-              fontSize: 16,
+              fontSize: 13,
               color: Colors.black87,
             ),
           ),

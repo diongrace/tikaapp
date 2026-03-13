@@ -369,13 +369,21 @@ class ShopService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final zones = data['data']['delivery_zones'] ?? data['data'];
+      // Format doc API : data.delivery_zones
+      // Format réel   : data.shop + data.delivery_zones
+      List? zones;
+      if (data['data'] is Map) {
+        zones = data['data']['delivery_zones'];
+      } else if (data['data'] is List) {
+        zones = data['data'];
+      }
+      zones ??= data['delivery_zones'];
       if (zones is List) {
         return zones.map((e) => DeliveryZone.fromJson(e)).toList();
       }
       return [];
     } else {
-      throw Exception('Erreur lors du chargement des zones de livraison');
+      throw Exception('Zones: HTTP ${response.statusCode}');
     }
   }
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Ecran de chargement pour la boutique
@@ -68,9 +68,9 @@ class _ShopLoadingScreenState extends State<ShopLoadingScreen>
               child: Text(
                 'Chargement de la boutique...',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade800,
                 ),
               ),
             ),

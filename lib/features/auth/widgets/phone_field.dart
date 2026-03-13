@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -33,7 +33,7 @@ class PhoneField extends StatelessWidget {
         Text(
           'Numéro de téléphone *',
           style: GoogleFonts.inriaSerif(
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -66,8 +66,8 @@ class PhoneField extends StatelessWidget {
             decoration: InputDecoration(
               hintText: '07 00 00 00 00',
               hintStyle: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade400,
+                fontSize: 13,
+                color: Colors.grey.shade900,
               ),
               prefixIcon: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -103,7 +103,7 @@ class PhoneField extends StatelessWidget {
                     Text(
                       '+225',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),

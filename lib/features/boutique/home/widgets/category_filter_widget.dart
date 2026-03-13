@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/models/shop_model.dart';
@@ -100,7 +100,7 @@ class CategoryFilterWidget extends StatelessWidget {
                     child: Text(
                       label,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
                         color: isSelected
@@ -146,7 +146,7 @@ class CategoryFilterWidget extends StatelessWidget {
               children: [
                 Icon(
                   Icons.tune_rounded,
-                  color: sortActive ? Colors.white : Colors.grey.shade600,
+                  color: sortActive ? Colors.white : Colors.grey.shade800,
                   size: 20,
                 ),
                 // Point orange si un tri est actif
@@ -201,7 +201,7 @@ class CategoryFilterWidget extends StatelessWidget {
             Text(
               'Trier les produits',
               style: GoogleFonts.inriaSerif(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1C1C1E),
               ),
@@ -244,13 +244,13 @@ class CategoryFilterWidget extends StatelessWidget {
           child: Icon(
             _sortIcon(opt),
             size: 18,
-            color: isSelected ? shopTheme.primary : Colors.grey.shade500,
+            color: isSelected ? shopTheme.primary : Colors.grey.shade800,
           ),
         ),
         title: Text(
           opt,
           style: GoogleFonts.inriaSerif(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             color: isSelected ? shopTheme.primary : Colors.black87,
           ),
@@ -287,7 +287,7 @@ class CategoryFilterWidget extends StatelessWidget {
         title: Text(
           'Réinitialiser le tri',
           style: GoogleFonts.inriaSerif(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Colors.red.shade400,
           ),

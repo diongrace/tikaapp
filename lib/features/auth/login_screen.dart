@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../services/push_notification_service.dart';
@@ -127,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     'Connexion',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 30,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -141,8 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     'Connectez-vous à votre compte TIKA',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ),
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Mot de passe *',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
@@ -193,12 +193,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: InputDecoration(
                           hintText: 'Votre mot de passe',
                           hintStyle: GoogleFonts.inriaSerif(
-                            fontSize: 16,
-                            color: Colors.grey.shade400,
+                            fontSize: 13,
+                            color: Colors.grey.shade900,
                           ),
                           prefixIcon: Icon(
                             Icons.lock_outline,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade800,
                             size: 22,
                           ),
                           suffixIcon: IconButton(
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               _obscurePassword
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade800,
                               size: 22,
                             ),
                             onPressed: () {
@@ -266,7 +266,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       'Mot de passe oublié ?',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF8936A8),
                       ),
@@ -302,7 +302,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         : Text(
                             'Se connecter',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 18,
+                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -320,8 +320,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'ou',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 16,
-                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ),
@@ -338,8 +338,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Pas encore de compte ?',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                     TextButton(
@@ -356,7 +356,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'Créer un compte',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 16,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF8936A8),
                         ),

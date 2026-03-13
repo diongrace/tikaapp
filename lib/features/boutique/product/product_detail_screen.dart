@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../panier/cart_manager.dart';
@@ -142,7 +142,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: Text(
                     'Pincez pour zoomer',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
+                      fontSize: 14,
                       color: Colors.white70,
                     ),
                   ),
@@ -243,7 +243,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Text(
               'Produits similaires',
               style: GoogleFonts.inriaSerif(
-                fontSize: 19,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -255,7 +255,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Text(
                 'Voir tout',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: _primaryColor,
                 ),
@@ -308,7 +308,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Icon(
                 Icons.image_outlined,
                 size: 40,
-                color: Colors.grey.shade400,
+                color: Colors.grey.shade900,
               ),
             ),
           ),
@@ -320,7 +320,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Text(
                   'Produit ${index + 1}',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF2D2D2D),
                   ),
@@ -331,7 +331,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Text(
                   '0 FCFA',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: _primaryColor,
                   ),
@@ -481,7 +481,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       Text(
                         widget.product['name'],
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF2D2D2D),
                           height: 1.3,
@@ -519,7 +519,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               Text(
                                 widget.product['category'],
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 15,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: _primaryColor,
                                   letterSpacing: 0.3,
@@ -539,7 +539,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Text(
                               '$price',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 27,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: _primaryColor,
                                 height: 1,
@@ -551,7 +551,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Text(
                                 'FCFA',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: _primaryColor,
                                 ),
@@ -561,9 +561,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Text(
                               'Prix non disponible',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade800,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -575,10 +575,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Text(
                                 '$oldPrice',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 18,
-                                  color: Colors.grey.shade400,
+                                  fontSize: 16,
+                                  color: Colors.grey.shade900,
                                   decoration: TextDecoration.lineThrough,
-                                  decorationColor: Colors.grey.shade400,
+                                  decorationColor: Colors.grey.shade900,
                                   decorationThickness: 2,
                                 ),
                               ),
@@ -595,7 +595,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 child: Text(
                                   '-${(((oldPrice! - price!) / oldPrice!) * 100).round()}%',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -622,13 +622,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               Icon(
                                 Icons.savings_outlined,
                                 size: 18,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade800,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 'Vous économisez $savings FCFA',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 15,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey.shade800,
                                   letterSpacing: 0.2,
@@ -674,7 +674,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 Text(
                                   isOutOfStock ? 'Rupture de stock' : '$stock en stock',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 15.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     color: isOutOfStock
                                         ? const Color(0xFFE91E63)
@@ -697,7 +697,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Text(
                               'Quantité',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 17,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF2D2D2D),
                               ),
@@ -730,7 +730,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       size: 18,
                                       color: _quantity > 1
                                           ? _primaryColor
-                                          : Colors.grey.shade400,
+                                          : Colors.grey.shade900,
                                     ),
                                   ),
                                 ),
@@ -741,7 +741,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   child: Text(
                                     '$_quantity',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 22,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.w700,
                                       color: const Color(0xFF1A1A2E),
                                     ),
@@ -779,7 +779,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       size: 18,
                                       color: _quantity < stock
                                           ? Colors.white
-                                          : Colors.grey.shade400,
+                                          : Colors.grey.shade900,
                                     ),
                                   ),
                                 ),
@@ -824,7 +824,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Text(
                               'Description',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 19,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF1A1A2E),
                               ),
@@ -836,8 +836,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       Text(
                         _getDescription(),
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 15,
-                          color: Colors.grey.shade700,
+                          fontSize: 14,
+                          color: Colors.grey.shade900,
                           height: 1.5,
                         ),
                       ),
@@ -907,8 +907,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Text(
                               'TOTAL',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 11,
-                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                                color: Colors.grey.shade800,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.2,
                               ),
@@ -922,7 +922,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Text(
                                     '$totalPrice',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w800,
                                       color: const Color(0xFF2D2D2D),
                                       height: 1,
@@ -936,7 +936,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       style: GoogleFonts.inriaSerif(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.grey.shade700,
+                                        color: Colors.grey.shade900,
                                       ),
                                     ),
                                   ),
@@ -944,9 +944,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Text(
                                     'Prix non disponible',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade600,
+                                      color: Colors.grey.shade800,
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
@@ -1049,7 +1049,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       Text(
                                         'Produit ajouté avec succès',
                                         style: GoogleFonts.inriaSerif(
-                                          fontSize: 17,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
                                         ),
@@ -1114,7 +1114,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Text(
                                     'Ajouter',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 15,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                       letterSpacing: 0.5,

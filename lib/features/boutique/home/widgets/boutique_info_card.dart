@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -88,10 +88,10 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
     final size = box.size;
 
     final actions = [
-      _SpeedDialItem(icon: Icons.phone_rounded,          color: t.primary,                  label: 'Appeler',    onTap: () { _closeAndRun(_call); }),
+      _SpeedDialItem(icon: Icons.call_rounded,           color: t.primary,                  label: 'Appeler',    onTap: () { _closeAndRun(_call); }),
       _SpeedDialItem(faIcon: FontAwesomeIcons.whatsapp,  color: const Color(0xFF25D366),    label: 'WhatsApp',   onTap: () { _closeAndRun(_whatsapp); }),
-      _SpeedDialItem(icon: Icons.receipt_long_rounded,   color: const Color(0xFF3B82F6),    label: 'Commandes',  onTap: () { _closeAndRun(() => _orders(context)); }),
-      _SpeedDialItem(icon: Icons.workspace_premium_rounded, color: const Color(0xFFF59E0B), label: 'Fidélité',   onTap: () { _closeAndRun(() => _loyalty(context)); }),
+      _SpeedDialItem(icon: Icons.receipt_long_rounded,    color: const Color(0xFF3B82F6),    label: 'Commandes',  onTap: () { _closeAndRun(() => _orders(context)); }),
+      _SpeedDialItem(icon: Icons.card_membership_rounded, color: const Color(0xFFF59E0B),   label: 'Fidélité',   onTap: () { _closeAndRun(() => _loyalty(context)); }),
     ];
 
     _overlayEntry = OverlayEntry(
@@ -272,7 +272,7 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
                         Text(
                           boutiqueName,
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 17.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w800,
                             color: const Color(0xFF0D0D26),
                             letterSpacing: -0.3,
@@ -287,7 +287,7 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 13.5,
+                            fontSize: 13,
                             color: const Color(0xFF6C7489),
                             height: 1.45,
                           ),
@@ -298,21 +298,29 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
                             children: [
                               const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
                               const SizedBox(width: 3),
-                              Text(
-                                averageRating.toStringAsFixed(1),
-                                style: GoogleFonts.inriaSerif(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF1C1C1E),
+                              Flexible(
+                                child: Text(
+                                  averageRating.toStringAsFixed(1),
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF1C1C1E),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               if (totalReviews > 0) ...[
                                 const SizedBox(width: 4),
-                                Text(
-                                  '($totalReviews avis)',
-                                  style: GoogleFonts.inriaSerif(
-                                    fontSize: 13,
-                                    color: const Color(0xFF6C7489),
+                                Flexible(
+                                  child: Text(
+                                    '($totalReviews avis)',
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 13,
+                                      color: const Color(0xFF6C7489),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -331,7 +339,7 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: _isExpanded ? Colors.grey.shade400 : t.primary,
+                        color: _isExpanded ? Colors.grey.shade900 : t.primary,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -342,7 +350,7 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
                         ],
                       ),
                       child: Icon(
-                        _isExpanded ? Icons.close : Icons.phone_rounded,
+                        _isExpanded ? Icons.close : Icons.more_vert_rounded,
                         color: Colors.white,
                         size: 22,
                       ),

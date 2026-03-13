@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/notification_service.dart';
@@ -158,7 +158,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     child: Text(
                       'Préférences',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -225,7 +225,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   child: Text(
                                     'Personnalisez vos alertes pour ne recevoir que ce qui vous intéresse',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 15,
+                                      fontSize: 14,
                                       color: Colors.grey.shade800,
                                       height: 1.4,
                                     ),
@@ -240,7 +240,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Text(
                             'Types de notifications',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -249,8 +249,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Text(
                             'Choisissez les notifications que vous souhaitez recevoir',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 15,
-                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                              color: Colors.grey.shade800,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -298,7 +298,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Text(
                             'Canaux de notification',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -307,8 +307,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Text(
                             'Comment souhaitez-vous être notifié ?',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 15,
-                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                              color: Colors.grey.shade800,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -356,13 +356,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               onPressed: _disableAll,
                               icon: Icon(
                                 Icons.notifications_off_outlined,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade800,
                               ),
                               label: Text(
                                 'Désactiver toutes les notifications',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 16,
-                                  color: Colors.grey.shade600,
+                                  fontSize: 14,
+                                  color: Colors.grey.shade800,
                                 ),
                               ),
                             ),
@@ -421,9 +421,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               Text(
                 'Diagnostic push notifications',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700,
+                  color: Colors.grey.shade900,
                 ),
               ),
             ],
@@ -431,7 +431,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 12),
 
           // Token FCM
-          Text('Token FCM :', style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade500)),
+          Text('Token FCM :', style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade800)),
           const SizedBox(height: 4),
           Row(
             children: [
@@ -480,7 +480,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   : const Icon(Icons.refresh_rounded, size: 16),
               label: Text(
                 _isRegistering ? 'Enregistrement...' : 'Re-enregistrer l\'appareil',
-                style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF8936A8),
@@ -507,7 +507,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   child: Text(
                     _registrationStatus,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: _registrationStatus.contains('succès')
                           ? Colors.green.shade700
                           : Colors.red.shade400,
@@ -562,7 +562,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   Text(
                     title,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
@@ -571,8 +571,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   Text(
                     description,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],
@@ -631,7 +631,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
               child: Icon(
                 icon,
-                color: value ? const Color(0xFF8936A8) : Colors.grey.shade400,
+                color: value ? const Color(0xFF8936A8) : Colors.grey.shade900,
                 size: 22,
               ),
             ),
@@ -646,7 +646,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         child: Text(
                           title,
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
                           ),
@@ -664,7 +664,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           child: Text(
                             'Recommandé',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -677,8 +677,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   Text(
                     description,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],

@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/dashboard_service.dart';
@@ -23,6 +23,7 @@ import '../boutique/notifications/notifications_list_screen.dart';
 import '../boutique/commande/order_tracking_api_page.dart';
 // Ecran dashboard unique (pas d'equivalent boutique)
 import 'dashboard_stats_screen.dart';
+import '../../core/utils/format_utils.dart';
 
 /// Ecran principal du tableau de bord client
 class DashboardScreen extends StatefulWidget {
@@ -315,7 +316,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(
               'Mon Espace',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -323,9 +324,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(
               _client?.name ?? AuthService.currentClient?.name ?? 'Accueil',
               style: GoogleFonts.inriaSerif(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: Colors.grey[500],
+                color: Colors.grey[800],
               ),
             ),
           ],
@@ -500,15 +501,15 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildNavTabs() {
     final tabs = [
-      _NavTab(Icons.receipt_long_rounded, 'Commandes',
+      _NavTab(Icons.receipt_long_outlined, 'Commandes',
           () => _navigateTo(const GlobalHistoryScreen())),
-      _NavTab(Icons.card_giftcard_rounded, 'Cartes',
+      _NavTab(Icons.card_membership_rounded, 'Cartes',
           () => _openLoyaltyCards()),
-      _NavTab(Icons.favorite_rounded, 'Favoris',
+      _NavTab(Icons.favorite_border_rounded, 'Favoris',
           () => _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false))),
-      _NavTab(Icons.bar_chart_rounded, 'Stats',
+      _NavTab(Icons.analytics_outlined, 'Stats',
           () => _navigateTo(const DashboardStatsScreen())),
-      _NavTab(Icons.notifications_rounded, 'Notifications',
+      _NavTab(Icons.notifications_outlined, 'Notifications',
           () => _navigateTo(const NotificationsListScreen())),
     ];
 
@@ -536,7 +537,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Text(
                     tab.label,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151),
                     ),
@@ -564,17 +565,17 @@ class _DashboardScreenState extends State<DashboardScreen>
             const Icon(Icons.logout_rounded, color: Colors.red, size: 24),
             const SizedBox(width: 10),
             Text(
-              'Deconnexion',
+              'Déconnexion',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
         content: Text(
-          'Voulez-vous vraiment vous deconnecter ?',
-          style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey[600]),
+          'Voulez-vous vraiment vous déconnecter ?',
+          style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey[800]),
         ),
         actions: [
           TextButton(
@@ -582,9 +583,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Text(
               'Annuler',
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: Colors.grey[800],
               ),
             ),
           ),
@@ -601,7 +602,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Text(
               'Quitter',
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -701,9 +702,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'Creer une carte de fidelite',
+              'Créer une carte de fidélité',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -712,11 +713,11 @@ class _DashboardScreenState extends State<DashboardScreen>
             if (knownShops.isEmpty) ...[
               // Aucune boutique connue
               Text(
-                'Passez une commande ou ajoutez une boutique en favori pour pouvoir creer une carte.',
+                'Passez une commande ou ajoutez une boutique en favori pour pouvoir créer une carte.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                  fontSize: 14,
+                  color: Colors.grey[800],
                 ),
               ),
               const SizedBox(height: 20),
@@ -731,7 +732,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   label: Text(
                     'Explorer les boutiques',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -750,8 +751,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               Text(
                 'Choisissez la boutique',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                  fontSize: 14,
+                  color: Colors.grey[800],
                 ),
               ),
               const SizedBox(height: 16),
@@ -775,7 +776,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       title: Text(
                         entry.value,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -811,9 +812,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Mes cartes de fidelite',
+              'Mes cartes de fidélité',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -832,15 +833,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                   title: Text(
                     card.shopName,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
                     '${card.points} points',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey[500],
+                      fontSize: 13,
+                      color: Colors.grey[800],
                     ),
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded,
@@ -922,7 +923,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               child: Text(
                 initials,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 26,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -937,7 +938,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Text(
                   'Bonjour, $name !',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 20,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -948,7 +949,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Text(
                   'Bienvenue dans votre espace',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 15,
+                    fontSize: 14,
                     color: Colors.white.withOpacity(0.85),
                   ),
                 ),
@@ -979,7 +980,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Text(
                   memberSince,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -1000,9 +1001,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     final spentFromStats = _stats?.totalSpent ?? 0.0;
     final spentFromOverview = _overview?.totalSpent ?? 0.0;
     final totalSpent = spentFromStats > spentFromOverview ? spentFromStats : spentFromOverview;
-    final spentFormatted = totalSpent >= 1000
-        ? '${(totalSpent / 1000).toStringAsFixed(1)}K'
-        : '${totalSpent.toInt()}';
+    final spentFormatted = fmtAmount(totalSpent);
 
     // Favoris: max entre stats API, overview API, et liste locale
     final favFromOverview = _overview?.favoritesCount ?? 0;
@@ -1020,21 +1019,21 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Row(
       children: [
         _buildStatCard(
-          icon: Icons.shopping_bag_rounded,
+          icon: Icons.receipt_long_outlined,
           label: 'COMMANDES',
           value: '$actualOrdersCount',
           color: const Color(0xFF42A5F5),
         ),
         const SizedBox(width: 12),
         _buildStatCard(
-          icon: Icons.account_balance_wallet_rounded,
-          label: 'TOTAL DEPENSE',
+          icon: Icons.account_balance_wallet_outlined,
+          label: 'TOTAL DÉPENSÉ',
           value: '$spentFormatted F',
           color: const Color(0xFF26A69A),
         ),
         const SizedBox(width: 12),
         _buildStatCard(
-          icon: Icons.favorite_rounded,
+          icon: Icons.favorite_border_rounded,
           label: 'FAVORIS',
           value: '$actualFavCount',
           color: const Color(0xFFE91E63),
@@ -1051,7 +1050,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -1078,23 +1077,21 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(
               value,
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF1E1E2E),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
             Text(
               label,
               style: GoogleFonts.inriaSerif(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[500],
+                color: Colors.grey[800],
                 letterSpacing: 0.5,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -1127,20 +1124,24 @@ class _DashboardScreenState extends State<DashboardScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.shopping_bag_rounded,
-                      color: accentColor, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Dernieres commandes',
-                    style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1E1E2E),
+              Flexible(
+                child: Row(
+                  children: [
+                    Icon(Icons.shopping_bag_rounded,
+                        color: accentColor, size: 20),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Dernières commandes',
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E1E2E),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               GestureDetector(
                 onTap: () => _navigateTo(const GlobalHistoryScreen()),
@@ -1149,7 +1150,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Text(
                       'Voir tout',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: accentColor,
                       ),
@@ -1206,9 +1207,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             Icon(Icons.storefront_rounded, color: accentColor, size: 20),
             const SizedBox(width: 8),
             Text(
-              'Boutiques visitees',
+              'Boutiques visitées',
               style: GoogleFonts.inriaSerif(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -1219,7 +1220,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
         // Liste horizontale
         SizedBox(
-          height: 100,
+          height: 120,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -1236,7 +1237,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ? () => _navigateTo(HomeScreen(shopId: shopId))
                     : null,
                 child: Container(
-                  width: 100,
+                  width: 130,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -1282,12 +1283,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                       Text(
                         name,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF1E1E2E),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -1315,23 +1315,23 @@ class _DashboardScreenState extends State<DashboardScreen>
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(Icons.shopping_cart_outlined,
-                  color: Colors.grey[400], size: 30),
+                  color: Colors.grey[900], size: 30),
             ),
             const SizedBox(height: 12),
             Text(
               'Aucune commande',
               style: GoogleFonts.inriaSerif(
-                fontSize: 17,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: Colors.grey[800],
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Explorez les restaurants',
               style: GoogleFonts.inriaSerif(
-                fontSize: 15,
-                color: Colors.grey[400],
+                fontSize: 14,
+                color: Colors.grey[900],
               ),
             ),
             const SizedBox(height: 16),
@@ -1339,9 +1339,9 @@ class _DashboardScreenState extends State<DashboardScreen>
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.search_rounded, size: 18),
               label: Text(
-                'Decouvrir',
+                'Découvrir',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1416,7 +1416,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Text(
                     order.shopName ?? '#${order.orderNumber}',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1E1E2E),
                     ),
@@ -1427,8 +1427,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Text(
                     _formatDate(order.createdAt),
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey[500],
+                      fontSize: 13,
+                      color: Colors.grey[800],
                     ),
                   ),
                 ],
@@ -1438,9 +1438,9 @@ class _DashboardScreenState extends State<DashboardScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${order.totalAmount.toInt()} F',
+                  '${fmtAmount(order.totalAmount)} F',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF1E1E2E),
                   ),
@@ -1486,7 +1486,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(
               'Mes Favoris',
               style: GoogleFonts.inriaSerif(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -1521,7 +1521,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         child: Text(
                           'Voir tous les favoris',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: accentColor,
                           ),
@@ -1555,17 +1555,17 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(
               'Aucun favori',
               style: GoogleFonts.inriaSerif(
-                fontSize: 17,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: Colors.grey[800],
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Ajoutez des restaurants a vos favoris',
+              'Ajoutez des restaurants à vos favoris',
               style: GoogleFonts.inriaSerif(
-                fontSize: 15,
-                color: Colors.grey[400],
+                fontSize: 14,
+                color: Colors.grey[900],
               ),
             ),
             const SizedBox(height: 16),
@@ -1573,9 +1573,9 @@ class _DashboardScreenState extends State<DashboardScreen>
               onPressed: () => _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false)),
               icon: const Icon(Icons.search_rounded, size: 18),
               label: Text(
-                'Decouvrir',
+                'Découvrir',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1641,7 +1641,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Text(
                     favorite.shopName,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1E1E2E),
                     ),
@@ -1656,8 +1656,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                           .where((e) => e != null && e.isNotEmpty)
                           .join(' - '),
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 14,
-                        color: Colors.grey[500],
+                        fontSize: 13,
+                        color: Colors.grey[800],
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1717,9 +1717,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Programme de fidelite',
+                    'Programme de fidélité',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -1730,7 +1730,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ? 'Cumulez des points a chaque commande'
                         : '${_loyaltyCards.length} carte(s) - ${_loyaltyCards.fold<int>(0, (sum, c) => sum + c.points)} points',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Colors.white.withOpacity(0.85),
                     ),
                   ),
@@ -1755,9 +1755,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    _loyaltyCards.isEmpty ? 'Creer une carte' : 'Voir',
+                    _loyaltyCards.isEmpty ? 'Créer une carte' : 'Voir',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: primaryColor,
                     ),
@@ -1787,14 +1787,14 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(
               'Erreur de chargement',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? 'Une erreur est survenue',
-              style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey[600]),
+              style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey[800]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -1808,9 +1808,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                'Reessayer',
+                'Réessayer',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -1851,17 +1851,17 @@ class _DashboardScreenState extends State<DashboardScreen>
   String _getStatusLabel(String status) {
     switch (status) {
       case 'recue':
-        return 'Recue';
+        return 'Reçue';
       case 'en_traitement':
-        return 'En preparation';
+        return 'En préparation';
       case 'prete':
-        return 'Prete';
+        return 'Prête';
       case 'en_livraison':
         return 'En livraison';
       case 'livree':
-        return 'Livree';
+        return 'Livrée';
       case 'annulee':
-        return 'Annulee';
+        return 'Annulée';
       default:
         return status;
     }

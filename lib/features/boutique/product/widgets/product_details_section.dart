@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/models/boutique_type.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
@@ -103,8 +103,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     Text(
                       'Temps de préparation',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -112,7 +112,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     Text(
                       prepTime,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: BoutiqueThemeProvider.of(context).primary,
                       ),
@@ -132,7 +132,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             Text(
               'Portions disponibles',
               style: GoogleFonts.inriaSerif(
-                fontSize: 19,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -145,7 +145,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
           Text(
             'Préférences',
             style: GoogleFonts.inriaSerif(
-              fontSize: 19,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF2D2D2D),
             ),
@@ -167,7 +167,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
           Text(
             'Note pour le restaurant',
             style: GoogleFonts.inriaSerif(
-              fontSize: 17,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF2D2D2D),
             ),
@@ -213,7 +213,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade400,
+                  color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade900,
                   width: 2,
                 ),
                 color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.transparent,
@@ -226,9 +226,9 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             Text(
               label,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade700,
+                color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade900,
               ),
             ),
           ],
@@ -304,14 +304,14 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                   name,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight:
                         isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: outOfStock
-                        ? Colors.grey.shade400
+                        ? Colors.grey.shade900
                         : isSelected
                             ? Colors.white
-                            : Colors.grey.shade700,
+                            : Colors.grey.shade900,
                     decoration: outOfStock
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
@@ -334,7 +334,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
             return Text(
               '$price FCFA',
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: primary,
               ),
@@ -394,7 +394,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade400,
+                          color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade900,
                           width: 2,
                         ),
                         color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.transparent,
@@ -407,9 +407,9 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     Text(
                       portion['name'] as String,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade700,
+                        color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.grey.shade900,
                       ),
                     ),
                   ],
@@ -421,7 +421,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     child: Text(
                       '${portion['price']} FCFA',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: BoutiqueThemeProvider.of(context).primary,
                       ),
@@ -435,8 +435,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     child: Text(
                       portion['description'] as String,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                   ),
@@ -471,12 +471,12 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
       decoration: InputDecoration(
         hintText: 'Ex: Sans oignons, bien cuit, sauce à part...',
         hintStyle: GoogleFonts.inriaSerif(
-          fontSize: 15,
-          color: Colors.grey.shade500,
+          fontSize: 14,
+          color: Colors.grey.shade800,
         ),
         prefixIcon: Icon(
           Icons.restaurant_menu,
-          color: Colors.grey.shade600,
+          color: Colors.grey.shade800,
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
@@ -495,7 +495,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       style: GoogleFonts.inriaSerif(
-        fontSize: 16,
+        fontSize: 14,
         color: Colors.grey.shade800,
       ),
       maxLines: 3,
@@ -578,7 +578,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
         Text(
           title,
           style: GoogleFonts.inriaSerif(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF1A1A2E),
           ),
@@ -647,9 +647,9 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
               size,
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+                color: isSelected ? Colors.white : Colors.grey.shade900,
               ),
             ),
           ),
@@ -726,8 +726,8 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     Text(
                       'Durée du service',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -735,7 +735,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     Text(
                       duration,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: BoutiqueThemeProvider.of(context).primary,
                       ),
@@ -785,13 +785,13 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                 label,
                 style: GoogleFonts.inriaSerif(
                   fontSize: 13,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade800,
                 ),
               ),
               Text(
                 value,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF2D2D2D),
                 ),
@@ -918,8 +918,8 @@ class _DetailRow extends StatelessWidget {
               Text(
                 label,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                  color: Colors.grey.shade800,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -927,7 +927,7 @@ class _DetailRow extends StatelessWidget {
               Text(
                 value,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: const Color(0xFF2D2D2D),
                   fontWeight: FontWeight.w500,
                 ),

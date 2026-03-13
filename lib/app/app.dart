@@ -60,7 +60,7 @@ class _TikaAppState extends State<TikaApp> with WidgetsBindingObserver {
       onGenerateRoute: onGenerateRoute,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
-          textScaler: const TextScaler.linear(1.0),
+          textScaler: const TextScaler.linear(1.1),
         ),
         child: child!,
       ),

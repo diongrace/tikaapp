@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Barre de recherche pour les produits
@@ -28,13 +28,13 @@ class SearchBarWidget extends StatelessWidget {
         onChanged: onSearchChanged ?? onChanged,
         style: GoogleFonts.inriaSerif(
           color: Colors.black87,
-          fontSize: 15,
+          fontSize: 14,
         ),
         decoration: InputDecoration(
           hintText: 'Rechercher un produit...',
           hintStyle: GoogleFonts.inriaSerif(
-            color: Colors.grey.shade600,
-            fontSize: 15,
+            color: Colors.grey.shade800,
+            fontSize: 14,
           ),
           prefixIcon: Icon(
             Icons.search,

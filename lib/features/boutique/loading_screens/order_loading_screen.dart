@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -80,7 +80,7 @@ class OrderLoadingScreen extends StatelessWidget {
               Text(
                 message ?? 'Traitement en cours...',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -92,7 +92,7 @@ class OrderLoadingScreen extends StatelessWidget {
               Text(
                 'Veuillez patienter',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Colors.white.withOpacity(0.9),
                 ),
               ),

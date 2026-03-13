@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/favorites_service.dart';
 import '../../../services/auth_service.dart';
@@ -240,7 +240,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                             Text(
                               'Mes Boutiques',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 28,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.white,
                                 height: 1,
@@ -263,7 +263,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                                       Text(
                                         '${_favoriteBoutiques.length} ${_favoriteBoutiques.length > 1 ? 'favoris' : 'favori'}',
                                         style: GoogleFonts.inriaSerif(
-                                          fontSize: 15,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
                                         ),
@@ -341,7 +341,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
             Text(
               'Connexion requise',
               style: GoogleFonts.inriaSerif(
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -351,8 +351,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               'Connectez-vous pour accéder\nà vos boutiques favorites',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey[600],
+                fontSize: 14,
+                color: Colors.grey[800],
                 height: 1.5,
               ),
             ),
@@ -379,7 +379,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               child: Text(
                 'Se connecter',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -416,7 +416,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
             Text(
               'Oups !',
               style: GoogleFonts.inriaSerif(
-                fontSize: 26,
+                fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -426,8 +426,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               'Impossible de charger vos favoris',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 17,
-                color: Colors.grey[600],
+                fontSize: 14,
+                color: Colors.grey[800],
               ),
             ),
             if (_errorMessage != null) ...[
@@ -436,8 +436,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 _errorMessage!,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 14,
-                  color: Colors.grey[500],
+                  fontSize: 13,
+                  color: Colors.grey[800],
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -462,7 +462,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                   Text(
                     'Réessayer',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -501,7 +501,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               'Aucun favori pour le moment',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF2D2D2D),
               ),
@@ -511,8 +511,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               'Découvrez et ajoutez vos boutiques préférées',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 17,
-                color: Colors.grey[600],
+                fontSize: 14,
+                color: Colors.grey[800],
                 height: 1.5,
               ),
             ),
@@ -538,7 +538,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                       'Explorer les boutiques',
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -664,7 +664,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                   Text(
                     shop.name,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 17,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF2D2D2D),
                     ),

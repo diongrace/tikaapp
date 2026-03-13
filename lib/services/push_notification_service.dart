@@ -283,11 +283,9 @@ class PushNotificationService {
   static Future<void> registerDeviceToken() async {
     print('[Push] ━━━ ENREGISTREMENT DEVICE ━━━');
 
-    // 1. Obtenir le token FCM
-    if (_fcmToken == null) {
-      print('[Push] Pas de token en mémoire, récupération...');
-      await _refreshToken();
-    }
+    // 1. Toujours obtenir un token frais (les tokens FCM peuvent changer)
+    print('[Push] Récupération d\'un token FCM frais...');
+    await _refreshToken();
 
     if (_fcmToken == null) {
       print('[Push] ❌ ÉCHEC: Pas de token FCM disponible');

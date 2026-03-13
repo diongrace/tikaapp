@@ -297,9 +297,12 @@ class DeliveryZone {
       id: _parseInt(json['id']) ?? 0,
       name: json['name']?.toString() ?? '',
       deliveryFee: _parseInt(json['delivery_fee']) ?? 0,
-      minOrderAmount: _parseInt(json['min_order_amount']) ?? 0,
-      estimatedTime: json['estimated_time']?.toString(),
-      isActive: json['is_active'] == true || json['is_active'] == 1,
+      // L'API retourne parfois "minimum_order" ou "min_order_amount"
+      minOrderAmount: _parseInt(json['min_order_amount'] ?? json['minimum_order']) ?? 0,
+      // L'API retourne estimated_time ou estimated_time_text
+      estimatedTime: json['estimated_time']?.toString() ?? json['estimated_time_text']?.toString(),
+      // Si is_active absent → considérer comme actif
+      isActive: json['is_active'] == null ? true : (json['is_active'] == true || json['is_active'] == 1),
     );
   }
 

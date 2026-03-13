@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/shop_service.dart';
@@ -126,7 +126,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     'Scanner le QR code',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 26,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -136,7 +136,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     'Positionnez le QR code dans le cadre',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: Colors.white70,
                     ),
                   ),
@@ -202,7 +202,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                           child: Text(
                             'Retour',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 19,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),

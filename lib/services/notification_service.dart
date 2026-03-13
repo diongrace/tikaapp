@@ -387,22 +387,40 @@ class NotificationService {
   // ============================================================
 
   /// Enregistrer l'appareil pour les push notifications (FCM)
+  /// Appelle les deux endpoints : simple (/fcm-token) + étendu (/register-device)
   static Future<bool> registerDevice({
     required String fcmToken,
     String deviceType = 'android',
   }) async {
     if (!isAuthenticated) {
-      print('⚠️ [registerDevice] Non authentifié - Auth token: ${AuthService.authToken != null}');
+      print('⚠️ [registerDevice] Non authentifié');
       return false;
     }
 
-    try {
-      print('📤 POST /client/notifications/register-device');
-      print('🔗 URL: ${Endpoints.notificationsRegisterDevice}');
-      print('📱 Device type: $deviceType');
-      print('🔑 FCM token: ${fcmToken.length > 20 ? '${fcmToken.substring(0, 20)}...' : fcmToken}');
+    print('📤 Enregistrement FCM token...');
+    print('🔑 Token: ${fcmToken.length > 20 ? '${fcmToken.substring(0, 20)}...' : fcmToken}');
 
-      final response = await http.post(
+    bool success = false;
+
+    // 1. Endpoint simple : POST /api/client/fcm-token
+    try {
+      final r1 = await http.post(
+        Uri.parse(Endpoints.clientFcmToken),
+        headers: _headers,
+        body: jsonEncode({'fcm_token': fcmToken}),
+      );
+      print('📥 /client/fcm-token → ${r1.statusCode}');
+      if (r1.statusCode == 200 || r1.statusCode == 201) {
+        print('✅ Token enregistré via /client/fcm-token');
+        success = true;
+      }
+    } catch (e) {
+      print('⚠️ /client/fcm-token erreur: $e');
+    }
+
+    // 2. Endpoint étendu : POST /api/client/notifications/register-device
+    try {
+      final r2 = await http.post(
         Uri.parse(Endpoints.notificationsRegisterDevice),
         headers: _headers,
         body: jsonEncode({
@@ -410,21 +428,16 @@ class NotificationService {
           'device_type': deviceType,
         }),
       );
-
-      print('📥 Register device status: ${response.statusCode}');
-      print('📄 Register device body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        print('✅ Device enregistré pour les push notifications');
-        return true;
-      } else {
-        print('❌ Échec enregistrement device: HTTP ${response.statusCode}');
+      print('📥 /register-device → ${r2.statusCode}');
+      if (r2.statusCode == 200 || r2.statusCode == 201) {
+        print('✅ Token enregistré via /register-device');
+        success = true;
       }
     } catch (e) {
-      print('❌ Erreur registerDevice: $e');
+      print('⚠️ /register-device erreur: $e');
     }
 
-    return false;
+    return success;
   }
 }
 

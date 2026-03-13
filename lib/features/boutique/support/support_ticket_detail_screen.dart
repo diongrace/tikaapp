@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../services/support_service.dart';
@@ -123,7 +123,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                               : 'Demande #${ticket.id}',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -151,7 +151,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                             Text(
                               'Statut',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
+                                fontSize: 13,
                                 color: Colors.white.withOpacity(0.8),
                               ),
                             ),
@@ -170,7 +170,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                                 Text(
                                   ticket.statusLabel,
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 17,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -186,7 +186,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                             Text(
                               'Envoyée le',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
+                                fontSize: 13,
                                 color: Colors.white.withOpacity(0.8),
                               ),
                             ),
@@ -194,7 +194,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                             Text(
                               _formatDate(ticket.createdAt),
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
@@ -233,7 +233,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                         child: Text(
                           'Votre demande a été envoyée. Nous vous répondrons rapidement.',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 15,
+                            fontSize: 14,
                             color: const Color(0xFF15803D),
                             fontWeight: FontWeight.w500,
                           ),
@@ -272,8 +272,8 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                             Text(
                               'Ma demande',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 15,
-                                color: Colors.grey.shade500,
+                                fontSize: 14,
+                                color: Colors.grey.shade800,
                               ),
                             ),
                             const Spacer(),
@@ -293,7 +293,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                                     Text(
                                       _getTypeLabel(ticket.category),
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: const Color(0xFF8936A8),
                                       ),
@@ -316,7 +316,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                             Text(
                               ticket.subject,
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 17,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),
@@ -325,8 +325,8 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                             Text(
                               ticket.message,
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 16,
-                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                                color: Colors.grey.shade800,
                                 height: 1.5,
                               ),
                             ),
@@ -376,7 +376,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                         Text(
                           'Retour',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
                           ),
@@ -405,7 +405,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                         Text(
                           'WhatsApp',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 17,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -453,7 +453,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
           Text(
             'En attente de réponse',
             style: GoogleFonts.inriaSerif(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -463,8 +463,8 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
             'Notre équipe traite votre demande. Vous serez notifié dès qu\'une réponse sera disponible.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inriaSerif(
-              fontSize: 15,
-              color: Colors.grey.shade500,
+              fontSize: 14,
+              color: Colors.grey.shade800,
               height: 1.5,
             ),
           ),
@@ -514,7 +514,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                 Text(
                   'Réponse du support',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 15,
+                    fontSize: 14,
                     color: const Color(0xFF4CAF50),
                     fontWeight: FontWeight.w600,
                   ),
@@ -531,7 +531,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                 Text(
                   ticket.response!,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: Colors.black87,
                     height: 1.5,
                   ),
@@ -541,8 +541,8 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                   Text(
                     'Répondu le ${_formatDate(ticket.respondedAt!)}',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade400,
+                      fontSize: 13,
+                      color: Colors.grey.shade900,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -565,11 +565,11 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text('Erreur de chargement',
-                style: GoogleFonts.inriaSerif(fontSize: 20, fontWeight: FontWeight.bold)),
+                style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(_error ?? '',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey.shade600)),
+                style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade800)),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _loadTicket,
@@ -591,7 +591,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
           const Icon(Icons.search_off, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
           Text('Ticket introuvable',
-              style: GoogleFonts.inriaSerif(fontSize: 20, fontWeight: FontWeight.bold)),
+              style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
     );

@@ -112,6 +112,9 @@ class Endpoints {
   static const String dashboardNotifications = '$baseUrl/client/dashboard/notifications';
   static const String dashboardNotificationsRead = '$baseUrl/client/dashboard/notifications/read';
 
+  // FCM Token (enregistrement simple après login)
+  static const String clientFcmToken = '$baseUrl/client/fcm-token';
+
   // Notifications Client (nécessite authentification Bearer Token)
   static const String notifications = '$baseUrl/client/notifications';
   static String notificationDetails(int id) => '$baseUrl/client/notifications/$id';

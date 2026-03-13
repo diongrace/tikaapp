@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/pdf.dart';
@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/utils/format_utils.dart';
 
 /// Page affichant le recu de commande a partir des donnees JSON de l'API
 class ReceiptViewPage extends StatelessWidget {
@@ -24,7 +25,7 @@ class ReceiptViewPage extends StatelessWidget {
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: Text(
-          'Recu de commande',
+          'Reçu de commande',
           style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
@@ -35,7 +36,7 @@ class ReceiptViewPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.download_rounded),
             onPressed: () => _downloadPdf(context, receipt),
-            tooltip: 'Telecharger PDF',
+            tooltip: 'Télécharger PDF',
           ),
         ],
       ),
@@ -75,7 +76,7 @@ class ReceiptViewPage extends StatelessWidget {
                       Text(
                         shop['name']?.toString() ?? 'Boutique',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -86,7 +87,7 @@ class ReceiptViewPage extends StatelessWidget {
                         Text(
                           shop['address'].toString(),
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 15,
+                            fontSize: 14,
                             color: Colors.white70,
                           ),
                           textAlign: TextAlign.center,
@@ -97,7 +98,7 @@ class ReceiptViewPage extends StatelessWidget {
                         Text(
                           shop['phone'].toString(),
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 15,
+                            fontSize: 14,
                             color: Colors.white70,
                           ),
                         ),
@@ -138,7 +139,7 @@ class ReceiptViewPage extends StatelessWidget {
                         style: GoogleFonts.inriaSerif(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade500,
+                          color: Colors.grey.shade800,
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -161,7 +162,7 @@ class ReceiptViewPage extends StatelessWidget {
                         style: GoogleFonts.inriaSerif(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade500,
+                          color: Colors.grey.shade800,
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -199,29 +200,29 @@ class ReceiptViewPage extends StatelessWidget {
                                 flex: 3,
                                 child: Text(
                                   itemMap['name']?.toString() ?? '-',
-                                  style: GoogleFonts.inriaSerif(fontSize: 15),
+                                  style: GoogleFonts.inriaSerif(fontSize: 14),
                                 ),
                               ),
                               SizedBox(
                                 width: 40,
                                 child: Text(
                                   '${itemMap['quantity'] ?? 1}',
-                                  style: GoogleFonts.inriaSerif(fontSize: 15),
+                                  style: GoogleFonts.inriaSerif(fontSize: 14),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
                               Expanded(
                                 child: Text(
-                                  '${itemMap['unit_price'] ?? '-'}',
-                                  style: GoogleFonts.inriaSerif(fontSize: 15),
+                                  itemMap['unit_price'] != null ? fmtAmount(itemMap['unit_price']) : '-',
+                                  style: GoogleFonts.inriaSerif(fontSize: 14),
                                   textAlign: TextAlign.right,
                                 ),
                               ),
                               Expanded(
                                 child: Text(
-                                  '${itemMap['total'] ?? '-'}',
+                                  itemMap['total'] != null ? fmtAmount(itemMap['total']) : '-',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 15,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   textAlign: TextAlign.right,
@@ -238,15 +239,15 @@ class ReceiptViewPage extends StatelessWidget {
 
                       // Totaux
                       if (receipt['subtotal'] != null)
-                        _buildTotalRow('Sous-total', '${receipt['subtotal']} FCFA'),
+                        _buildTotalRow('Sous-total', '${fmtAmount(receipt['subtotal'])} FCFA'),
                       if (receipt['delivery_fee'] != null &&
                           receipt['delivery_fee'].toString() != '0' &&
                           receipt['delivery_fee'].toString() != '0.00')
-                        _buildTotalRow('Livraison', '${receipt['delivery_fee']} FCFA'),
+                        _buildTotalRow('Livraison', '${fmtAmount(receipt['delivery_fee'])} FCFA'),
                       if (receipt['discount'] != null &&
                           receipt['discount'].toString() != '0' &&
                           receipt['discount'].toString() != '0.00')
-                        _buildTotalRow('Reduction', '-${receipt['discount']} FCFA'),
+                        _buildTotalRow('Réduction', '-${fmtAmount(receipt['discount'])} FCFA'),
 
                       const SizedBox(height: 8),
                       Container(
@@ -262,15 +263,15 @@ class ReceiptViewPage extends StatelessWidget {
                             Text(
                               'TOTAL',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF059669),
                               ),
                             ),
                             Text(
-                              '${receipt['total'] ?? '0'} FCFA',
+                              '${fmtAmount(receipt['total'] ?? 0)} FCFA',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF059669),
                               ),
@@ -306,9 +307,9 @@ class ReceiptViewPage extends StatelessWidget {
                         child: Text(
                           'Merci pour votre commande !',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade800,
                           ),
                         ),
                       ),
@@ -333,8 +334,8 @@ class ReceiptViewPage extends StatelessWidget {
           child: Text(
             label,
             style: GoogleFonts.inriaSerif(
-              fontSize: 15,
-              color: Colors.grey.shade600,
+              fontSize: 14,
+              color: Colors.grey.shade800,
             ),
           ),
         ),
@@ -342,7 +343,7 @@ class ReceiptViewPage extends StatelessWidget {
           child: Text(
             value,
             style: GoogleFonts.inriaSerif(
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
               color: Colors.black87,
             ),
@@ -361,11 +362,11 @@ class ReceiptViewPage extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey.shade700),
+            style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade900),
           ),
           Text(
             value,
-            style: GoogleFonts.inriaSerif(fontSize: 15, fontWeight: FontWeight.w500),
+            style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -384,14 +385,14 @@ class ReceiptViewPage extends StatelessWidget {
     return GoogleFonts.inriaSerif(
       fontSize: 13,
       fontWeight: FontWeight.w600,
-      color: Colors.grey.shade500,
+      color: Colors.grey.shade800,
     );
   }
 
   String _formatPaymentMethod(String? method) {
     switch (method) {
       case 'especes':
-        return 'Especes';
+        return 'Espèces';
       case 'mobile_money':
         return 'Mobile Money';
       case 'wave':
@@ -408,11 +409,11 @@ class ReceiptViewPage extends StatelessWidget {
       case 'pending':
         return 'En attente';
       case 'paid':
-        return 'Paye';
+        return 'Payé';
       case 'failed':
-        return 'Echoue';
+        return 'Échoué';
       case 'refunded':
-        return 'Rembourse';
+        return 'Remboursé';
       default:
         return status ?? '-';
     }
@@ -424,7 +425,7 @@ class ReceiptViewPage extends StatelessWidget {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Generation du PDF...'),
+          content: Text('Génération du PDF...'),
           backgroundColor: Color(0xFF3B82F6),
           duration: Duration(seconds: 2),
         ),
@@ -461,7 +462,7 @@ class ReceiptViewPage extends StatelessWidget {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('PDF telecharge !'),
+          content: const Text('PDF téléchargé !'),
           backgroundColor: const Color(0xFF10B981),
           action: SnackBarAction(
             label: 'Ouvrir',
@@ -502,7 +503,7 @@ class ReceiptViewPage extends StatelessWidget {
                   children: [
                     pw.Text(
                       shop['name']?.toString() ?? 'Boutique',
-                      style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
                     ),
                     if (shop['address'] != null)
                       pw.Text(shop['address'].toString(), style: const pw.TextStyle(fontSize: 13)),
@@ -511,7 +512,7 @@ class ReceiptViewPage extends StatelessWidget {
                     pw.SizedBox(height: 8),
                     pw.Text(
                       'RECU DE COMMANDE',
-                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -595,10 +596,10 @@ class ReceiptViewPage extends StatelessWidget {
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('TOTAL', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('TOTAL', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
                     pw.Text(
                       '${receipt['total'] ?? '0'} FCFA',
-                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -617,7 +618,7 @@ class ReceiptViewPage extends StatelessWidget {
               pw.Center(
                 child: pw.Text(
                   'Merci pour votre commande !',
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
                 ),
               ),
             ],

@@ -258,6 +258,13 @@ class OrderItem {
         image = product['image'].toString();
       } else if (product['image_url'] != null && product['image_url'].toString().isNotEmpty) {
         image = product['image_url'].toString();
+      } else if (product['primary_image_url'] != null && product['primary_image_url'].toString().isNotEmpty) {
+        image = product['primary_image_url'].toString();
+      } else if (product['images'] != null && product['images'] is List && (product['images'] as List).isNotEmpty) {
+        final firstImg = (product['images'] as List).first;
+        if (firstImg['url'] != null && firstImg['url'].toString().isNotEmpty) {
+          image = firstImg['url'].toString();
+        }
       }
     }
 

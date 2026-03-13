@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/profile_service.dart';
@@ -39,7 +39,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     child: Text(
                       'Securite et confidentialite',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -59,7 +59,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     Text(
                       'Securite du compte',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
@@ -132,7 +132,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     Text(
                       'Confidentialite des donnees',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
@@ -205,7 +205,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     Text(
                       'Gestion des donnees',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
@@ -288,7 +288,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       Text(
                         title,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 17,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -297,8 +297,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       Text(
                         subtitle,
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 15,
-                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ],
@@ -309,7 +309,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 else
                   Icon(
                     Icons.chevron_right,
-                    color: Colors.grey.shade400,
+                    color: Colors.grey.shade900,
                     size: 24,
                   ),
               ],
@@ -543,15 +543,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   device,
                   style: GoogleFonts.inriaSerif(
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: 14,
                   ),
                 ),
                 if (location.isNotEmpty)
                   Text(
                     location,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 Text(
@@ -593,7 +593,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             '3. Protection des donnees\n'
             '4. Vos droits\n'
             '5. Modifications de la politique',
-            style: GoogleFonts.inriaSerif(fontSize: 16),
+            style: GoogleFonts.inriaSerif(fontSize: 14),
           ),
         ),
         actions: [
@@ -622,7 +622,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             '3. Paiements et remboursements\n'
             '4. Propriete intellectuelle\n'
             '5. Limitation de responsabilite',
-            style: GoogleFonts.inriaSerif(fontSize: 16),
+            style: GoogleFonts.inriaSerif(fontSize: 14),
           ),
         ),
         actions: [
@@ -706,7 +706,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     '- Historique des commandes\n'
                     '- Cartes de fidelite\n'
                     '- Adresses et moyens de paiement',
-                    style: GoogleFonts.inriaSerif(fontSize: 15),
+                    style: GoogleFonts.inriaSerif(fontSize: 14),
                   ),
                 ),
                 if (AuthService.isAuthenticated) ...[

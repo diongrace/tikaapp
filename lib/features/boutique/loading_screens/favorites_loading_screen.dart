@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Écran de chargement pour les favoris
@@ -42,7 +42,7 @@ class FavoritesLoadingScreen extends StatelessWidget {
           Text(
             'Chargement des favoris...',
             style: GoogleFonts.inriaSerif(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF2D2D2D),
             ),
@@ -51,8 +51,8 @@ class FavoritesLoadingScreen extends StatelessWidget {
           Text(
             'Veuillez patienter',
             style: GoogleFonts.inriaSerif(
-              fontSize: 16,
-              color: Colors.grey.shade600,
+              fontSize: 14,
+              color: Colors.grey.shade800,
             ),
           ),
         ],

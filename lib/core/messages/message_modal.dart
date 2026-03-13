@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Affiche un modal de succès avec un message centré
@@ -60,7 +60,7 @@ void showSuccessModal(BuildContext context, String message) {
               Text(
                 message,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 20,
+                  fontSize: 18,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -98,7 +98,7 @@ void showSuccessModal(BuildContext context, String message) {
                         child: Text(
                           'OK',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -175,7 +175,7 @@ void showErrorModal(BuildContext context, String message) {
               Text(
                 message,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 20,
+                  fontSize: 18,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -213,7 +213,7 @@ void showErrorModal(BuildContext context, String message) {
                         child: Text(
                           'OK',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -290,7 +290,7 @@ void showWarningModal(BuildContext context, String message) {
               Text(
                 message,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 20,
+                  fontSize: 18,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -328,7 +328,7 @@ void showWarningModal(BuildContext context, String message) {
                         child: Text(
                           'OK',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -405,7 +405,7 @@ void showInfoModal(BuildContext context, String message) {
               Text(
                 message,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 20,
+                  fontSize: 18,
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   height: 1.4,
@@ -443,7 +443,7 @@ void showInfoModal(BuildContext context, String message) {
                         child: Text(
                           'OK',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),

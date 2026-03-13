@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Écran de chargement simple et réutilisable
@@ -63,7 +63,7 @@ class SimpleLoadingScreen extends StatelessWidget {
                 child: Text(
                   title!,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF2D2D2D),
                   ),
@@ -79,8 +79,8 @@ class SimpleLoadingScreen extends StatelessWidget {
                 child: Text(
                   subtitle!,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
+                    fontSize: 14,
+                    color: Colors.grey.shade800,
                   ),
                   textAlign: TextAlign.center,
                 ),

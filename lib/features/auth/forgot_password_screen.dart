@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../core/messages/message_modal.dart';
@@ -211,7 +211,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Text(
                     _otpSent ? 'Nouveau mot de passe' : 'Mot de passe oublié',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 28,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -227,8 +227,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ? 'Créez votre nouveau mot de passe'
                         : 'Entrez votre numéro de téléphone pour recevoir un code de vérification',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -271,7 +271,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           : Text(
                               'Envoyer le code',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 18,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -299,7 +299,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               Text(
                                 'Numéro vérifié',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 16,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.green.shade700,
                                 ),
@@ -307,7 +307,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               Text(
                                 '+225 ${_phoneController.text}',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   color: Colors.green.shade700,
                                 ),
                               ),
@@ -390,7 +390,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           : Text(
                               'Réinitialiser le mot de passe',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 18,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -421,7 +421,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Text(
           '$label *',
           style: GoogleFonts.inriaSerif(
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
@@ -445,18 +445,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey.shade400,
+                fontSize: 13,
+                color: Colors.grey.shade900,
               ),
               prefixIcon: Icon(
                 Icons.lock_outline,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade800,
                 size: 22,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
                   obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade800,
                   size: 22,
                 ),
                 onPressed: onToggleObscure,

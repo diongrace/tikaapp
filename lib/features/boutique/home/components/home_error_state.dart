@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Widget d'état d'erreur pour l'écran d'accueil
@@ -25,7 +25,7 @@ class HomeErrorState extends StatelessWidget {
             Text(
               'Erreur de chargement',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -35,8 +35,8 @@ class HomeErrorState extends StatelessWidget {
               child: Text(
                 errorMessage ?? 'Une erreur est survenue',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                  fontSize: 14,
+                  color: Colors.grey[800],
                 ),
                 textAlign: TextAlign.center,
               ),

@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
@@ -204,7 +204,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
           title: Text(
             'Numéro de téléphone requis',
             style: GoogleFonts.inriaSerif(
-              fontSize: 20,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -214,7 +214,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             children: [
               Text(
                 'Pour suivre votre commande, veuillez entrer le numéro de téléphone utilisé lors de la commande :',
-                style: GoogleFonts.inriaSerif(fontSize: 16),
+                style: GoogleFonts.inriaSerif(fontSize: 13),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -238,7 +238,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               child: Text(
                 'Annuler',
                 style: GoogleFonts.inriaSerif(
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade800,
                 ),
               ),
             ),
@@ -346,7 +346,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   Text(
                     'Recommander',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -355,7 +355,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   Text(
                     '#${order.orderNumber}',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Colors.white.withOpacity(0.85),
                     ),
                   ),
@@ -372,8 +372,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     'Voulez-vous repasser la même commande ?',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
-                      color: Colors.grey.shade700,
+                      fontSize: 13,
+                      color: Colors.grey.shade900,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -381,8 +381,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     'Les mêmes articles seront ajoutés à votre panier.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 13,
-                      color: Colors.grey.shade400,
+                      fontSize: 12,
+                      color: Colors.grey.shade900,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -397,7 +397,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                             side: BorderSide(color: Colors.grey.shade300),
                           ),
                           child: Text('Annuler',
-                            style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                            style: GoogleFonts.inriaSerif(color: Colors.grey.shade800, fontWeight: FontWeight.w500)),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -426,7 +426,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             ),
                             child: Text('Oui, commander',
-                              style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                              style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                           ),
                         ),
                       ),
@@ -495,7 +495,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
           children: [
             Text(
               'Voulez-vous annuler #${order.orderNumber} ?',
-              style: GoogleFonts.inriaSerif(fontSize: 16),
+              style: GoogleFonts.inriaSerif(fontSize: 13),
             ),
             if (minutesLeft > 0) ...[
               const SizedBox(height: 8),
@@ -507,7 +507,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 ),
                 child: Text(
                   'Temps restant: $minutesLeft min',
-                  style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inriaSerif(fontSize: 12, color: const Color(0xFFF59E0B), fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -518,7 +518,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               maxLength: 500,
               decoration: InputDecoration(
                 hintText: 'Raison (optionnel)',
-                hintStyle: GoogleFonts.inriaSerif(fontSize: 15),
+                hintStyle: GoogleFonts.inriaSerif(fontSize: 13),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -605,12 +605,12 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.star_rounded, color: Colors.white, size: 40),
+                      const Icon(Icons.star_outline_rounded, color: Colors.white, size: 40),
                       const SizedBox(height: 8),
                       Text(
                         'Notez votre commande',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -619,7 +619,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       Text(
                         '#${order.orderNumber}',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: Colors.white.withOpacity(0.85),
                         ),
                       ),
@@ -656,7 +656,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           label,
                           key: ValueKey(label),
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 16,
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFFF59E0B),
                           ),
@@ -668,10 +668,10 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       TextField(
                         controller: commentController,
                         maxLines: 3,
-                        style: GoogleFonts.inriaSerif(fontSize: 14),
+                        style: GoogleFonts.inriaSerif(fontSize: 12),
                         decoration: InputDecoration(
                           hintText: 'Partagez votre expérience... (optionnel)',
-                          hintStyle: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade400),
+                          hintStyle: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade900),
                           filled: true,
                           fillColor: Colors.grey.shade50,
                           contentPadding: const EdgeInsets.all(14),
@@ -703,7 +703,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 side: BorderSide(color: Colors.grey.shade300),
                               ),
                               child: Text('Annuler',
-                                style: GoogleFonts.inriaSerif(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                                style: GoogleFonts.inriaSerif(color: Colors.grey.shade800, fontWeight: FontWeight.w500)),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -735,7 +735,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 ),
                                 child: Text('Envoyer mon avis',
-                                  style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                  style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                               ),
                             ),
                           ),
@@ -809,7 +809,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             children: [
               const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3)),
               const SizedBox(height: 16),
-              Text('Chargement du recu...', style: GoogleFonts.inriaSerif(fontSize: 16)),
+              Text('Chargement du recu...', style: GoogleFonts.inriaSerif(fontSize: 13)),
             ],
           ),
         ),
@@ -1027,22 +1027,40 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
         String productImage = item.image ?? '';
         double price = item.price;
 
+        print('📦 Item: name=$productName, image=$productImage, productId=${item.productId}');
+
         // Si les infos sont manquantes et qu'on a un productId, récupérer les détails
         if (item.productId != null && (productName.isEmpty || productImage.isEmpty)) {
           try {
             final product = await ProductService.getProductById(item.productId!);
             if (productName.isEmpty) productName = product.name;
-            if (productImage.isEmpty) productImage = product.primaryImageUrl ?? '';
+            if (productImage.isEmpty) {
+              // Essayer primaryImageUrl d'abord, puis la première image de la liste
+              productImage = product.primaryImageUrl ?? '';
+              if (productImage.isEmpty && product.images != null && product.images!.isNotEmpty) {
+                productImage = product.images!.first.url;
+              }
+            }
             if (price == 0 && product.price != null) price = product.price!.toDouble();
-            print('✅ Produit ${item.productId} récupéré: $productName');
+            print('✅ Produit ${item.productId} récupéré: $productName image=$productImage');
           } catch (e) {
             print('⚠️ Erreur récupération produit ${item.productId}: $e');
           }
         }
 
+        // Normaliser l'URL de l'image (relative → absolue)
+        String normalizedImage = productImage;
+        if (normalizedImage.isNotEmpty) {
+          if (!normalizedImage.startsWith('http://') && !normalizedImage.startsWith('https://')) {
+            final cleaned = normalizedImage.startsWith('/') ? normalizedImage.substring(1) : normalizedImage;
+            normalizedImage = '${Endpoints.storageBaseUrl}/$cleaned';
+          }
+        }
+        print('🖼️ Image produit finale: $normalizedImage');
+
         productsDetails.add({
           'name': productName.isNotEmpty ? productName : 'Produit',
-          'image': productImage,
+          'image': normalizedImage,
           'price': price,
           'quantity': item.quantity,
         });
@@ -1220,7 +1238,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             Text(
               'Historique',
               style: GoogleFonts.inriaSerif(
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -1228,9 +1246,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             Text(
               'Vos commandes',
               style: GoogleFonts.inriaSerif(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: Colors.grey[500],
+                color: Colors.grey[800],
               ),
             ),
           ],
@@ -1294,7 +1312,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(
-                Icons.error_outline,
+                Icons.error_outline_rounded,
                 size: 64,
                 color: Colors.red,
               ),
@@ -1302,7 +1320,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               Text(
                 'Erreur de chargement',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 22,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1310,8 +1328,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               Text(
                 _errorMessage ?? 'Une erreur est survenue',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                  color: Colors.grey.shade800,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1325,7 +1343,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 child: Text(
                   'Réessayer',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -1360,7 +1378,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   child: Text(
                     'Charger plus',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 16,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -1437,7 +1455,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   return Container(
                                     color: primaryColor.withOpacity(0.1),
                                     child: const Icon(
-                                      Icons.store_rounded,
+                                      Icons.storefront_outlined,
                                       size: 26,
                                       color: primaryColor,
                                     ),
@@ -1447,7 +1465,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                             : Container(
                                 color: primaryColor.withOpacity(0.1),
                                 child: const Icon(
-                                  Icons.store_rounded,
+                                  Icons.storefront_outlined,
                                   size: 26,
                                   color: primaryColor,
                                 ),
@@ -1463,7 +1481,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           Text(
                             order.shopName ?? 'Boutique #${order.shopId}',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 18,
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF1E1E2E),
                             ),
@@ -1510,7 +1528,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           Text(
                             statusInfo['label'],
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 15,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: statusColor,
                             ),
@@ -1552,7 +1570,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       child: Text(
                         _formatDateTime(order.createdAt),
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 15,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF374151),
                         ),
@@ -1570,7 +1588,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       child: Text(
                         '${order.itemsCount > 0 ? order.itemsCount : order.items.length} art.',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF374151),
                         ),
@@ -1581,7 +1599,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     Text(
                       '${order.totalAmount.toInt()} F',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w800,
                         color: const Color.fromARGB(255, 49, 49, 49),
                       ),
@@ -1650,9 +1668,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         return Container(
                           color: Colors.grey[200],
                           child: Icon(
-                            Icons.fastfood,
+                            Icons.lunch_dining_outlined,
                             size: 28,
-                            color: Colors.grey[400],
+                            color: Colors.grey[900],
                           ),
                         );
                       },
@@ -1660,9 +1678,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   : Container(
                       color: Colors.grey[200],
                       child: Icon(
-                        Icons.fastfood,
+                        Icons.lunch_dining_outlined,
                         size: 28,
-                        color: Colors.grey[400],
+                        color: Colors.grey[900],
                       ),
                     ),
             ),
@@ -1676,7 +1694,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 Text(
                   name,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -1687,8 +1705,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 Text(
                   'Quantité: $quantity',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+                    fontSize: 12,
+                    color: Colors.grey[800],
                   ),
                 ),
               ],
@@ -1701,7 +1719,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               Text(
                 '${(price * quantity).toInt()} F',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF8936A8),
                 ),
@@ -1710,8 +1728,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 Text(
                   '${price.toInt()} F/unité',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 13,
-                    color: Colors.grey[500],
+                    fontSize: 12,
+                    color: Colors.grey[800],
                   ),
                 ),
             ],
@@ -1774,8 +1792,18 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         // Logo boutique et infos
                         Row(
                           children: [
-                            // Logo de la boutique
-                            Container(
+                            // Logo de la boutique (cliquable → boutique)
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => HomeScreen(shopId: order.shopId),
+                                  ),
+                                );
+                              },
+                              child: Container(
                               width: 64,
                               height: 64,
                               decoration: BoxDecoration(
@@ -1799,7 +1827,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                           return Container(
                                             color: Colors.grey[100],
                                             child: const Icon(
-                                              Icons.store_rounded,
+                                              Icons.storefront_outlined,
                                               size: 32,
                                               color: Color(0xFF8936A8),
                                             ),
@@ -1809,13 +1837,14 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                     : Container(
                                         color: Colors.grey[100],
                                         child: const Icon(
-                                          Icons.store_rounded,
+                                          Icons.storefront_outlined,
                                           size: 32,
                                           color: Color(0xFF8936A8),
                                         ),
                                       ),
                               ),
                             ),
+                            ), // GestureDetector logo
                             const SizedBox(width: 16),
                             // Infos boutique
                             Expanded(
@@ -1825,7 +1854,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   Text(
                                     order.shopName ?? 'Boutique #${order.shopId}',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 20,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -1842,7 +1871,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                     child: Text(
                                       '#${order.orderNumber}',
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 14,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
                                       ),
@@ -1877,7 +1906,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                       child: Center(
                                         child: Text(
                                           statusInfo['icon'],
-                                          style: const TextStyle(fontSize: 14),
+                                          style: const TextStyle(fontSize: 12),
                                         ),
                                       ),
                                     ),
@@ -1889,8 +1918,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                           Text(
                                             'Statut',
                                             style: GoogleFonts.inriaSerif(
-                                              fontSize: 11,
-                                              color: Colors.grey[500],
+                                              fontSize: 12,
+                                              color: Colors.grey[800],
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -1943,8 +1972,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                           Text(
                                             'Date',
                                             style: GoogleFonts.inriaSerif(
-                                              fontSize: 11,
-                                              color: Colors.grey[500],
+                                              fontSize: 12,
+                                              color: Colors.grey[800],
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -1997,7 +2026,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       Text(
                         'Produits commandés',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -2012,7 +2041,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         child: Text(
                           '${hasProductDetails ? productsDetails.length : order.items.length} article${(hasProductDetails ? productsDetails.length : order.items.length) > 1 ? 's' : ''}',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF8936A8),
                           ),
@@ -2068,8 +2097,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 Text(
                                   'Détails des produits non disponibles',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 15,
-                                    color: Colors.grey[500],
+                                    fontSize: 13,
+                                    color: Colors.grey[800],
                                   ),
                                 ),
                               ],
@@ -2096,7 +2125,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       Text(
                         'Informations',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -2122,8 +2151,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       Expanded(
                         child: _buildInfoCard(
                           icon: order.serviceType.toLowerCase().contains('livraison')
-                              ? Icons.delivery_dining_rounded
-                              : Icons.store_mall_directory_rounded,
+                              ? Icons.local_shipping_outlined
+                              : Icons.storefront_outlined,
                           iconColor: const Color(0xFF8936A8),
                           label: 'Récupération',
                           value: order.serviceType.isNotEmpty ? order.serviceType : 'Non spécifié',
@@ -2165,8 +2194,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 Text(
                                   'Adresse de livraison',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                    color: Colors.grey[800],
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -2214,15 +2243,15 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                             Text(
                               'Total de la commande',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
-                                color: Colors.grey[600],
+                                fontSize: 12,
+                                color: Colors.grey[800],
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '${order.totalAmount.toInt()} FCFA',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 24,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF8936A8),
                               ),
@@ -2270,7 +2299,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           order.status == 'prete' || order.status == 'prête')
                         Expanded(
                           child: _buildActionChip(
-                            icon: Icons.star_rounded,
+                            icon: Icons.star_outline_rounded,
                             label: 'Noter',
                             color: const Color(0xFFF59E0B),
                             onTap: () {
@@ -2320,9 +2349,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 child: Text(
                                   'Fermer',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 16,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.grey[700],
+                                    color: Colors.grey[900],
                                   ),
                                 ),
                               ),
@@ -2350,12 +2379,12 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+                                  const Icon(Icons.receipt_long_outlined, color: Colors.white, size: 18),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Recu',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 16,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
@@ -2407,7 +2436,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   Text(
                                     'Suivre',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 16,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
@@ -2456,7 +2485,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               Text(
                 label,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: color,
                 ),
@@ -2505,8 +2534,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 Text(
                   label,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 11,
-                    color: Colors.grey[500],
+                    fontSize: 12,
+                    color: Colors.grey[800],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -2563,9 +2592,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         return Container(
                           color: Colors.grey[100],
                           child: Icon(
-                            Icons.fastfood_rounded,
+                            Icons.lunch_dining_outlined,
                             size: 28,
-                            color: Colors.grey[400],
+                            color: Colors.grey[900],
                           ),
                         );
                       },
@@ -2573,9 +2602,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   : Container(
                       color: Colors.grey[100],
                       child: Icon(
-                        Icons.fastfood_rounded,
+                        Icons.lunch_dining_outlined,
                         size: 28,
-                        color: Colors.grey[400],
+                        color: Colors.grey[900],
                       ),
                     ),
             ),
@@ -2589,7 +2618,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 Text(
                   name,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -2606,9 +2635,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   child: Text(
                     'Qté: $quantity',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
+                      color: Colors.grey[900],
                     ),
                   ),
                 ),
@@ -2623,7 +2652,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               Text(
                 '${(price * quantity).toInt()} F',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF8936A8),
                 ),
@@ -2632,8 +2661,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 Text(
                   '${price.toInt()} F/u',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 13,
-                    color: Colors.grey[500],
+                    fontSize: 12,
+                    color: Colors.grey[800],
                   ),
                 ),
             ],
@@ -2673,7 +2702,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             Text(
               'Aucune commande',
               style: GoogleFonts.inriaSerif(
-                fontSize: 24,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1E1E2E),
               ),
@@ -2683,8 +2712,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               'Vous n\'avez pas encore passé de commande sur cet appareil',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey[500],
+                fontSize: 13,
+                color: Colors.grey[800],
                 height: 1.6,
               ),
             ),
@@ -2711,7 +2740,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     child: Text(
                       'Scannez un QR code pour commander',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: primaryColor.withOpacity(0.8),
                       ),

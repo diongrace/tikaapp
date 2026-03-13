@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/profile_service.dart';
@@ -157,7 +157,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                       Text(
                         'Ajouter une adresse',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -185,7 +185,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                         const SizedBox(height: 4),
                         Text(
                           'Donnez un nom pour identifier facilement cette adresse',
-                          style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade500),
+                          style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade800),
                         ),
 
                         const SizedBox(height: 18),
@@ -195,10 +195,10 @@ class _AddressesScreenState extends State<AddressesScreen> {
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
                           value: selectedRegion,
-                          style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.black87),
+                          style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.black87),
                           decoration: InputDecoration(
                             hintText: 'Sélectionnez une région',
-                            hintStyle: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey.shade400),
+                            hintStyle: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade900),
                             filled: true,
                             fillColor: const Color(0xFFF8F8F8),
                             border: OutlineInputBorder(
@@ -217,7 +217,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                           ),
                           items: _ciRegions.map((r) => DropdownMenuItem(
                             value: r,
-                            child: Text(r, style: GoogleFonts.inriaSerif(fontSize: 16)),
+                            child: Text(r, style: GoogleFonts.inriaSerif(fontSize: 14)),
                           )).toList(),
                           onChanged: (v) => setSheet(() => selectedRegion = v),
                         ),
@@ -264,7 +264,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                 child: Center(
                                   child: Text(
                                     _addressEmojis[i]['emoji']!,
-                                    style: const TextStyle(fontSize: 24),
+                                    style: const TextStyle(fontSize: 20),
                                   ),
                                 ),
                               ),
@@ -299,7 +299,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                 child: Text(
                                   'Annuler',
                                   style: GoogleFonts.inriaSerif(
-                                    fontSize: 17,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black87,
                                   ),
@@ -375,7 +375,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                             children: [
                                               const Icon(Icons.save_outlined, color: Colors.white, size: 18),
                                               const SizedBox(width: 8),
-                                              Text('Enregistrer', style: GoogleFonts.inriaSerif(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+                                              Text('Enregistrer', style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                                             ],
                                           ),
                                   ),
@@ -401,15 +401,15 @@ class _AddressesScreenState extends State<AddressesScreen> {
   Widget _formLabel(String emoji, String label, {bool optional = false}) {
     return Row(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 18)),
+        Text(emoji, style: const TextStyle(fontSize: 16)),
         const SizedBox(width: 6),
         Text(
           label,
-          style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+          style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
         ),
         if (optional) ...[
           const SizedBox(width: 6),
-          Text('(optionnel)', style: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey.shade400)),
+          Text('(optionnel)', style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade900)),
         ],
       ],
     );
@@ -423,10 +423,10 @@ class _AddressesScreenState extends State<AddressesScreen> {
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      style: GoogleFonts.inriaSerif(fontSize: 16),
+      style: GoogleFonts.inriaSerif(fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.grey.shade400),
+        hintStyle: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade900),
         filled: true,
         fillColor: const Color(0xFFF8F8F8),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
@@ -471,13 +471,13 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   Expanded(
                     child: Text(
                       'Mes adresses de livraison',
-                      style: GoogleFonts.inriaSerif(fontSize: 19, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                   Text(
                     '$_addressCount/$_maxAddresses adresses',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF8936A8),
                     ),
@@ -520,7 +520,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                       Text(
                                         'Gérez vos adresses',
                                         style: GoogleFonts.inriaSerif(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black87,
                                         ),
@@ -529,8 +529,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                       Text(
                                         'Vous pouvez enregistrer jusqu\'à $_maxAddresses adresses de livraison. L\'adresse marquée comme "par défaut" sera automatiquement pré-remplie lors de vos commandes.',
                                         style: GoogleFonts.inriaSerif(
-                                          fontSize: 14,
-                                          color: Colors.grey.shade600,
+                                          fontSize: 13,
+                                          color: Colors.grey.shade800,
                                           height: 1.4,
                                         ),
                                       ),
@@ -574,7 +574,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                     Text(
                                       'Ajouter une adresse',
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 17,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                         color: const Color(0xFF8936A8),
                                       ),
@@ -583,8 +583,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                     Text(
                                       '${_maxAddresses - _addressCount} adresse(s) disponible(s)',
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade500,
+                                        fontSize: 13,
+                                        color: Colors.grey.shade800,
                                       ),
                                     ),
                                   ],
@@ -617,12 +617,12 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                   const SizedBox(height: 16),
                                   Text(
                                     'Aucune adresse enregistrée',
-                                    style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                                    style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     'Ajoutez votre première adresse de livraison',
-                                    style: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey.shade500),
+                                    style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade800),
                                   ),
                                   const SizedBox(height: 20),
                                   GestureDetector(
@@ -644,7 +644,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                           const SizedBox(width: 8),
                                           Text(
                                             'Ajouter une adresse',
-                                            style: GoogleFonts.inriaSerif(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                                            style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
                                           ),
                                         ],
                                       ),
@@ -727,7 +727,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 26)),
+                child: Text(emoji, style: const TextStyle(fontSize: 20)),
               ),
             ),
 
@@ -741,7 +741,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                     children: [
                       Text(
                         name,
-                        style: GoogleFonts.inriaSerif(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                        style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
                       ),
                       if (isDefault) ...[
                         const SizedBox(width: 8),
@@ -766,7 +766,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   const SizedBox(height: 6),
                   Text(
                     address,
-                    style: GoogleFonts.inriaSerif(fontSize: 15, color: Colors.grey.shade600, height: 1.4),
+                    style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade800, height: 1.4),
                   ),
                 ],
               ),
@@ -784,7 +784,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                     child: Row(children: [
                       const Icon(Icons.check_circle_outline, size: 18, color: Color(0xFF8936A8)),
                       const SizedBox(width: 10),
-                      Text('Définir par défaut', style: GoogleFonts.inriaSerif(fontSize: 16)),
+                      Text('Définir par défaut', style: GoogleFonts.inriaSerif(fontSize: 14)),
                     ]),
                   ),
                 PopupMenuItem(
@@ -792,7 +792,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   child: Row(children: [
                     const Icon(Icons.delete_outline, size: 18, color: Colors.red),
                     const SizedBox(width: 10),
-                    Text('Supprimer', style: GoogleFonts.inriaSerif(fontSize: 16, color: Colors.red)),
+                    Text('Supprimer', style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.red)),
                   ]),
                 ),
               ],

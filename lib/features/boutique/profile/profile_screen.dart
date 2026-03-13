@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'personal_info_screen.dart';
 import 'addresses_screen.dart';
@@ -295,7 +295,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
+      useSafeArea: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.75,
         ),
@@ -347,7 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         'Mes cartes de fidelite',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 20,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
@@ -355,8 +358,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         '${cards.length} carte${cards.length > 1 ? 's' : ''}',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ],
@@ -369,17 +372,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Divider(color: Colors.grey.shade100, thickness: 1),
             const SizedBox(height: 8),
 
-            // Liste des cartes
+            // Liste des cartes - style carte bancaire
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                 itemCount: cards.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, __) => const SizedBox(height: 14),
                 itemBuilder: (context, index) {
                   final card = cards[index];
                   final hasPoints = card.points > 0;
-                  return InkWell(
+                  // Palette de couleurs alternées
+                  final palettes = [
+                    [const Color(0xFF8936A8), const Color(0xFFD44CDA)],
+                    [const Color(0xFF1A73E8), const Color(0xFF4FC3F7)],
+                    [const Color(0xFF00897B), const Color(0xFF80CBC4)],
+                    [const Color(0xFFF57C00), const Color(0xFFFFCC80)],
+                  ];
+                  final colors = palettes[index % palettes.length];
+                  return GestureDetector(
                     onTap: () {
                       Navigator.pop(ctx);
                       Navigator.push(
@@ -392,79 +403,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     },
-                    borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.all(14),
+                      height: 110,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8F4FF),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _shopPrimary.withOpacity(0.15),
-                          width: 1,
+                        gradient: LinearGradient(
+                          colors: colors,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors[0].withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
-                      child: Row(
+                      child: Stack(
                         children: [
-                          // Logo ou initiale de la boutique
-                          _buildShopAvatar(card),
-                          const SizedBox(width: 14),
-
-                          // Infos
-                          Expanded(
+                          // Cercles décoratifs
+                          Positioned(
+                            right: -20,
+                            top: -20,
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.08),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: 30,
+                            bottom: -30,
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.06),
+                              ),
+                            ),
+                          ),
+                          // Contenu
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  card.shopName,
-                                  style: GoogleFonts.inriaSerif(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
+                                // Ligne du haut: logo + nom boutique + badge TIKA
                                 Row(
                                   children: [
-                                    Icon(
-                                      Icons.stars_rounded,
-                                      size: 15,
-                                      color: hasPoints
-                                          ? _shopPrimary
-                                          : Colors.grey.shade400,
+                                    _buildShopAvatar(card),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        card.shopName,
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      hasPoints
-                                          ? '${card.points} points'
-                                          : 'Aucun point',
-                                      style: GoogleFonts.inriaSerif(
-                                        fontSize: 15,
-                                        fontWeight: hasPoints
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
-                                        color: hasPoints
-                                            ? _shopPrimary
-                                            : Colors.grey.shade400,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        'TIKA',
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                          letterSpacing: 1.5,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
+                                // Ligne du bas: points + icone
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Points fidélité',
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 11,
+                                            color: Colors.white.withOpacity(0.75),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          hasPoints ? '${card.points} pts' : '0 pt',
+                                          style: GoogleFonts.inriaSerif(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Spacer(),
+                                    Icon(
+                                      Icons.card_membership_rounded,
+                                      color: Colors.white.withOpacity(0.5),
+                                      size: 32,
+                                    ),
+                                  ],
+                                ),
                               ],
-                            ),
-                          ),
-
-                          // Fleche
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: _shopPrimary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              size: 14,
-                              color: _shopPrimary,
                             ),
                           ),
                         ],
@@ -476,6 +534,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -556,7 +615,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text(
                           'Profil',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 22,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -594,8 +653,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           // Avatar
                           Container(
-                            width: 100,
-                            height: 100,
+                            width: 70,
+                            height: 70,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [_shopPrimary.withOpacity(0.6), _shopPrimary],
@@ -616,14 +675,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ? Text(
                                       _getInitials(_customerName),
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 38,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                       ),
                                     )
                                   : const Icon(
                                       Icons.person_outline,
-                                      size: 48,
+                                      size: 36,
                                       color: Colors.white,
                                     ),
                             ),
@@ -637,7 +696,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ? (_customerName.isEmpty ? 'Mon profil' : _customerName)
                                 : 'Bienvenue',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 26,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -656,8 +715,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   Text(
                                     _customerEmail,
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 16,
-                                      color: Colors.grey.shade700,
+                                      fontSize: 13,
+                                      color: Colors.grey.shade900,
                                     ),
                                   ),
                                 ],
@@ -673,8 +732,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   Text(
                                     _customerPhone,
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 16,
-                                      color: Colors.grey.shade700,
+                                      fontSize: 13,
+                                      color: Colors.grey.shade900,
                                     ),
                                   ),
                                 ],
@@ -684,8 +743,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               'Connectez-vous pour acceder a votre profil',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 15,
-                                color: Colors.grey.shade500,
+                                fontSize: 13,
+                                color: Colors.grey.shade800,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -799,7 +858,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       Text(
                                         'Programme de fidelite',
                                         style: GoogleFonts.inriaSerif(
-                                          fontSize: 18,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
                                         ),
@@ -810,7 +869,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   Text(
                                     '$_loyaltyPoints points',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 38,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -821,7 +880,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ? 'Valeur: ${(_loyaltyPoints * 5).toStringAsFixed(0)} FCFA'
                                         : 'Creez une carte pour gagner des points',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 16,
+                                      fontSize: 13,
                                       color: Colors.white.withOpacity(0.9),
                                     ),
                                   ),
@@ -840,7 +899,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     child: Text(
                                       'Voir mes cartes',
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 16,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -858,7 +917,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         Text(
                                           'Programme de fidelite',
                                           style: GoogleFonts.inriaSerif(
-                                            fontSize: 18,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.w600,
                                             color: Colors.white,
                                           ),
@@ -867,7 +926,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         Text(
                                           'Connectez-vous pour gagner des points et des recompenses',
                                           style: GoogleFonts.inriaSerif(
-                                            fontSize: 15,
+                                            fontSize: 13,
                                             color: Colors.white.withOpacity(0.85),
                                           ),
                                         ),
@@ -993,16 +1052,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     'Tika v1.0.0',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '2025 Tika. Tous droits reserves.',
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                      color: Colors.grey.shade800,
                     ),
                   ),
 
@@ -1070,7 +1129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Text(
           initial,
           style: GoogleFonts.inriaSerif(
-            fontSize: 24,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -1102,7 +1161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : Text(
                     value,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 34,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: _shopPrimary,
                     ),
@@ -1113,8 +1172,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inriaSerif(
-                fontSize: 13,
-                color: locked ? Colors.grey.shade400 : Colors.grey.shade700,
+                fontSize: 12,
+                color: locked ? Colors.grey.shade900 : Colors.grey.shade900,
               ),
             ),
           ],
@@ -1159,7 +1218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Icon(
                 icon,
-                color: locked ? Colors.grey.shade400 : _shopPrimary,
+                color: locked ? Colors.grey.shade900 : _shopPrimary,
                 size: 24,
               ),
             ),
@@ -1171,17 +1230,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     title,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 18,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: locked ? Colors.grey.shade400 : Colors.black87,
+                      color: locked ? Colors.grey.shade900 : Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 15,
-                      color: Colors.grey.shade500,
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],
@@ -1189,7 +1248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             Icon(
               locked ? Icons.lock_outline : Icons.chevron_right,
-              color: Colors.grey.shade400,
+              color: Colors.grey.shade900,
               size: 22,
             ),
           ],
@@ -1245,7 +1304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         'Se connecter',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -1254,7 +1313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         'Synchronisez vos donnees',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 15,
+                          fontSize: 13,
                           color: Colors.white.withOpacity(0.8),
                         ),
                       ),
@@ -1318,7 +1377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         'Deconnexion',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.red.shade700,
                         ),
@@ -1327,8 +1386,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         'Se deconnecter de ce compte',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 15,
-                          color: Colors.grey.shade600,
+                          fontSize: 13,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ],
@@ -1336,7 +1395,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: Colors.grey.shade400,
+                  color: Colors.grey.shade900,
                   size: 24,
                 ),
               ],

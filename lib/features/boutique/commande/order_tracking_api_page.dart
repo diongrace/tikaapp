@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -353,7 +353,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         Text(
                           isCancelled ? 'Commande annulée' : 'Suivi de commande',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 22,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -368,7 +368,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           child: Text(
                             '#${widget.orderNumber}',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
@@ -448,7 +448,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           Text(
                             _order!.shopName ?? 'Boutique',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 18,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
@@ -459,7 +459,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           Text(
                             '${_order!.totalAmount.toInt()} FCFA',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 22,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -490,8 +490,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
             Text(
               'Chargement de votre commande...',
               style: GoogleFonts.inriaSerif(
-                fontSize: 16,
-                color: Colors.grey[600],
+                fontSize: 12,
+                color: Colors.grey[800],
               ),
             ),
           ],
@@ -523,7 +523,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Text(
                 'Erreur de chargement',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 22,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -531,8 +531,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Text(
                 _errorMessage ?? 'Une erreur est survenue',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                  color: Colors.grey.shade800,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -543,7 +543,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 label: Text(
                   'Réessayer',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -566,7 +566,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
       return Center(
         child: Text(
           'Commande introuvable',
-          style: GoogleFonts.inriaSerif(fontSize: 18),
+          style: GoogleFonts.inriaSerif(fontSize: 12),
         ),
       );
     }
@@ -632,7 +632,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 child: Text(
                   'Détails de la commande',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 18,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -649,7 +649,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 child: Text(
                   '$itemsCount article${itemsCount > 1 ? 's' : ''}',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: primaryColor,
                   ),
@@ -715,7 +715,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                     child: Icon(
                                       Icons.fastfood_rounded,
                                       size: 30,
-                                      color: Colors.grey[400],
+                                      color: Colors.grey[900],
                                     ),
                                   );
                                 },
@@ -725,7 +725,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                 child: Icon(
                                   Icons.fastfood_rounded,
                                   size: 30,
-                                  color: Colors.grey[400],
+                                  color: Colors.grey[900],
                                 ),
                               ),
                       ),
@@ -739,7 +739,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           Text(
                             name,
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
@@ -756,9 +756,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             child: Text(
                               'Qté: $quantity',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
+                                color: Colors.grey[900],
                               ),
                             ),
                           ),
@@ -773,7 +773,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         Text(
                           '${(price * quantity).toInt()} F',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 18,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: primaryColor,
                           ),
@@ -782,8 +782,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           Text(
                             '${price.toInt()} F/u',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 13,
-                              color: Colors.grey[500],
+                              fontSize: 12,
+                              color: Colors.grey[800],
                             ),
                           ),
                       ],
@@ -812,7 +812,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         Text(
                           '$itemsCount article${itemsCount > 1 ? 's' : ''} commandé${itemsCount > 1 ? 's' : ''}',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 16,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
                           ),
@@ -821,8 +821,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         Text(
                           'Détails disponibles après traitement',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 14,
-                            color: Colors.grey[500],
+                            fontSize: 12,
+                            color: Colors.grey[800],
                           ),
                         ),
                       ],
@@ -870,7 +870,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                     Text(
                       'Total',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
@@ -880,7 +880,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 Text(
                   '${order.totalAmount.toInt()} FCFA',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 22,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: primaryColor,
                   ),
@@ -938,7 +938,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Text(
                 'Statut de la commande',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 18,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -968,7 +968,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
             child: Text(
               'Commande annulée',
               style: GoogleFonts.inriaSerif(
-                fontSize: 20,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFFE53935),
               ),
@@ -980,8 +980,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               'Cette commande a été annulée\net ne sera pas traitée.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inriaSerif(
-                fontSize: 14,
-                color: Colors.grey[600],
+                fontSize: 12,
+                color: Colors.grey[800],
                 height: 1.5,
               ),
             ),
@@ -1030,9 +1030,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               child: Text(
                 label,
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 15,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey[400],
+                  color: Colors.grey[900],
                   decoration: TextDecoration.lineThrough,
                   decorationColor: Colors.grey[350],
                 ),
@@ -1089,7 +1089,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Text(
                 'Suivi en temps réel',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87,
+                  fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87,
                 ),
               ),
             ],
@@ -1162,9 +1162,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             Text(
                               label,
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 17,
+                                fontSize: 14,
                                 fontWeight: (completed || isCurrent) ? FontWeight.w600 : FontWeight.w500,
-                                color: (completed || isCurrent) ? Colors.black87 : Colors.grey[400],
+                                color: (completed || isCurrent) ? Colors.black87 : Colors.grey[900],
                               ),
                             ),
                             if (date != null && date.isNotEmpty)
@@ -1172,7 +1172,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                 padding: const EdgeInsets.only(top: 4),
                                 child: Text(
                                   date,
-                                  style: GoogleFonts.inriaSerif(fontSize: 13, color: color, fontWeight: FontWeight.w600),
+                                  style: GoogleFonts.inriaSerif(fontSize: 12, color: color, fontWeight: FontWeight.w600),
                                 ),
                               )
                             else if (isCurrent)
@@ -1180,7 +1180,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                 padding: const EdgeInsets.only(top: 4),
                                 child: Text(
                                   'En cours...',
-                                  style: GoogleFonts.inriaSerif(fontSize: 15, color: color, fontWeight: FontWeight.w600),
+                                  style: GoogleFonts.inriaSerif(fontSize: 12, color: color, fontWeight: FontWeight.w600),
                                 ),
                               ),
                             if (!isLast) const SizedBox(height: 16),
@@ -1206,7 +1206,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             const SizedBox(width: 4),
                             Text(
                               isCurrent ? 'Actuel' : 'Fait',
-                              style: GoogleFonts.inriaSerif(fontSize: 13, fontWeight: FontWeight.w600, color: color),
+                              style: GoogleFonts.inriaSerif(fontSize: 12, fontWeight: FontWeight.w600, color: color),
                             ),
                           ],
                         ),
@@ -1292,7 +1292,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Text(
                 'Suivi en temps réel',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 18,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -1364,7 +1364,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                 child: Icon(
                                   icon,
                                   size: 22,
-                                  color: isCompleted ? Colors.white : Colors.grey[400],
+                                  color: isCompleted ? Colors.white : Colors.grey[900],
                                 ),
                               ),
                         if (!isLast)
@@ -1390,9 +1390,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             Text(
                               label,
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 17,
+                                fontSize: 14,
                                 fontWeight: isPassed ? FontWeight.w600 : FontWeight.w500,
-                                color: isPassed ? Colors.black87 : Colors.grey[400],
+                                color: isPassed ? Colors.black87 : Colors.grey[900],
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -1403,12 +1403,12 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                       ? 'Terminé ✓'
                                       : description,
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 15,
+                                fontSize: 12,
                                 color: isCurrent
                                     ? stepColor
                                     : isCompleted
                                         ? stepColor
-                                        : Colors.grey[500],
+                                        : Colors.grey[800],
                                 fontWeight: isPassed ? FontWeight.w600 : FontWeight.normal,
                               ),
                             ),
@@ -1438,7 +1438,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             Text(
                               isCurrent ? 'Actuel' : 'Fait',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: stepColor,
                               ),
@@ -1489,7 +1489,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Text(
                 'Informations',
                 style: GoogleFonts.inriaSerif(
-                  fontSize: 18,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -1565,8 +1565,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 Text(
                   label,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 13,
-                    color: Colors.grey[500],
+                    fontSize: 12,
+                    color: Colors.grey[800],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1574,7 +1574,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 Text(
                   value,
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 16,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -1630,7 +1630,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                     Text(
                       'Besoin d\'aide ?',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 18,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
@@ -1638,8 +1638,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                     Text(
                       'Contactez la boutique directement',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 15,
-                        color: Colors.grey[600],
+                        fontSize: 12,
+                        color: Colors.grey[800],
                       ),
                     ),
                   ],
@@ -1672,7 +1672,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           Text(
                             'Appeler',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
                             ),
@@ -1714,7 +1714,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           Text(
                             'WhatsApp',
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
