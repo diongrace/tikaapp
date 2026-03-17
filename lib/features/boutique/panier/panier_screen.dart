@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'cart_manager.dart';
 import '../commande/commande_screen.dart';
@@ -8,6 +9,8 @@ import '../../../services/shop_service.dart';
 import '../../../services/loyalty_service.dart';
 import '../../../services/auth_service.dart';
 import '../loyalty/create_loyalty_card_page.dart';
+import '../../../services/gift_service.dart';
+import '../../../services/models/gift_model.dart';
 import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../core/utils/responsive.dart';
@@ -18,6 +21,26 @@ class PanierScreen extends StatefulWidget {
   final Shop? shop;
 
   const PanierScreen({super.key, required this.shopId, this.shop});
+
+  /// Affiche le panier comme une modal bottom sheet
+  static Future<bool?> show(BuildContext context, {required int shopId, Shop? shop}) {
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.95,
+          child: BoutiqueThemeProvider(
+            shop: shop,
+            child: PanierScreen(shopId: shopId, shop: shop),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   State<PanierScreen> createState() => _PanierScreenState();
@@ -42,6 +65,13 @@ class _PanierScreenState extends State<PanierScreen> {
   String? _loyaltyError;
   int _loyaltyDiscount = 0;
   int _loyaltyPointsUsed = 0;
+
+  // Carte cadeau
+  final TextEditingController _giftCardController = TextEditingController();
+  GiftCardValidation? _appliedGiftCard;
+  bool _isValidatingGiftCard = false;
+  String? _giftCardError;
+  int _giftCardDiscount = 0;
 
   // Thème de la boutique - Utiliser une variable late pour éviter les recalculs
   late final ShopTheme _theme;
@@ -93,6 +123,7 @@ class _PanierScreenState extends State<PanierScreen> {
       _promoController.dispose();
       _loyaltyCardController.dispose();
       _loyaltyPinController.dispose();
+      _giftCardController.dispose();
     } catch (e) {
       print('❌ [PanierScreen] Erreur dans dispose: $e');
     }
@@ -230,11 +261,38 @@ class _PanierScreenState extends State<PanierScreen> {
     return discount > total ? total : discount;
   }
 
+  Future<void> _applyGiftCard() async {
+    final code = _giftCardController.text.trim();
+    if (code.isEmpty) return;
+    setState(() { _isValidatingGiftCard = true; _giftCardError = null; });
+    try {
+      final validation = await GiftService.validateGiftCard(
+        code: code,
+        shopId: widget.shopId,
+      );
+      final total = _cartManager.totalPrice;
+      final discount = validation.balance > total ? total : validation.balance;
+      setState(() {
+        _appliedGiftCard = validation;
+        _giftCardDiscount = discount;
+        _isValidatingGiftCard = false;
+      });
+    } catch (e) {
+      setState(() {
+        _giftCardError = e.toString().replaceFirst('Exception: ', '');
+        _appliedGiftCard = null;
+        _giftCardDiscount = 0;
+        _isValidatingGiftCard = false;
+      });
+    }
+  }
+
   int _totalAfterDiscounts(int total) {
     final couponDiscount = _calculateDiscount(total);
     final afterCoupon = total - couponDiscount;
     final afterLoyalty = afterCoupon - _loyaltyDiscount;
-    return afterLoyalty < 0 ? 0 : afterLoyalty;
+    final afterGiftCard = afterLoyalty - _giftCardDiscount;
+    return afterGiftCard < 0 ? 0 : afterGiftCard;
   }
 
   void _onCartChanged() {
@@ -282,6 +340,16 @@ class _PanierScreenState extends State<PanierScreen> {
           SafeArea(
             child: Column(
               children: [
+                // Drag handle (modal indicator)
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 10, bottom: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
                 // Header premium
                 Container(
                   padding: EdgeInsets.symmetric(
@@ -309,6 +377,7 @@ class _PanierScreenState extends State<PanierScreen> {
                         child: Container(
                           width: 44,
                           height: 44,
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
                             shape: BoxShape.circle,
@@ -317,8 +386,8 @@ class _PanierScreenState extends State<PanierScreen> {
                               width: 1.5,
                             ),
                           ),
-                          child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
+                          child: FaIcon(
+                            FontAwesomeIcons.arrowLeft,
                             size: 17,
                             color: Colors.grey.shade900,
                           ),
@@ -353,13 +422,14 @@ class _PanierScreenState extends State<PanierScreen> {
                       Container(
                         width: 48,
                         height: 48,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: Colors.grey.shade200, width: 1.5),
                         ),
-                        child: Icon(
-                          Icons.shopping_bag_rounded,
+                        child: FaIcon(
+                          FontAwesomeIcons.bagShopping,
                           color: Colors.grey.shade800,
                           size: 22,
                         ),
@@ -382,8 +452,9 @@ class _PanierScreenState extends State<PanierScreen> {
                               color: Colors.grey.shade100,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              Icons.shopping_bag_outlined,
+                            alignment: Alignment.center,
+                            child: FaIcon(
+                              FontAwesomeIcons.bagShopping,
                               size: 60,
                               color: Colors.grey.shade900,
                             ),
@@ -485,8 +556,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 10),
-                                    Icon(
-                                      Icons.local_offer_rounded,
+                                    FaIcon(
+                                      FontAwesomeIcons.tag,
                                       color: Colors.grey.shade800,
                                       size: 18,
                                     ),
@@ -582,7 +653,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.check_circle, color: Color(0xFF16A34A), size: 16),
+                                        const FaIcon(FontAwesomeIcons.solidCircleCheck, color: Color(0xFF16A34A), size: 16),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
@@ -592,7 +663,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                         ),
                                         GestureDetector(
                                           onTap: () => setState(() { _appliedCoupon = null; _promoController.clear(); }),
-                                          child: const Icon(Icons.close, size: 16, color: Color(0xFF15803D)),
+                                          child: const FaIcon(FontAwesomeIcons.xmark, size: 16, color: Color(0xFF15803D)),
                                         ),
                                       ],
                                     ),
@@ -610,7 +681,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 16),
+                                        const FaIcon(FontAwesomeIcons.circleExclamation, color: Color(0xFFDC2626), size: 16),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
@@ -625,6 +696,11 @@ class _PanierScreenState extends State<PanierScreen> {
                               ],
                             ),
                           ),
+
+                          const SizedBox(height: 16),
+
+                          // Section Carte cadeau
+                          _buildGiftCardSection(total),
 
                           const SizedBox(height: 16),
 
@@ -690,7 +766,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                           color: Colors.grey.shade100,
                                           borderRadius: BorderRadius.circular(10),
                                         ),
-                                        child: Icon(Icons.card_giftcard_rounded, color: Colors.grey.shade500, size: 22),
+                                        child: FaIcon(FontAwesomeIcons.gift, color: Colors.grey.shade500, size: 22),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -734,7 +810,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                           _loadLoyaltyCard();
                                         }
                                       },
-                                      icon: Icon(Icons.add_card_rounded, size: 18, color: _primaryColor),
+                                      icon: FaIcon(FontAwesomeIcons.creditCard, size: 18, color: _primaryColor),
                                       label: Text(
                                         'Créer ma carte de fidélité',
                                         style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: _primaryColor),
@@ -789,7 +865,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(Icons.info_outline, size: 14, color: Colors.grey.shade600),
+                                          FaIcon(FontAwesomeIcons.circleInfo, size: 14, color: Colors.grey.shade600),
                                           const SizedBox(width: 6),
                                           Expanded(
                                             child: Text(hint, style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade900)),
@@ -850,7 +926,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                       decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(8)),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 16),
+                                          const FaIcon(FontAwesomeIcons.circleExclamation, color: Color(0xFFDC2626), size: 16),
                                           const SizedBox(width: 8),
                                           Expanded(child: Text(_loyaltyError!, style: GoogleFonts.inriaSerif(fontSize: 13, color: const Color(0xFFDC2626)))),
                                         ],
@@ -869,7 +945,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.stars_rounded, color: Color(0xFF2E7D32), size: 20),
+                                        const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF2E7D32), size: 20),
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: Column(
@@ -893,7 +969,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                             _loyaltyPointsUsed = 0;
                                             _loyaltyPinController.clear();
                                           }),
-                                          child: const Icon(Icons.close, size: 16, color: Color(0xFF2E7D32)),
+                                          child: const FaIcon(FontAwesomeIcons.xmark, size: 16, color: Color(0xFF2E7D32)),
                                         ),
                                       ],
                                     ),
@@ -930,8 +1006,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                         color: Colors.grey.shade100,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: Icon(
-                                        Icons.receipt_long,
+                                      child: FaIcon(
+                                        FontAwesomeIcons.receipt,
                                         color: Colors.grey.shade800,
                                         size: 20,
                                       ),
@@ -982,6 +1058,23 @@ class _PanierScreenState extends State<PanierScreen> {
                                       Text(
                                         '-${_calculateDiscount(total)} FCFA',
                                         style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF16A34A)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                // Ligne réduction carte cadeau
+                                if (_appliedGiftCard != null && _giftCardDiscount > 0) ...[
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Carte cadeau (${_appliedGiftCard!.code})',
+                                        style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF6B21A8)),
+                                      ),
+                                      Text(
+                                        '-$_giftCardDiscount FCFA',
+                                        style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF6B21A8)),
                                       ),
                                     ],
                                   ),
@@ -1090,6 +1183,10 @@ class _PanierScreenState extends State<PanierScreen> {
                                 ? _loyaltyDiscount.toDouble()
                                 : null,
                             loyaltyPointValue: _autoLoadedCard?.pointValue,
+                            giftCardCode: _appliedGiftCard?.code,
+                            giftCardDiscount: _giftCardDiscount > 0
+                                ? _giftCardDiscount.toDouble()
+                                : null,
                           ),
                         ),
                       ),
@@ -1133,6 +1230,127 @@ class _PanierScreenState extends State<PanierScreen> {
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _buildGiftCardSection(int total) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Container(
+              width: 4, height: 22,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6B21A8).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const FaIcon(FontAwesomeIcons.creditCard, color: Color(0xFF6B21A8), size: 17),
+            const SizedBox(width: 8),
+            Text('Carte cadeau', style: GoogleFonts.inriaSerif(
+              fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF1A1A2E))),
+          ]),
+          const SizedBox(height: 12),
+
+          if (_appliedGiftCard == null) ...[
+            Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _giftCardController,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    hintText: 'Code carte (GC-XXXXXXXX)',
+                    hintStyle: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade500),
+                    filled: true,
+                    fillColor: const Color(0xFFF5F5F5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: _isValidatingGiftCard ? null : _applyGiftCard,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6B21A8),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: _isValidatingGiftCard
+                      ? const SizedBox(width: 18, height: 18,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : Text('Appliquer', style: GoogleFonts.inriaSerif(
+                          color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                ),
+              ),
+            ]),
+            if (_giftCardError != null) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(children: [
+                  const FaIcon(FontAwesomeIcons.circleExclamation, color: Color(0xFFDC2626), size: 14),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(_giftCardError!, style: GoogleFonts.inriaSerif(
+                    fontSize: 12, color: const Color(0xFFDC2626)))),
+                ]),
+              ),
+            ],
+          ] else ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6B21A8).withOpacity(0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF6B21A8).withOpacity(0.3)),
+              ),
+              child: Row(children: [
+                const FaIcon(FontAwesomeIcons.circleCheck, color: Color(0xFF6B21A8), size: 16),
+                const SizedBox(width: 10),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(_appliedGiftCard!.code, style: GoogleFonts.inriaSerif(
+                    fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF6B21A8))),
+                  Text(
+                    'Solde: ${_appliedGiftCard!.balance} FCFA · −$_giftCardDiscount FCFA appliqué',
+                    style: GoogleFonts.inriaSerif(fontSize: 12, color: const Color(0xFF6B21A8)),
+                  ),
+                ])),
+                GestureDetector(
+                  onTap: () => setState(() {
+                    _appliedGiftCard = null;
+                    _giftCardDiscount = 0;
+                    _giftCardController.clear();
+                  }),
+                  child: const FaIcon(FontAwesomeIcons.xmark, size: 16, color: Color(0xFF6B21A8)),
+                ),
+              ]),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -1187,8 +1405,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Center(
-                                    child: Icon(
-                                      Icons.shopping_bag_outlined,
+                                    child: FaIcon(
+                                      FontAwesomeIcons.bagShopping,
                                       size: 40,
                                       color: Colors.grey.shade900,
                                     ),
@@ -1197,8 +1415,8 @@ class _PanierScreenState extends State<PanierScreen> {
                               ),
                             )
                           : Center(
-                              child: Icon(
-                                Icons.shopping_bag_outlined,
+                              child: FaIcon(
+                                FontAwesomeIcons.bagShopping,
                                 size: 40,
                                 color: Colors.grey.shade900,
                               ),
@@ -1222,7 +1440,7 @@ class _PanierScreenState extends State<PanierScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.auto_awesome, size: 10, color: Colors.white),
+                            const FaIcon(FontAwesomeIcons.wandMagicSparkles, size: 10, color: Colors.white),
                             const SizedBox(width: 4),
                             Text(
                               '-$discount%',
@@ -1326,6 +1544,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                 duration: const Duration(milliseconds: 180),
                                 width: 36,
                                 height: 36,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: Colors.white,
@@ -1343,8 +1562,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                     ),
                                   ],
                                 ),
-                                child: Icon(
-                                  Icons.remove_rounded,
+                                child: FaIcon(
+                                  FontAwesomeIcons.minus,
                                   size: 16,
                                   color: item['quantity'] > 1
                                       ? Colors.grey.shade900
@@ -1389,6 +1608,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                 duration: const Duration(milliseconds: 180),
                                 width: 36,
                                 height: 36,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: LinearGradient(
@@ -1404,8 +1624,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
-                                  Icons.add_rounded,
+                                child: const FaIcon(
+                                  FontAwesomeIcons.plus,
                                   size: 16,
                                   color: Colors.white,
                                 ),
@@ -1424,6 +1644,7 @@ class _PanierScreenState extends State<PanierScreen> {
                           child: Container(
                             width: 40,
                             height: 40,
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: const Color(0xFFFEE2E2),
                               borderRadius: BorderRadius.circular(10),
@@ -1435,8 +1656,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.delete_rounded,
+                            child: const FaIcon(
+                              FontAwesomeIcons.trash,
                               size: 20,
                               color: Color(0xFFEF4444),
                             ),

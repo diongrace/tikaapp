@@ -1,6 +1,7 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:pdf/pdf.dart';
@@ -89,6 +90,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 child: Container(
                   width: 90,
                   height: 90,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     shape: BoxShape.circle,
@@ -100,8 +102,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.check_rounded,
+                  child: const FaIcon(
+                    FontAwesomeIcons.check,
                     size: 50,
                     color: Colors.white,
                   ),
@@ -208,7 +210,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     ),
                     child: Column(
                       children: [
-                        const Icon(Icons.star_rounded, color: Color(0xFF7C3AED), size: 28),
+                        const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF7C3AED), size: 28),
                         const SizedBox(height: 6),
                         Text(
                           'Carte de fidélité détectée !',
@@ -222,7 +224,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.card_giftcard_rounded, color: Color(0xFF7C3AED), size: 16),
+                            const FaIcon(FontAwesomeIcons.gift, color: Color(0xFF7C3AED), size: 16),
                             const SizedBox(width: 6),
                             RichText(
                               text: TextSpan(
@@ -261,7 +263,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 if (!_hasLoyaltyCard)
                   _buildActionButton(
                     label: 'Creer carte de fidelite',
-                    icon: Icons.card_giftcard,
+                    icon: FontAwesomeIcons.gift,
                     color: const Color(0xFFD946EF),
                     onPressed: () {
                       final shop = BoutiqueThemeProvider.shopOf(context);
@@ -288,7 +290,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 // Voir le recu
                 _buildActionButton(
                   label: 'Voir le recu',
-                  icon: Icons.receipt_long,
+                  icon: FontAwesomeIcons.receipt,
                   color: const Color(0xFF3B82F6),
                   onPressed: () => _openReceipt(),
                 ),
@@ -297,7 +299,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 // Télécharger le reçu
                 _buildActionButton(
                   label: 'Télécharger le reçu',
-                  icon: Icons.download,
+                  icon: FontAwesomeIcons.download,
                   color: const Color(0xFF10B981),
                   onPressed: () => _downloadReceipt(),
                 ),
@@ -306,7 +308,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                 // Suivre ma commande
                 _buildActionButton(
                   label: 'Suivre ma commande',
-                  icon: Icons.local_shipping_outlined,
+                  icon: FontAwesomeIcons.truck,
                   color: const Color(0xFFF97316),
                   onPressed: () => _trackOrder(),
                 ),
@@ -814,8 +816,8 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               children: [
                 Icon(
                   color == Colors.red || color == Colors.orange
-                      ? Icons.warning_rounded
-                      : Icons.check_circle_rounded,
+                      ? FontAwesomeIcons.triangleExclamation
+                      : FontAwesomeIcons.solidCircleCheck,
                   color: Colors.white,
                   size: 36,
                 ),
@@ -1016,6 +1018,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                 child: Container(
                   width: 90,
                   height: 90,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     shape: BoxShape.circle,
@@ -1027,8 +1030,8 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.check_rounded,
+                  child: const FaIcon(
+                    FontAwesomeIcons.check,
                     size: 50,
                     color: Colors.white,
                   ),
@@ -1071,7 +1074,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.store, color: const Color(0xFF059669), size: 22),
+                        FaIcon(FontAwesomeIcons.store, color: const Color(0xFF059669), size: 22),
                         const SizedBox(width: 10),
                         Text(
                           'Récupération en boutique',
@@ -1095,7 +1098,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.calendar_today, size: 18, color: Colors.grey.shade700),
+                            FaIcon(FontAwesomeIcons.calendarDay, size: 18, color: Colors.grey.shade700),
                             const SizedBox(width: 10),
                             Text(
                               _formatPickupDateTime(
@@ -1142,7 +1145,7 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
                           ),
                         );
                       },
-                      icon: const Icon(Icons.card_giftcard, size: 20),
+                      icon: const FaIcon(FontAwesomeIcons.gift, size: 20),
                       label: Text(
                         'Creer une carte de fidelite',
                         style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600),

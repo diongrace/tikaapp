@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../services/models/shop_model.dart';
 import '../../panier/cart_manager.dart';
 import '../../panier/panier_screen.dart';
@@ -103,20 +104,20 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _navItem(context, shopTheme: shopTheme,
-              icon: Icons.home_outlined, iconActive: Icons.home_rounded,
+              icon: FontAwesomeIcons.house, iconActive: FontAwesomeIcons.house,
               label: 'Accueil', index: 0),
             _navItem(context, shopTheme: shopTheme,
-              icon: Icons.search_outlined, iconActive: Icons.search_rounded,
+              icon: FontAwesomeIcons.magnifyingGlass, iconActive: FontAwesomeIcons.magnifyingGlass,
               label: 'Chercher', index: 2),
 
             // ── Bouton panier central ──────────────────────────────
             _cartButton(context, shopTheme),
 
             _navItem(context, shopTheme: shopTheme,
-              icon: Icons.favorite_outline_rounded, iconActive: Icons.favorite_rounded,
+              icon: FontAwesomeIcons.heart, iconActive: FontAwesomeIcons.solidHeart,
               label: 'Favoris', index: 3),
             _navItem(context, shopTheme: shopTheme,
-              icon: Icons.person_outline_rounded, iconActive: Icons.person_rounded,
+              icon: FontAwesomeIcons.user, iconActive: FontAwesomeIcons.solidUser,
               label: 'Profil', index: 5),
           ],
         ),
@@ -169,10 +170,11 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.shopping_cart_rounded,
+            alignment: Alignment.center,
+            child: const FaIcon(
+              FontAwesomeIcons.cartShopping,
               color: Colors.white,
-              size: 26,
+              size: 22,
             ),
           ),
 
@@ -240,10 +242,10 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
               duration: const Duration(milliseconds: 220),
               transitionBuilder: (child, anim) =>
                   ScaleTransition(scale: anim, child: child),
-              child: Icon(
+              child: FaIcon(
                 isSelected ? iconActive : icon,
                 key: ValueKey(isSelected),
-                size: 22,
+                size: 18,
                 color: color,
               ),
             ),
@@ -314,14 +316,10 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
     if (shop == null || shop.id == 0) return;
 
     try {
-      final orderCompleted = await Navigator.push<bool>(
+      final orderCompleted = await PanierScreen.show(
         context,
-        MaterialPageRoute(
-          builder: (context) => BoutiqueThemeProvider(
-            shop: shop,
-            child: PanierScreen(shopId: shop.id, shop: shop),
-          ),
-        ),
+        shopId: shop.id,
+        shop: shop,
       );
       if (orderCompleted == true) {
         widget.onProductsReload?.call();

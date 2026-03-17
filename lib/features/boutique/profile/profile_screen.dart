@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'personal_info_screen.dart';
 import 'addresses_screen.dart';
@@ -329,6 +330,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     width: 44,
                     height: 44,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [_shopPrimary.withOpacity(0.6), _shopPrimary],
@@ -337,8 +339,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(
-                      Icons.loyalty_rounded,
+                    child: const FaIcon(
+                      FontAwesomeIcons.award,
                       color: Colors.white,
                       size: 22,
                     ),
@@ -404,7 +406,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     },
                     child: Container(
-                      height: 110,
+                      height: 140,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: colors,
@@ -515,8 +517,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ],
                                     ),
                                     const Spacer(),
-                                    Icon(
-                                      Icons.card_membership_rounded,
+                                    FaIcon(
+                                      FontAwesomeIcons.idCard,
                                       color: Colors.white.withOpacity(0.5),
                                       size: 32,
                                     ),
@@ -606,7 +608,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                            icon: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 24),
                             onPressed: () => Navigator.pop(context),
                             padding: EdgeInsets.zero,
                           ),
@@ -680,8 +682,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         color: Colors.white,
                                       ),
                                     )
-                                  : const Icon(
-                                      Icons.person_outline,
+                                  : const FaIcon(
+                                      FontAwesomeIcons.user,
                                       size: 36,
                                       color: Colors.white,
                                     ),
@@ -710,7 +712,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.email_outlined, size: 18, color: Colors.grey),
+                                  const FaIcon(FontAwesomeIcons.envelope, size: 18, color: Colors.grey),
                                   const SizedBox(width: 8),
                                   Text(
                                     _customerEmail,
@@ -727,7 +729,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.phone_outlined, size: 18, color: Colors.grey),
+                                  const FaIcon(FontAwesomeIcons.phone, size: 18, color: Colors.grey),
                                   const SizedBox(width: 8),
                                   Text(
                                     _customerPhone,
@@ -853,7 +855,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      const Icon(Icons.credit_card, color: Colors.white, size: 24),
+                                      const FaIcon(FontAwesomeIcons.creditCard, color: Colors.white, size: 24),
                                       const SizedBox(width: 12),
                                       Text(
                                         'Programme de fidelite',
@@ -908,7 +910,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               )
                             : Row(
                                 children: [
-                                  const Icon(Icons.lock_outline, color: Colors.white, size: 28),
+                                  const FaIcon(FontAwesomeIcons.lock, color: Colors.white, size: 28),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
@@ -933,7 +935,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ],
                                     ),
                                   ),
-                                  const Icon(Icons.chevron_right, color: Colors.white, size: 22),
+                                  const FaIcon(FontAwesomeIcons.chevronRight, color: Colors.white, size: 22),
                                 ],
                               ),
                       ),
@@ -948,7 +950,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         _buildMenuOption(
-                          icon: Icons.person_outline,
+                          icon: FontAwesomeIcons.user,
                           title: 'Mon profil',
                           subtitle: 'Informations personnelles et mot de passe',
                           locked: !_isAuthenticated,
@@ -973,7 +975,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 12),
                         _buildMenuOption(
-                          icon: Icons.location_on_outlined,
+                          icon: FontAwesomeIcons.locationDot,
                           title: 'Adresses de livraison',
                           subtitle: 'Gerer vos adresses',
                           locked: !_isAuthenticated,
@@ -995,7 +997,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 12),
                         _buildMenuOption(
-                          icon: Icons.notifications_outlined,
+                          icon: FontAwesomeIcons.bell,
                           title: 'Notifications',
                           subtitle: 'Gerer vos alertes',
                           locked: !_isAuthenticated,
@@ -1017,7 +1019,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 12),
                         _buildMenuOption(
-                          icon: Icons.help_outline,
+                          icon: FontAwesomeIcons.circleQuestion,
                           title: 'Support / Aide',
                           subtitle: 'Contactez-nous, suivez vos demandes',
                           onTap: () {
@@ -1157,7 +1159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             locked
-                ? Icon(Icons.lock_outline, size: 28, color: Colors.grey.shade400)
+                ? FaIcon(FontAwesomeIcons.lock, size: 28, color: Colors.grey.shade400)
                 : Text(
                     value,
                     style: GoogleFonts.inriaSerif(
@@ -1216,10 +1218,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     : _shopPrimary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              alignment: Alignment.center,
+              child: FaIcon(
                 icon,
                 color: locked ? Colors.grey.shade900 : _shopPrimary,
-                size: 24,
+                size: 20,
               ),
             ),
             const SizedBox(width: 16),
@@ -1247,7 +1250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             Icon(
-              locked ? Icons.lock_outline : Icons.chevron_right,
+              locked ? FontAwesomeIcons.lock : FontAwesomeIcons.chevronRight,
               color: Colors.grey.shade900,
               size: 22,
             ),
@@ -1290,10 +1293,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.login,
+                  alignment: Alignment.center,
+                  child: const FaIcon(
+                    FontAwesomeIcons.rightToBracket,
                     color: Colors.white,
-                    size: 24,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1320,8 +1324,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
+                FaIcon(
+                  FontAwesomeIcons.chevronRight,
                   color: Colors.white.withOpacity(0.8),
                   size: 24,
                 ),
@@ -1363,10 +1367,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.red.shade50,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.logout,
+                  alignment: Alignment.center,
+                  child: FaIcon(
+                    FontAwesomeIcons.rightFromBracket,
                     color: Colors.red.shade700,
-                    size: 24,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1393,8 +1398,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
+                FaIcon(
+                  FontAwesomeIcons.chevronRight,
                   color: Colors.grey.shade900,
                   size: 24,
                 ),

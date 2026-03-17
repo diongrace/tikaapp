@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Affiche un modal de succès avec un message centré
@@ -33,6 +34,7 @@ void showSuccessModal(BuildContext context, String message) {
               Container(
                 width: 90,
                 height: 90,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF10B981), Color(0xFF059669)],
@@ -48,8 +50,8 @@ void showSuccessModal(BuildContext context, String message) {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.check_circle,
+                child: const FaIcon(
+                  FontAwesomeIcons.solidCircleCheck,
                   size: 60,
                   color: Colors.white,
                 ),
@@ -148,6 +150,7 @@ void showErrorModal(BuildContext context, String message) {
               Container(
                 width: 90,
                 height: 90,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
@@ -163,8 +166,8 @@ void showErrorModal(BuildContext context, String message) {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.error_outline,
+                child: const FaIcon(
+                  FontAwesomeIcons.circleExclamation,
                   size: 60,
                   color: Colors.white,
                 ),
@@ -278,8 +281,8 @@ void showWarningModal(BuildContext context, String message) {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.warning_amber_rounded,
+                child: const FaIcon(
+                  FontAwesomeIcons.triangleExclamation,
                   size: 60,
                   color: Colors.white,
                 ),
@@ -393,8 +396,8 @@ void showInfoModal(BuildContext context, String message) {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.info_outline,
+                child: const FaIcon(
+                  FontAwesomeIcons.circleInfo,
                   size: 60,
                   color: Colors.white,
                 ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -86,7 +86,7 @@ class HomeDialogs {
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Column(
                           children: [
-                            Icon(Icons.search_off_rounded, size: 40, color: Colors.grey.shade400),
+                            FaIcon(FontAwesomeIcons.magnifyingGlass, size: 40, color: Colors.grey.shade400),
                             const SizedBox(height: 8),
                             Text(
                               'Aucun produit trouvé',
@@ -116,12 +116,12 @@ class HomeDialogs {
                                         errorBuilder: (_, __, ___) => Container(
                                           width: 48, height: 48,
                                           color: Colors.grey.shade100,
-                                          child: Icon(Icons.image_not_supported_outlined, color: Colors.grey.shade400),
+                                          child: FaIcon(FontAwesomeIcons.image, color: Colors.grey.shade400),
                                         ))
                                     : Container(
                                         width: 48, height: 48,
                                         color: Colors.grey.shade100,
-                                        child: Icon(Icons.shopping_bag_outlined, color: Colors.grey.shade400),
+                                        child: FaIcon(FontAwesomeIcons.bagShopping, color: Colors.grey.shade400),
                                       ),
                               ),
                               title: Text(
@@ -202,7 +202,7 @@ class HomeDialogs {
               children: [
                 // Appeler
                 _ActionButton(
-                  icon: Icons.phone,
+                  icon: FontAwesomeIcons.phone,
                   label: 'Appeler',
                   color: const Color(0xFF25D366),
                   onTap: () async {
@@ -234,7 +234,7 @@ class HomeDialogs {
               children: [
                 // Mes commandes
                 _ActionButton(
-                  icon: Icons.inventory_2_outlined,
+                  icon: FontAwesomeIcons.boxOpen,
                   label: 'Mes commandes',
                   color: const Color(0xFFFF9800),
                   onTap: () {
@@ -248,7 +248,7 @@ class HomeDialogs {
                 ),
                 // Carte de fidélité
                 _ActionButton(
-                  icon: Icons.credit_card,
+                  icon: FontAwesomeIcons.creditCard,
                   label: 'Carte de fidélité',
                   color: const Color.fromARGB(255, 151, 15, 110),
                   onTap: () {
@@ -299,6 +299,7 @@ class _ActionButton extends StatelessWidget {
             Container(
               width: 56,
               height: 56,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: color,
                 shape: BoxShape.circle,

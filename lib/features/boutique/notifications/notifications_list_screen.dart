@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/notification_service.dart';
 
@@ -20,10 +21,10 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
 
   final List<Map<String, dynamic>> _filters = [
     {'id': 'all',     'label': 'Tout',      'icon': Icons.all_inbox_rounded},
-    {'id': 'order',   'label': 'Commandes', 'icon': Icons.shopping_bag_rounded},
-    {'id': 'payment', 'label': 'Paiements', 'icon': Icons.payment_rounded},
-    {'id': 'loyalty', 'label': 'Fidélité',  'icon': Icons.stars_rounded},
-    {'id': 'promo',   'label': 'Promos',    'icon': Icons.local_offer_rounded},
+    {'id': 'order',   'label': 'Commandes', 'icon': FontAwesomeIcons.bagShopping},
+    {'id': 'payment', 'label': 'Paiements', 'icon': FontAwesomeIcons.creditCard},
+    {'id': 'loyalty', 'label': 'Fidélité',  'icon': FontAwesomeIcons.solidStar},
+    {'id': 'promo',   'label': 'Promos',    'icon': FontAwesomeIcons.tag},
   ];
 
   static const _purple = Color.fromARGB(255, 151, 24, 210);
@@ -186,7 +187,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: _glassContainer(
-                  child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                  child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 18),
                 ),
               ),
               const SizedBox(width: 14),
@@ -242,14 +243,14 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                     PopupMenuItem(
                       value: 'mark_all',
                       child: Row(children: [
-                        const Icon(Icons.done_all_rounded, size: 20, color: _purple),
+                        const FaIcon(FontAwesomeIcons.checkDouble, size: 20, color: _purple),
                         const SizedBox(width: 12),
                         Text('Tout marquer comme lu', style: GoogleFonts.inriaSerif(fontSize: 14)),
                       ]),
                     ),
                   ],
                   child: _glassContainer(
-                    child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
+                    child: const FaIcon(FontAwesomeIcons.ellipsisVertical, color: Colors.white, size: 20),
                   ),
                 ),
             ],
@@ -386,7 +387,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.delete_rounded, color: Colors.white, size: 26),
+            const FaIcon(FontAwesomeIcons.trash, color: Colors.white, size: 26),
             const SizedBox(height: 3),
             Text(
               'Supprimer',
@@ -540,7 +541,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Icon(Icons.access_time_rounded,
+                                    FaIcon(FontAwesomeIcons.clock,
                                         size: 12, color: Colors.grey.shade900),
                                     const SizedBox(width: 4),
                                     Text(
@@ -585,7 +586,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
               ),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_none_rounded, size: 46, color: _purple),
+            alignment: Alignment.center,
+            child: const FaIcon(FontAwesomeIcons.bell, size: 46, color: _purple),
           ),
           const SizedBox(height: 20),
           Text(
@@ -622,7 +624,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                 color: Colors.red.shade50,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.error_outline_rounded, size: 46, color: Colors.red.shade400),
+              alignment: Alignment.center,
+              child: FaIcon(FontAwesomeIcons.circleExclamation, size: 46, color: Colors.red.shade400),
             ),
             const SizedBox(height: 20),
             Text(
@@ -642,7 +645,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadNotifications,
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const FaIcon(FontAwesomeIcons.arrowsRotate),
               label: const Text('Réessayer'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _purple,
@@ -672,15 +675,15 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
 
   IconData _getIconForType(String type) {
     switch (type) {
-      case 'order':        return Icons.shopping_bag_rounded;
+      case 'order':        return FontAwesomeIcons.bagShopping;
       case 'payment':
-      case 'wave_payment': return Icons.payment_rounded;
-      case 'loyalty':      return Icons.stars_rounded;
+      case 'wave_payment': return FontAwesomeIcons.creditCard;
+      case 'loyalty':      return FontAwesomeIcons.solidStar;
       case 'promo':
-      case 'promotion':    return Icons.local_offer_rounded;
-      case 'delivery':     return Icons.local_shipping_rounded;
-      case 'system':       return Icons.info_rounded;
-      default:             return Icons.notifications_rounded;
+      case 'promotion':    return FontAwesomeIcons.tag;
+      case 'delivery':     return FontAwesomeIcons.truck;
+      case 'system':       return FontAwesomeIcons.circleInfo;
+      default:             return FontAwesomeIcons.solidBell;
     }
   }
 

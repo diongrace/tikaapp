@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/profile_service.dart';
@@ -463,10 +464,10 @@ class _AddressesScreenState extends State<AddressesScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 24),
+                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 24),
                   ),
                   const SizedBox(width: 10),
-                  const Icon(Icons.location_on, color: Color(0xFFE53935), size: 22),
+                  const FaIcon(FontAwesomeIcons.locationDot, color: Color(0xFFE53935), size: 22),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -510,7 +511,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                     color: Color(0xFF2196F3),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.info_outline, color: Colors.white, size: 14),
+                                  alignment: Alignment.center,
+                                  child: const FaIcon(FontAwesomeIcons.circleInfo, color: Colors.white, size: 14),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -568,7 +570,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                         color: const Color(0xFF8936A8).withOpacity(0.1),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: const Icon(Icons.add, color: Color(0xFF8936A8), size: 26),
+                                      alignment: Alignment.center,
+                                      child: const FaIcon(FontAwesomeIcons.plus, color: Color(0xFF8936A8), size: 26),
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
@@ -612,7 +615,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                     width: 64,
                                     height: 64,
                                     decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                                    child: Icon(Icons.map_outlined, size: 32, color: Colors.grey.shade400),
+                                    child: FaIcon(FontAwesomeIcons.map, size: 32, color: Colors.grey.shade400),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
@@ -640,7 +643,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.add, color: Colors.white, size: 18),
+                                          const FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 18),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Ajouter une adresse',
@@ -782,7 +785,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   PopupMenuItem(
                     value: 'default',
                     child: Row(children: [
-                      const Icon(Icons.check_circle_outline, size: 18, color: Color(0xFF8936A8)),
+                      const FaIcon(FontAwesomeIcons.circleCheck, size: 18, color: Color(0xFF8936A8)),
                       const SizedBox(width: 10),
                       Text('Définir par défaut', style: GoogleFonts.inriaSerif(fontSize: 14)),
                     ]),
@@ -790,13 +793,13 @@ class _AddressesScreenState extends State<AddressesScreen> {
                 PopupMenuItem(
                   value: 'delete',
                   child: Row(children: [
-                    const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                    const FaIcon(FontAwesomeIcons.trash, size: 18, color: Colors.red),
                     const SizedBox(width: 10),
                     Text('Supprimer', style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.red)),
                   ]),
                 ),
               ],
-              icon: Icon(Icons.more_vert, color: Colors.grey.shade500),
+              icon: FaIcon(FontAwesomeIcons.ellipsisVertical, color: Colors.grey.shade500),
             ),
           ],
         ),

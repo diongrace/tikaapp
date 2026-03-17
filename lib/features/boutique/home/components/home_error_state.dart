@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Widget d'état d'erreur pour l'écran d'accueil
@@ -20,7 +21,7 @@ class HomeErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+            FaIcon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'Erreur de chargement',

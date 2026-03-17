@@ -1,5 +1,6 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -227,7 +228,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  prefixIcon: const Icon(Icons.phone),
+                  prefixIcon: const FaIcon(FontAwesomeIcons.phone),
                 ),
               ),
             ],
@@ -341,7 +342,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.replay_rounded, color: Colors.white, size: 40),
+                  const FaIcon(FontAwesomeIcons.arrowsRotate, color: Colors.white, size: 40),
                   const SizedBox(height: 8),
                   Text(
                     'Recommander',
@@ -605,7 +606,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.star_outline_rounded, color: Colors.white, size: 40),
+                      const FaIcon(FontAwesomeIcons.solidStar, color: Colors.white, size: 40),
                       const SizedBox(height: 8),
                       Text(
                         'Notez votre commande',
@@ -640,7 +641,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: Icon(
-                              i < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                              i < selectedRating ? FontAwesomeIcons.solidStar : FontAwesomeIcons.solidStar,
                               color: i < selectedRating ? const Color(0xFFF59E0B) : Colors.grey.shade300,
                               size: 38,
                             ),
@@ -1193,18 +1194,18 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
     switch (method.toLowerCase()) {
       case 'especes':
       case 'cash':
-        return Icons.payments_outlined;
+        return FontAwesomeIcons.moneyBill;
       case 'mobile_money':
       case 'mobile':
       case 'wave':
       case 'orange_money':
       case 'mtn_money':
-        return Icons.phone_android;
+        return FontAwesomeIcons.mobileScreen;
       case 'carte':
       case 'card':
-        return Icons.credit_card;
+        return FontAwesomeIcons.creditCard;
       default:
-        return Icons.payment;
+        return FontAwesomeIcons.creditCard;
     }
   }
 
@@ -1224,8 +1225,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               color: primaryColor.withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
-              Icons.arrow_back_ios_rounded,
+            child: const FaIcon(
+              FontAwesomeIcons.arrowLeft,
               color: primaryColor,
               size: 18,
             ),
@@ -1263,8 +1264,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   color: primaryColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.refresh_rounded,
+                child: const FaIcon(
+                  FontAwesomeIcons.arrowsRotate,
                   color: primaryColor,
                   size: 20,
                 ),
@@ -1311,8 +1312,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline_rounded,
+              const FaIcon(
+                FontAwesomeIcons.circleExclamation,
                 size: 64,
                 color: Colors.red,
               ),
@@ -1454,8 +1455,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     color: primaryColor.withOpacity(0.1),
-                                    child: const Icon(
-                                      Icons.storefront_outlined,
+                                    child: const FaIcon(
+                                      FontAwesomeIcons.store,
                                       size: 26,
                                       color: primaryColor,
                                     ),
@@ -1464,8 +1465,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               )
                             : Container(
                                 color: primaryColor.withOpacity(0.1),
-                                child: const Icon(
-                                  Icons.storefront_outlined,
+                                child: const FaIcon(
+                                  FontAwesomeIcons.store,
                                   size: 26,
                                   color: primaryColor,
                                 ),
@@ -1560,8 +1561,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 Row(
                   children: [
                     // Date et heure
-                    Icon(
-                      Icons.schedule_rounded,
+                    FaIcon(
+                      FontAwesomeIcons.clock,
                       size: 16,
                       color: primaryColor,
                     ),
@@ -1619,22 +1620,22 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
     switch (status) {
       case 'recue':
       case 'reçue':
-        return Icons.inbox_rounded;
+        return FontAwesomeIcons.inbox;
       case 'en_traitement':
         return Icons.hourglass_top_rounded;
       case 'prete':
       case 'prête':
-        return Icons.check_circle_rounded;
+        return FontAwesomeIcons.solidCircleCheck;
       case 'en_livraison':
-        return Icons.local_shipping_rounded;
+        return FontAwesomeIcons.truck;
       case 'livree':
       case 'livrée':
-        return Icons.check_circle_rounded;
+        return FontAwesomeIcons.solidCircleCheck;
       case 'annulee':
       case 'annulée':
-        return Icons.cancel_rounded;
+        return FontAwesomeIcons.xmark;
       default:
-        return Icons.inventory_2_rounded;
+        return FontAwesomeIcons.boxOpen;
     }
   }
 
@@ -1826,8 +1827,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                         errorBuilder: (context, error, stackTrace) {
                                           return Container(
                                             color: Colors.grey[100],
-                                            child: const Icon(
-                                              Icons.storefront_outlined,
+                                            child: const FaIcon(
+                                              FontAwesomeIcons.store,
                                               size: 32,
                                               color: Color(0xFF8936A8),
                                             ),
@@ -1836,8 +1837,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                       )
                                     : Container(
                                         color: Colors.grey[100],
-                                        child: const Icon(
-                                          Icons.storefront_outlined,
+                                        child: const FaIcon(
+                                          FontAwesomeIcons.store,
                                           size: 32,
                                           color: Color(0xFF8936A8),
                                         ),
@@ -1954,12 +1955,13 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                     Container(
                                       width: 28,
                                       height: 28,
+                                      alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF8936A8).withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(7),
                                       ),
-                                      child: const Icon(
-                                        Icons.schedule_rounded,
+                                      child: const FaIcon(
+                                        FontAwesomeIcons.clock,
                                         size: 14,
                                         color: Color(0xFF8936A8),
                                       ),
@@ -2092,7 +2094,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.info_outline_rounded, color: Colors.grey[400], size: 20),
+                                FaIcon(FontAwesomeIcons.circleInfo, color: Colors.grey[400], size: 20),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Détails des produits non disponibles',
@@ -2151,8 +2153,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       Expanded(
                         child: _buildInfoCard(
                           icon: order.serviceType.toLowerCase().contains('livraison')
-                              ? Icons.local_shipping_outlined
-                              : Icons.storefront_outlined,
+                              ? FontAwesomeIcons.truck
+                              : FontAwesomeIcons.store,
                           iconColor: const Color(0xFF8936A8),
                           label: 'Récupération',
                           value: order.serviceType.isNotEmpty ? order.serviceType : 'Non spécifié',
@@ -2176,12 +2178,13 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           Container(
                             width: 32,
                             height: 32,
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: const Color(0xFFFF9800).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
-                              Icons.location_on_rounded,
+                            child: const FaIcon(
+                              FontAwesomeIcons.locationDot,
                               color: Color(0xFFFF9800),
                               size: 16,
                             ),
@@ -2261,12 +2264,13 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         Container(
                           width: 44,
                           height: 44,
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: const Color(0xFF8936A8).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(
-                            Icons.receipt_long_rounded,
+                          child: const FaIcon(
+                            FontAwesomeIcons.receipt,
                             color: Color(0xFF8936A8),
                             size: 22,
                           ),
@@ -2283,7 +2287,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       // Recommander
                       Expanded(
                         child: _buildActionChip(
-                          icon: Icons.replay_rounded,
+                          icon: FontAwesomeIcons.arrowsRotate,
                           label: 'Recommander',
                           color: const Color(0xFF10B981),
                           onTap: () {
@@ -2299,7 +2303,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           order.status == 'prete' || order.status == 'prête')
                         Expanded(
                           child: _buildActionChip(
-                            icon: Icons.star_outline_rounded,
+                            icon: FontAwesomeIcons.solidStar,
                             label: 'Noter',
                             color: const Color(0xFFF59E0B),
                             onTap: () {
@@ -2313,7 +2317,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       if (_canCancel(order))
                         Expanded(
                           child: _buildActionChip(
-                            icon: Icons.cancel_outlined,
+                            icon: FontAwesomeIcons.xmark,
                             label: _cancelMinutesLeft(order) > 0
                                 ? 'Annuler (${_cancelMinutesLeft(order)}m)'
                                 : 'Annuler',
@@ -2379,7 +2383,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.receipt_long_outlined, color: Colors.white, size: 18),
+                                  const FaIcon(FontAwesomeIcons.receipt, color: Colors.white, size: 18),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Recu',
@@ -2427,8 +2431,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
-                                    Icons.local_shipping_rounded,
+                                  const FaIcon(
+                                    FontAwesomeIcons.truck,
                                     color: Colors.white,
                                     size: 18,
                                   ),
@@ -2516,6 +2520,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
           Container(
             width: 32,
             height: 32,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
@@ -2692,8 +2697,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   width: 2,
                 ),
               ),
-              child: Icon(
-                Icons.receipt_long_rounded,
+              child: FaIcon(
+                FontAwesomeIcons.receipt,
                 size: 56,
                 color: primaryColor.withOpacity(0.6),
               ),
@@ -2730,8 +2735,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.info_outline_rounded,
+                  FaIcon(
+                    FontAwesomeIcons.circleInfo,
                     size: 18,
                     color: primaryColor.withOpacity(0.7),
                   ),

@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../notifications/notifications_list_screen.dart';
+import '../../gift/gift_bottom_sheet.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../services/utils/api_endpoint.dart';
 import '../../../../services/push_notification_service.dart';
+import '../../../../services/models/shop_model.dart';
 
 /// Widget d'en-tête avec image de fond et boutons d'action
 /// Gère l'affichage conditionnel de la page de couverture:
@@ -16,7 +19,8 @@ class HomeHeader extends StatefulWidget {
   final VoidCallback onFavoriteToggle;
   final VoidCallback onBackPressed;
   final VoidCallback? onHomeTap;
-  final String? bannerUrl; // URL de l'image de couverture depuis l'API
+  final String? bannerUrl;
+  final Shop? currentShop;
 
   const HomeHeader({
     super.key,
@@ -25,6 +29,7 @@ class HomeHeader extends StatefulWidget {
     required this.onBackPressed,
     this.onHomeTap,
     this.bannerUrl,
+    this.currentShop,
   });
 
   @override
@@ -216,39 +221,43 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // ── Gauche : retour + accueil en cercles séparés ──
+                // ── Gauche : ← + 🏠 ──────────────────────────────
                 Row(
                   children: [
-                    _buildGlassBtn(
-                      icon: Icons.arrow_back_rounded,
+                    _buildFaBtn(
+                      icon: FontAwesomeIcons.arrowLeft,
                       onPressed: widget.onBackPressed,
+                      bgColors: const [Color(0xFF3A3A3C), Color(0xFF2C2C2E)],
                     ),
                     if (widget.onHomeTap != null) ...[
-                      const SizedBox(width: 10),
-                      _buildGlassBtn(
-                        icon: Icons.home,
+                      const SizedBox(width: 8),
+                      _buildFaBtn(
+                        icon: FontAwesomeIcons.house,
                         onPressed: widget.onHomeTap!,
+                        bgColors: const [Color(0xFF0A84FF), Color(0xFF0055D4)],
                       ),
                     ],
                   ],
                 ),
 
-                // ── Droite : favoris + notification ───────────────
+                // ── Droite : 🎁 + ❤️ + 🔔 ───────────────────────
                 Row(
                   children: [
-                    // Bouton favori
-                    _buildGlassBtn(
-                      icon: widget.isFavorite
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_outline_rounded,
-                      onPressed: widget.onFavoriteToggle,
-                      activeTint: widget.isFavorite
-                          ? const Color(0xFFE53935)
-                          : null,
+                    _buildFaBtn(
+                      icon: FontAwesomeIcons.gift,
+                      onPressed: () => GiftBottomSheet.show(context, currentShop: widget.currentShop),
+                      bgColors: const [Color(0xFFE91E8C), Color(0xFFFF5252)],
                     ),
-                    const SizedBox(width: 10),
-                    // Bouton notification
-                    _buildNotificationButton(context),
+                    const SizedBox(width: 8),
+                    _buildFaBtn(
+                      icon: widget.isFavorite ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+                      onPressed: widget.onFavoriteToggle,
+                      bgColors: widget.isFavorite
+                          ? const [Color(0xFFFF3B30), Color(0xFFCC0000)]
+                          : const [Color(0xFF3A3A3C), Color(0xFF2C2C2E)],
+                    ),
+                    const SizedBox(width: 8),
+                    _buildNotificationIconBtn(context),
                   ],
                 ),
               ],
@@ -259,111 +268,120 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
     );
   }
 
-  // ── Bouton glassmorphisme circulaire ──────────────────────────────────────
-  Widget _buildGlassBtn({
+  // ── Bouton FontAwesome avec fond dégradé ─────────────────────────────────
+  Widget _buildFaBtn({
     required IconData icon,
     required VoidCallback onPressed,
-    Color? activeTint,
-    Color? iconColor,
+    List<Color> bgColors = const [Color(0xFF3A3A3C), Color(0xFF2C2C2E)],
   }) {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: 46,
-        height: 46,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-          color: activeTint ?? Colors.white.withOpacity(0.92),
           shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: bgColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.18),
+              color: bgColors.first.withOpacity(0.45),
               blurRadius: 10,
-              offset: const Offset(0, 3),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Icon(
-          icon,
-          color: activeTint != null ? Colors.white : const Color(0xFF1A1A2E),
-          size: 22,
-        ),
+        alignment: Alignment.center,
+        child: FaIcon(icon, color: Colors.white, size: 17),
       ),
     );
   }
 
-  // ── Bouton notification avec badge ────────────────────────────────────────
-  Widget _buildNotificationButton(BuildContext context) {
+  Widget _buildNotificationIconBtn(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: PushNotificationService.unreadCount,
       builder: (context, count, _) {
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            AnimatedBuilder(
-              animation: _shakeAnimation,
-              builder: (context, child) => Transform.rotate(
-                angle: count > 0 ? _shakeAnimation.value : 0,
-                child: child,
-              ),
-              child: _buildGlassBtn(
-                icon: count > 0
-                    ? Icons.notifications_rounded
-                    : Icons.notifications_outlined,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsListScreen(),
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationsListScreen()),
+            ).then((_) => PushNotificationService.refreshUnreadCount());
+          },
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              AnimatedBuilder(
+                animation: _shakeAnimation,
+                builder: (context, child) => Transform.rotate(
+                  angle: count > 0 ? _shakeAnimation.value : 0,
+                  child: child,
+                ),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF9500), Color(0xFFFF6B00)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ).then((_) => PushNotificationService.refreshUnreadCount());
-                },
-              ),
-            ),
-            // Badge
-            if (count > 0)
-              Positioned(
-                right: -3,
-                top: -3,
-                child: AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) => Transform.scale(
-                    scale: _pulseAnimation.value,
-                    child: child,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF3B30),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red.withOpacity(0.45),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
-                    ),
-                    child: Text(
-                      count > 99 ? '99+' : count.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF9500).withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: FaIcon(
+                    count > 0 ? FontAwesomeIcons.solidBell : FontAwesomeIcons.bell,
+                    color: Colors.white,
+                    size: 17,
                   ),
                 ),
               ),
-          ],
+              if (count > 0)
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) => Transform.scale(
+                      scale: _pulseAnimation.value,
+                      child: child,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3B30),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      child: Text(
+                        count > 99 ? '99+' : count.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         );
       },
     );
   }
+
 }
 

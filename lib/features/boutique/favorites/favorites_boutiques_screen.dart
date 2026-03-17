@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/favorites_service.dart';
 import '../../../services/auth_service.dart';
@@ -226,7 +227,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                           ),
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                          icon: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 20),
                           padding: EdgeInsets.zero,
                           onPressed: () => Navigator.pop(context),
                         ),
@@ -258,7 +259,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.favorite, color: Colors.white, size: 14),
+                                      const FaIcon(FontAwesomeIcons.solidHeart, color: Colors.white, size: 14),
                                       const SizedBox(width: 6),
                                       Text(
                                         '${_favoriteBoutiques.length} ${_favoriteBoutiques.length > 1 ? 'favoris' : 'favori'}',
@@ -331,8 +332,9 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 color: _shopPrimary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.lock_outline_rounded,
+              alignment: Alignment.center,
+              child: FaIcon(
+                FontAwesomeIcons.lock,
                 size: 60,
                 color: _shopPrimary,
               ),
@@ -406,6 +408,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 color: Colors.red.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
+              alignment: Alignment.center,
               child: const Icon(
                 Icons.cloud_off_rounded,
                 size: 70,
@@ -457,7 +460,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.refresh, size: 20),
+                  const FaIcon(FontAwesomeIcons.arrowsRotate, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Réessayer',
@@ -490,8 +493,9 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                 color: _shopPrimary.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.favorite_border_rounded,
+              alignment: Alignment.center,
+              child: FaIcon(
+                FontAwesomeIcons.heart,
                 size: 80,
                 color: _shopPrimary.withOpacity(0.5),
               ),
@@ -614,8 +618,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                             logoUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.storefront_rounded,
+                              return FaIcon(
+                                FontAwesomeIcons.store,
                                 size: 45,
                                 color: _shopPrimary.withOpacity(0.5),
                               );
@@ -644,8 +648,8 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.favorite,
+                        child: const FaIcon(
+                          FontAwesomeIcons.solidHeart,
                           size: 18,
                           color: Color(0xFFE91E63),
                         ),
@@ -685,7 +689,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.category, size: 12, color: _shopPrimary),
+                        FaIcon(FontAwesomeIcons.layerGroup, size: 12, color: _shopPrimary),
                         const SizedBox(width: 5),
                         Flexible(
                           child: Text(

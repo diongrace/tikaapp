@@ -71,6 +71,8 @@ class OrderService {
     int? loyaltyCardId,
     int? loyaltyPointsUsed,
     double? loyaltyDiscount,
+    String? giftCardCode,
+    double? giftCardDiscount,
     String? pickupDate,
     String? pickupTime,
   }) async {
@@ -98,6 +100,8 @@ class OrderService {
       if (loyaltyPointsUsed != null && loyaltyPointsUsed > 0)
         'loyalty_points_used': loyaltyPointsUsed,
       if (loyaltyDiscount != null) 'loyalty_discount': loyaltyDiscount,
+      if (giftCardCode != null && giftCardCode.isNotEmpty) 'gift_card_code': giftCardCode,
+      if (giftCardDiscount != null) 'gift_card_discount': giftCardDiscount,
       if (pickupDate != null && pickupDate.isNotEmpty) 'pickup_date': pickupDate,
       if (pickupTime != null && pickupTime.isNotEmpty) 'pickup_time': pickupTime,
     };

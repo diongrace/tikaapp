@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/boutique_theme_provider.dart';
@@ -134,13 +135,13 @@ class StepIndicator extends StatelessWidget {
   IconData _getIconForStep(int step) {
     switch (step) {
       case 1:
-        return Icons.person_outline;
+        return FontAwesomeIcons.user;
       case 2:
-        return Icons.shopping_bag_outlined;
+        return FontAwesomeIcons.bagShopping;
       case 3:
-        return Icons.payment;
+        return FontAwesomeIcons.creditCard;
       default:
-        return Icons.check_circle_outline;
+        return FontAwesomeIcons.circleCheck;
     }
   }
 
@@ -155,6 +156,7 @@ class StepIndicator extends StatelessWidget {
             Container(
               width: 48,
               height: 48,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 gradient: isActive
                     ? LinearGradient(
@@ -176,7 +178,7 @@ class StepIndicator extends StatelessWidget {
                     : null,
               ),
               child: Icon(
-                isActive ? Icons.check : _getIconForStep(step),
+                isActive ? FontAwesomeIcons.check : _getIconForStep(step),
                 size: 24,
                 color: isActive ? Colors.white : Colors.grey.shade800,
               ),

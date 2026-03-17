@@ -403,8 +403,16 @@ class ShopTheme {
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 
-  /// Obtient la couleur primaire comme Color Flutter
-  Color get primary => hexToColor(primaryColor);
+  /// Obtient la couleur primaire comme Color Flutter.
+  /// Si la couleur est trop claire (proche du blanc), retourne le violet TIKA
+  /// par défaut pour garantir la lisibilité sur fond blanc.
+  Color get primary {
+    final color = hexToColor(primaryColor);
+    if (color.computeLuminance() > 0.85) {
+      return hexToColor('#9C27B0');
+    }
+    return color;
+  }
 
   /// Obtient la couleur secondaire comme Color Flutter
   Color get secondary => hexToColor(secondaryColor);

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/profile_service.dart';
@@ -32,7 +33,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 24),
+                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -67,7 +68,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     const SizedBox(height: 12),
 
                     _buildSecurityOption(
-                      icon: Icons.lock_outline,
+                      icon: FontAwesomeIcons.lock,
                       title: 'Changer le mot de passe',
                       subtitle: 'Modifiez votre mot de passe actuel',
                       onTap: () => _showChangePasswordDialog(),
@@ -76,7 +77,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     const SizedBox(height: 12),
 
                     _buildSecurityOption(
-                      icon: Icons.fingerprint,
+                      icon: FontAwesomeIcons.fingerprint,
                       title: 'Authentification biometrique',
                       subtitle: 'Empreinte digitale ou Face ID',
                       trailing: Switch(
@@ -98,7 +99,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     const SizedBox(height: 12),
 
                     _buildSecurityOption(
-                      icon: Icons.verified_user_outlined,
+                      icon: FontAwesomeIcons.shieldHalved,
                       title: 'Authentification a deux facteurs',
                       subtitle: 'Protection supplementaire par SMS',
                       trailing: Switch(
@@ -140,7 +141,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     const SizedBox(height: 12),
 
                     _buildSecurityOption(
-                      icon: Icons.analytics_outlined,
+                      icon: FontAwesomeIcons.chartBar,
                       title: 'Collecte de donnees',
                       subtitle: 'Amelioration de l\'experience utilisateur',
                       trailing: Switch(
@@ -213,7 +214,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     const SizedBox(height: 12),
 
                     _buildSecurityOption(
-                      icon: Icons.download_outlined,
+                      icon: FontAwesomeIcons.download,
                       title: 'Telecharger mes donnees',
                       subtitle: 'Exportez toutes vos donnees personnelles',
                       iconColor: const Color(0xFF2196F3),
@@ -223,7 +224,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     const SizedBox(height: 12),
 
                     _buildSecurityOption(
-                      icon: Icons.delete_outline,
+                      icon: FontAwesomeIcons.trash,
                       title: 'Supprimer mon compte',
                       subtitle: 'Action irreversible',
                       iconColor: Colors.red,
@@ -307,8 +308,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 if (trailing != null)
                   trailing
                 else
-                  Icon(
-                    Icons.chevron_right,
+                  FaIcon(
+                    FontAwesomeIcons.chevronRight,
                     color: Colors.grey.shade900,
                     size: 24,
                   ),
@@ -352,7 +353,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureCurrent ? Icons.visibility_off : Icons.visibility,
+                        obscureCurrent ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
                       ),
                       onPressed: () {
                         setDialogState(() {
@@ -374,7 +375,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureNew ? Icons.visibility_off : Icons.visibility,
+                        obscureNew ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
                       ),
                       onPressed: () {
                         setDialogState(() {
@@ -396,7 +397,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                        obscureConfirm ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
                       ),
                       onPressed: () {
                         setDialogState(() {
@@ -530,8 +531,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.phone_android,
+          FaIcon(
+            FontAwesomeIcons.mobileScreen,
             color: isActive ? const Color(0xFF8936A8) : Colors.grey,
           ),
           const SizedBox(width: 12),
@@ -566,7 +567,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ),
           if (!isActive)
             IconButton(
-              icon: const Icon(Icons.logout, color: Colors.red, size: 20),
+              icon: const FaIcon(FontAwesomeIcons.rightFromBracket, color: Colors.red, size: 20),
               onPressed: () {
                 Navigator.pop(context);
                 _showConfirmationSnackBar('Session deconnectee');
@@ -692,7 +693,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
+                const FaIcon(FontAwesomeIcons.triangleExclamation, color: Colors.red, size: 48),
                 const SizedBox(height: 16),
                 Text(
                   'Cette action est irreversible. Toutes vos donnees seront definitivement supprimees :',
@@ -722,7 +723,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          obscurePassword ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
                         ),
                         onPressed: () {
                           setDialogState(() {

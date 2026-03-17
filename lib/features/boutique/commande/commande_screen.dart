@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -37,6 +38,8 @@ class CommandeScreen extends StatefulWidget {
   final int? loyaltyPointsUsed;
   final double? loyaltyDiscount;
   final int? loyaltyPointValue;
+  final String? giftCardCode;
+  final double? giftCardDiscount;
 
   const CommandeScreen({
     super.key,
@@ -48,6 +51,8 @@ class CommandeScreen extends StatefulWidget {
     this.loyaltyPointsUsed,
     this.loyaltyDiscount,
     this.loyaltyPointValue,
+    this.giftCardCode,
+    this.giftCardDiscount,
   });
 
   @override
@@ -170,7 +175,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
                     color: _primaryColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.location_on, color: _primaryColor, size: 20),
+                  alignment: Alignment.center,
+                  child: FaIcon(FontAwesomeIcons.locationDot, color: _primaryColor, size: 20),
                 ),
                 title: Row(
                   children: [
@@ -509,6 +515,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
               loyaltyCardId: widget.loyaltyCardId,
               loyaltyPointsUsed: widget.loyaltyPointsUsed,
               loyaltyDiscount: widget.loyaltyDiscount,
+              giftCardCode: widget.giftCardCode,
+              giftCardDiscount: widget.giftCardDiscount,
               pickupDate: _selectedPickupDate != null
                   ? '${_selectedPickupDate!.year}-${_selectedPickupDate!.month.toString().padLeft(2, '0')}-${_selectedPickupDate!.day.toString().padLeft(2, '0')}'
                   : null,
@@ -676,6 +684,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
         loyaltyCardId: widget.loyaltyCardId,
         loyaltyPointsUsed: widget.loyaltyPointsUsed,
         loyaltyDiscount: widget.loyaltyDiscount,
+        giftCardCode: widget.giftCardCode,
+        giftCardDiscount: widget.giftCardDiscount,
         pickupDate: pickupDate,
         pickupTime: pickupTime,
         deliveryZoneId: (_selectedLivraisonProvider?.startsWith('vendeur_') == true) ? _selectedZone?.id : null,
@@ -791,7 +801,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 24),
+                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Text(
@@ -889,7 +899,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.arrow_back_ios_rounded, size: 14, color: Colors.grey.shade600),
+                              FaIcon(FontAwesomeIcons.arrowLeft, size: 14, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Text(
                                 'Retour',
@@ -967,7 +977,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           ),
           child: Center(
             child: isPast
-                ? const Icon(Icons.check, color: Colors.white, size: 18)
+                ? const FaIcon(FontAwesomeIcons.check, color: Colors.white, size: 18)
                 : Text(
                     '$step',
                     style: GoogleFonts.inriaSerif(
@@ -1010,7 +1020,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           FormFieldWidget(
             label: 'Nom complet',
             hint: 'Entrez votre nom complet',
-            icon: Icons.person,
+            icon: FontAwesomeIcons.user,
             controller: _nomController,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZÀ-ÿ\s]')), // Lettres et espaces uniquement
@@ -1030,7 +1040,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           FormFieldWidget(
             label: 'Téléphone',
             hint: '07 XX XX XX XX',
-            icon: Icons.phone,
+            icon: FontAwesomeIcons.phone,
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             maxLength: 10,
@@ -1059,7 +1069,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           FormFieldWidget(
             label: 'Email (optionnel)',
             hint: 'exemple@email.com',
-            icon: Icons.email,
+            icon: FontAwesomeIcons.envelope,
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             required: false,
@@ -1089,7 +1099,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         // Option Livraison
         _buildDeliveryOption(
           id: 'Livraison',
-          icon: Icons.delivery_dining,
+          icon: FontAwesomeIcons.truckFast,
           title: 'Livraison',
           description: 'Livraison à votre adresse',
         ),
@@ -1098,7 +1108,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         // Option À emporter
         _buildDeliveryOption(
           id: 'À emporter',
-          icon: Icons.shopping_bag,
+          icon: FontAwesomeIcons.bagShopping,
           title: 'À emporter',
           description: 'Récupérer en boutique',
         ),
@@ -1144,7 +1154,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _buildLivraisonProviderCard(
                   id: 'vendeur_${zone.id}',
-                  icon: Icons.location_on_rounded,
+                  icon: FontAwesomeIcons.locationDot,
                   title: zone.name,
                   subtitle: sub,
                   color: _primaryColor,
@@ -1214,8 +1224,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: isSelected
-                  ? Icon(Icons.check_circle_rounded, color: color, size: 22, key: ValueKey('sel_$id'))
-                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 22, key: ValueKey('unsel_$id')),
+                  ? FaIcon(FontAwesomeIcons.solidCircleCheck, color: color, size: 22, key: ValueKey('sel_$id'))
+                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade300, size: 22, key: ValueKey('unsel_$id')),
             ),
           ],
         ),
@@ -1289,7 +1299,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         // // Option Carte bancaire
         // _buildPaymentOption(
         //   id: 'carte',
-        //   icon: Icons.credit_card,
+        //   icon: FontAwesomeIcons.creditCard,
         //   title: 'Carte bancaire',
         //   description: 'Visa / Mastercard via CinetPay',
         // ),
@@ -1365,7 +1375,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                 imagePath,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.payment, color: color, size: 28);
+                  return FaIcon(FontAwesomeIcons.creditCard, color: color, size: 28);
                 },
               ),
             ),
@@ -1418,8 +1428,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: isSelected
-                  ? Icon(Icons.check_circle_rounded, color: color, size: 26, key: const ValueKey('checked'))
-                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+                  ? FaIcon(FontAwesomeIcons.solidCircleCheck, color: color, size: 26, key: const ValueKey('checked'))
+                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
             ),
           ],
         ),
@@ -1481,8 +1491,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: isSelected
-                  ? Icon(Icons.check_circle_rounded, color: _primaryColor, size: 26, key: const ValueKey('checked'))
-                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+                  ? FaIcon(FontAwesomeIcons.solidCircleCheck, color: _primaryColor, size: 26, key: const ValueKey('checked'))
+                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
             ),
           ],
         ),
@@ -1513,7 +1523,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.location_on, color: _primaryColor, size: 16),
+                  FaIcon(FontAwesomeIcons.locationDot, color: _primaryColor, size: 16),
                   const SizedBox(width: 6),
                   Text(
                     'Utiliser une adresse enregistrée',
@@ -1535,7 +1545,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
         FormFieldWidget(
           label: required ? 'Adresse de livraison' : 'Adresse (optionnel)',
           hint: 'Votre adresse complète',
-          icon: Icons.location_on,
+          icon: FontAwesomeIcons.locationDot,
           controller: _addressController,
           maxLines: 2,
           required: required,
@@ -1647,8 +1657,8 @@ class _CommandeScreenState extends State<CommandeScreen> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: isSelected
-                  ? Icon(Icons.check_circle_rounded, color: _primaryColor, size: 26, key: const ValueKey('checked'))
-                  : Icon(Icons.radio_button_unchecked, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+                  ? FaIcon(FontAwesomeIcons.solidCircleCheck, color: _primaryColor, size: 26, key: const ValueKey('checked'))
+                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
             ),
           ],
         ),

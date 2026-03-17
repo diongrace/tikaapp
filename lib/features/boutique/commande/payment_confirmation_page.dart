@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/messages/message_modal.dart';
@@ -219,7 +220,7 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 24),
+                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Text(
@@ -405,7 +406,7 @@ class _PaymentConfirmationPageState extends State<PaymentConfirmationPage> with 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.credit_card, color: Colors.white, size: 32),
+              const FaIcon(FontAwesomeIcons.creditCard, color: Colors.white, size: 32),
               const SizedBox(height: 24),
               Text('Numéro de carte', style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey.shade900)),
               const SizedBox(height: 4),

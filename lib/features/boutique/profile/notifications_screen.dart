@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/notification_service.dart';
@@ -151,7 +152,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 24),
+                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -214,8 +215,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     color: const Color(0xFF8936A8).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(
-                                    Icons.notifications_active,
+                                  child: const FaIcon(
+                                    FontAwesomeIcons.solidBell,
                                     color: Color(0xFF8936A8),
                                     size: 24,
                                   ),
@@ -258,7 +259,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _buildNotificationTypeCard(
                             title: 'Mes commandes',
                             description: 'Suivi de vos commandes, livraisons et confirmations',
-                            icon: Icons.shopping_bag_outlined,
+                            icon: FontAwesomeIcons.bagShopping,
                             iconColor: const Color(0xFF2196F3),
                             value: _settings.orderUpdates,
                             onChanged: (value) {
@@ -271,7 +272,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _buildNotificationTypeCard(
                             title: 'Promotions et offres',
                             description: 'Réductions exclusives et codes promo',
-                            icon: Icons.local_offer_outlined,
+                            icon: FontAwesomeIcons.tag,
                             iconColor: const Color(0xFFFF9800),
                             value: _settings.promotions,
                             onChanged: (value) {
@@ -284,7 +285,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _buildNotificationTypeCard(
                             title: 'Programme fidélité',
                             description: 'Points cumulés, récompenses et avantages',
-                            icon: Icons.stars_outlined,
+                            icon: FontAwesomeIcons.star,
                             iconColor: const Color(0xFF8936A8),
                             value: _settings.loyaltyUpdates,
                             onChanged: (value) {
@@ -316,7 +317,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _buildChannelCard(
                             title: 'Notifications push',
                             description: 'Alertes instantanées sur votre appareil',
-                            icon: Icons.notifications_active_outlined,
+                            icon: FontAwesomeIcons.bell,
                             value: _settings.pushEnabled,
                             isPrimary: true,
                             onChanged: (value) {
@@ -329,7 +330,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _buildChannelCard(
                             title: 'Email',
                             description: 'Recevoir les notifications par email',
-                            icon: Icons.email_outlined,
+                            icon: FontAwesomeIcons.envelope,
                             value: _settings.emailEnabled,
                             onChanged: (value) {
                               _updateSetting((s) => s.copyWith(emailEnabled: value));
@@ -354,8 +355,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Center(
                             child: TextButton.icon(
                               onPressed: _disableAll,
-                              icon: Icon(
-                                Icons.notifications_off_outlined,
+                              icon: FaIcon(
+                                FontAwesomeIcons.bellSlash,
                                 color: Colors.grey.shade800,
                               ),
                               label: Text(
@@ -477,7 +478,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       width: 14, height: 14,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Icon(Icons.refresh_rounded, size: 16),
+                  : const FaIcon(FontAwesomeIcons.arrowsRotate, size: 16),
               label: Text(
                 _isRegistering ? 'Enregistrement...' : 'Re-enregistrer l\'appareil',
                 style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600),
@@ -497,8 +498,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               children: [
                 Icon(
                   _registrationStatus.contains('succès')
-                      ? Icons.check_circle_outline
-                      : Icons.error_outline,
+                      ? FontAwesomeIcons.circleCheck
+                      : FontAwesomeIcons.circleExclamation,
                   size: 14,
                   color: _registrationStatus.contains('succès') ? Colors.green : Colors.red,
                 ),

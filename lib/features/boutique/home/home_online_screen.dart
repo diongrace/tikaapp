@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../product/product_detail_screen.dart';
 import '../panier/cart_manager.dart';
@@ -339,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+              const FaIcon(FontAwesomeIcons.circleCheck, color: Colors.white, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -514,6 +515,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: HomeHeader(
               isFavorite: _isFavorite,
               bannerUrl: _currentShop?.bannerUrl,
+              currentShop: _currentShop,
               onFavoriteToggle: _toggleFavorite,
               onBackPressed: () => Navigator.pop(context),
               onHomeTap: () {

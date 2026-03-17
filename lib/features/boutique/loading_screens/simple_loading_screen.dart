@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Écran de chargement simple et réutilisable
@@ -35,6 +35,7 @@ class SimpleLoadingScreen extends StatelessWidget {
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
+                alignment: Alignment.center,
                 child: Icon(
                   icon,
                   size: 48,

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -341,7 +342,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                      child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 20),
                     ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
@@ -385,7 +386,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.refresh_rounded, color: Colors.white, size: 20),
+                      child: const FaIcon(FontAwesomeIcons.arrowsRotate, color: Colors.white, size: 20),
                     ),
                     onPressed: _loadOrderData,
                   ),
@@ -421,8 +422,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     color: Colors.grey[100],
-                                    child: Icon(
-                                      Icons.store_rounded,
+                                    child: FaIcon(
+                                      FontAwesomeIcons.store,
                                       size: 28,
                                       color: primaryColor,
                                     ),
@@ -431,8 +432,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                               )
                             : Container(
                                 color: Colors.grey[100],
-                                child: Icon(
-                                  Icons.store_rounded,
+                                child: FaIcon(
+                                  FontAwesomeIcons.store,
                                   size: 28,
                                   color: primaryColor,
                                 ),
@@ -513,8 +514,9 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                   color: Colors.red.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.error_outline_rounded,
+                alignment: Alignment.center,
+                child: const FaIcon(
+                  FontAwesomeIcons.circleExclamation,
                   size: 40,
                   color: Colors.red,
                 ),
@@ -539,7 +541,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _loadOrderData,
-                icon: const Icon(Icons.refresh_rounded, size: 20),
+                icon: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 20),
                 label: Text(
                   'Réessayer',
                   style: GoogleFonts.inriaSerif(
@@ -803,7 +805,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.inventory_2_outlined, color: primaryColor, size: 28),
+                  FaIcon(FontAwesomeIcons.boxOpen, color: primaryColor, size: 28),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -856,12 +858,13 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                     Container(
                       width: 40,
                       height: 40,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: primaryColor.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(
-                        Icons.receipt_long_rounded,
+                      child: FaIcon(
+                        FontAwesomeIcons.receipt,
                         color: primaryColor,
                         size: 22,
                       ),
@@ -956,8 +959,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFFE53935).withOpacity(0.3), width: 2),
               ),
-              child: const Icon(
-                Icons.cancel_rounded,
+              child: const FaIcon(
+                FontAwesomeIcons.xmark,
                 size: 44,
                 color: Color(0xFFE53935),
               ),
@@ -988,10 +991,10 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           ),
           const SizedBox(height: 24),
           // Étapes grisées
-          _buildGreyedStep(Icons.shopping_cart_checkout_rounded, 'Commande reçue', isFirst: true),
+          _buildGreyedStep(FontAwesomeIcons.cartArrowDown, 'Commande reçue', isFirst: true),
           _buildGreyedStep(Icons.restaurant_rounded, 'En préparation'),
-          _buildGreyedStep(Icons.inventory_2_rounded, 'Prête à récupérer'),
-          _buildGreyedStep(Icons.delivery_dining_rounded, 'En livraison', isLast: true),
+          _buildGreyedStep(FontAwesomeIcons.boxOpen, 'Prête à récupérer'),
+          _buildGreyedStep(FontAwesomeIcons.truckFast, 'En livraison', isLast: true),
         ],
       ),
     );
@@ -1008,6 +1011,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 Container(
                   width: 40,
                   height: 40,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     shape: BoxShape.circle,
@@ -1048,10 +1052,10 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
   Widget _buildTimelineFromBackend(List<Map<String, dynamic>> timeline) {
     // Map des icônes par status
     const iconMap = {
-      'recue': Icons.shopping_cart_checkout_rounded,
+      'recue': FontAwesomeIcons.cartArrowDown,
       'en_traitement': Icons.restaurant_rounded,
-      'prete': Icons.inventory_2_rounded,
-      'livree': Icons.delivery_dining_rounded,
+      'prete': FontAwesomeIcons.boxOpen,
+      'livree': FontAwesomeIcons.truckFast,
     };
     const colorMap = {
       'recue': Color(0xFF4CAF50),
@@ -1121,6 +1125,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                   scale: _pulseAnimation.value,
                                   child: Container(
                                     width: 48, height: 48,
+                                    alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [color, color.withOpacity(0.7)],
@@ -1134,6 +1139,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                               )
                             : Container(
                                 width: 48, height: 48,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: completed ? color : Colors.grey[100],
                                   shape: BoxShape.circle,
@@ -1200,7 +1206,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isCurrent ? Icons.hourglass_top_rounded : Icons.check_circle_rounded,
+                              isCurrent ? Icons.hourglass_top_rounded : FontAwesomeIcons.solidCircleCheck,
                               size: 14, color: color,
                             ),
                             const SizedBox(width: 4),
@@ -1246,10 +1252,10 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
       'en_livraison': 'Le livreur est en route',
     };
     final statusIcons = {
-      'recue': Icons.shopping_cart_checkout_rounded,
+      'recue': FontAwesomeIcons.cartArrowDown,
       'en_traitement': Icons.restaurant_rounded,
-      'prete': Icons.inventory_2_rounded,
-      'en_livraison': Icons.delivery_dining_rounded,
+      'prete': FontAwesomeIcons.boxOpen,
+      'en_livraison': FontAwesomeIcons.truckFast,
     };
     // Couleurs spécifiques pour chaque étape
     final statusColors = {
@@ -1329,6 +1335,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                                     child: Container(
                                       width: 48,
                                       height: 48,
+                                      alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [stepColor, stepColor.withOpacity(0.7)],
@@ -1352,6 +1359,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                             : Container(
                                 width: 48,
                                 height: 48,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: isCompleted
                                       ? stepColor
@@ -1430,7 +1438,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isCurrent ? Icons.hourglass_top_rounded : Icons.check_circle_rounded,
+                              isCurrent ? Icons.hourglass_top_rounded : FontAwesomeIcons.solidCircleCheck,
                               size: 14,
                               color: stepColor,
                             ),
@@ -1500,8 +1508,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           // Mode de récupération
           _buildInfoTile(
             icon: order.serviceType.toLowerCase().contains('livraison')
-                ? Icons.delivery_dining_rounded
-                : Icons.store_mall_directory_rounded,
+                ? FontAwesomeIcons.truckFast
+                : FontAwesomeIcons.store,
             iconColor: primaryColor,
             label: 'Mode de récupération',
             value: order.serviceType.isNotEmpty ? order.serviceType : 'Retrait en boutique',
@@ -1509,7 +1517,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           if (order.deliveryAddress != null && order.deliveryAddress!.isNotEmpty) ...[
             const SizedBox(height: 12),
             _buildInfoTile(
-              icon: Icons.location_on_rounded,
+              icon: FontAwesomeIcons.locationDot,
               iconColor: const Color(0xFFFF9800),
               label: 'Adresse de livraison',
               value: order.deliveryAddress!,
@@ -1517,14 +1525,14 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           ],
           const SizedBox(height: 12),
           _buildInfoTile(
-            icon: Icons.schedule_rounded,
+            icon: FontAwesomeIcons.clock,
             iconColor: Colors.blue,
             label: 'Date de commande',
             value: _formatDate(order.createdAt),
           ),
           const SizedBox(height: 12),
           _buildInfoTile(
-            icon: Icons.payments_rounded,
+            icon: FontAwesomeIcons.moneyBill,
             iconColor: const Color(0xFF4CAF50),
             label: 'Paiement',
             value: _getPaymentMethodLabel(order.paymentMethod),
@@ -1551,6 +1559,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           Container(
             width: 42,
             height: 42,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
@@ -1612,12 +1621,13 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               Container(
                 width: 48,
                 height: 48,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(
-                  Icons.support_agent_rounded,
+                child: FaIcon(
+                  FontAwesomeIcons.headset,
                   color: primaryColor,
                   size: 26,
                 ),
@@ -1667,7 +1677,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.phone_rounded, color: primaryColor, size: 20),
+                          FaIcon(FontAwesomeIcons.phone, color: primaryColor, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             'Appeler',

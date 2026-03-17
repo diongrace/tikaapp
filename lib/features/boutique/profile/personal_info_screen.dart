@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../services/auth_service.dart';
@@ -188,7 +189,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 24),
+                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Text('Mon profil', style: GoogleFonts.inriaSerif(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -214,14 +215,14 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                 children: [
                                   Expanded(child: _field(
                                     label: 'Prénom',
-                                    icon: Icons.person_outline,
+                                    icon: FontAwesomeIcons.user,
                                     controller: _firstNameController,
                                     validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
                                   )),
                                   const SizedBox(width: 12),
                                   Expanded(child: _field(
                                     label: 'Nom',
-                                    icon: Icons.person_outline,
+                                    icon: FontAwesomeIcons.user,
                                     controller: _lastNameController,
                                     validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
                                   )),
@@ -232,12 +233,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                               // Téléphone (non modifiable)
                               _field(
                                 label: 'Téléphone',
-                                icon: Icons.phone_outlined,
+                                icon: FontAwesomeIcons.phone,
                                 controller: _phoneController,
                                 readOnly: _isAuthenticated,
                                 keyboardType: TextInputType.phone,
                                 suffix: _isAuthenticated
-                                    ? Icon(Icons.lock_outline, size: 16, color: Colors.grey.shade400)
+                                    ? FaIcon(FontAwesomeIcons.lock, size: 16, color: Colors.grey.shade400)
                                     : null,
                                 validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
                               ),
@@ -256,7 +257,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                               // Email
                               _field(
                                 label: 'Email (optionnel)',
-                                icon: Icons.email_outlined,
+                                icon: FontAwesomeIcons.envelope,
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 hint: 'votre@email.com',
@@ -329,7 +330,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                 const SizedBox(height: 12),
 
                                 Row(children: [
-                                  Icon(Icons.info_outline, size: 13, color: Colors.grey.shade400),
+                                  FaIcon(FontAwesomeIcons.circleInfo, size: 13, color: Colors.grey.shade400),
                                   const SizedBox(width: 6),
                                   Expanded(child: Text(
                                     'Laissez les champs mot de passe vides si vous ne souhaitez pas le modifier.',
@@ -373,7 +374,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: _isSaving ? null : () => Navigator.pop(context),
-                                  icon: const Icon(Icons.close, size: 18),
+                                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                                   label: Text('Annuler', style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600)),
                                   style: OutlinedButton.styleFrom(
                                     minimumSize: const Size(0, 52),
@@ -467,7 +468,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          const Icon(Icons.lock_outline, size: 14, color: Color(0xFF8936A8)),
+          const FaIcon(FontAwesomeIcons.lock, size: 14, color: Color(0xFF8936A8)),
           const SizedBox(width: 5),
           Text(label, style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
         ]),
@@ -482,7 +483,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             suffixIcon: GestureDetector(
               onTap: onToggle,
               child: Icon(
-                obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                obscure ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
                 size: 18,
                 color: Colors.grey.shade900,
               ),

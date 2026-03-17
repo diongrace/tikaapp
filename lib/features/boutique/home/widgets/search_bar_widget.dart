@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Barre de recherche pour les produits
@@ -36,10 +37,14 @@ class SearchBarWidget extends StatelessWidget {
             color: Colors.grey.shade800,
             fontSize: 14,
           ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: Colors.grey.shade800,
-            size: 22,
+          prefixIcon: Align(
+            alignment: Alignment.center,
+            widthFactor: 1.0,
+            child: FaIcon(
+              FontAwesomeIcons.magnifyingGlass,
+              color: Colors.grey.shade800,
+              size: 16,
+            ),
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(

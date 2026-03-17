@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
@@ -237,7 +238,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+            alignment: Alignment.center,
+            child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.black87, size: 20),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -432,8 +434,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
+                    FaIcon(
+                      FontAwesomeIcons.circleInfo,
                       color: Colors.blue.shade700,
                       size: 20,
                     ),

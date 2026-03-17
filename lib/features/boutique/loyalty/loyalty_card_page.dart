@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../services/loyalty_service.dart';
@@ -95,7 +96,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 24),
+            const FaIcon(FontAwesomeIcons.triangleExclamation, color: Color(0xFFEF4444), size: 24),
             const SizedBox(width: 10),
             Text(
               'Supprimer la carte ?',
@@ -120,7 +121,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Color(0xFFEF4444), size: 16),
+                  const FaIcon(FontAwesomeIcons.circleInfo, color: Color(0xFFEF4444), size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -239,6 +240,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                     child: Container(
                       width: 44,
                       height: 44,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: _cardGradient,
@@ -254,7 +256,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 17),
+                      child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 17),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -388,7 +390,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.storefront_rounded, size: 18, color: Colors.white),
+                              const FaIcon(FontAwesomeIcons.store, size: 18, color: Colors.white),
                               const SizedBox(width: 8),
                               Text(
                                 'Retour à la boutique',
@@ -432,8 +434,8 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : const Icon(
-                                      Icons.delete_outline_rounded,
+                                  : const FaIcon(
+                                      FontAwesomeIcons.trash,
                                       size: 18,
                                       color: Color(0xFFEF4444),
                                     ),
@@ -687,7 +689,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
       children: [
         Expanded(
           child: _buildStatCard(
-            icon: Icons.star_rounded,
+            icon: FontAwesomeIcons.solidStar,
             value: '${_card.points}',
             label: 'Points',
             color: _primaryColor,
@@ -696,7 +698,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         const SizedBox(width: 10),
         Expanded(
           child: _buildStatCard(
-            icon: Icons.monetization_on_rounded,
+            icon: FontAwesomeIcons.dollarSign,
             value: '${_card.pointsValue} F',
             label: 'Valeur',
             color: const Color(0xFF4CAF50),
@@ -705,7 +707,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
         const SizedBox(width: 10),
         Expanded(
           child: _buildStatCard(
-            icon: Icons.storefront_rounded,
+            icon: FontAwesomeIcons.store,
             value: '${_card.visitsCount}',
             label: 'Visites',
             color: const Color(0xFF2196F3),
@@ -739,6 +741,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
           Container(
             width: 46,
             height: 46,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [color, color.withOpacity(0.68)],
@@ -817,7 +820,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 ),
               ),
               const SizedBox(width: 10),
-              Icon(Icons.qr_code_2_rounded, color: _primaryColor, size: 20),
+              FaIcon(FontAwesomeIcons.qrcode, color: _primaryColor, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Mon QR Code',
@@ -877,7 +880,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFFFF9800)),
+                  const FaIcon(FontAwesomeIcons.lock, size: 14, color: Color(0xFFFF9800)),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
@@ -934,7 +937,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Icon(Icons.card_giftcard_rounded, color: Color(0xFFFF9800), size: 18),
+              const FaIcon(FontAwesomeIcons.gift, color: Color(0xFFFF9800), size: 18),
               const SizedBox(width: 8),
               Text(
                 'Récompenses',
@@ -1057,11 +1060,11 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
 
   IconData _getRewardIcon(String type) {
     switch (type) {
-      case 'free_delivery': return Icons.local_shipping_outlined;
-      case 'gift_product': return Icons.card_giftcard;
-      case 'percent_discount': return Icons.percent;
+      case 'free_delivery': return FontAwesomeIcons.truck;
+      case 'gift_product': return FontAwesomeIcons.gift;
+      case 'percent_discount': return FontAwesomeIcons.percent;
       case 'fixed_discount': return Icons.money_off;
-      default: return Icons.star_outline;
+      default: return FontAwesomeIcons.solidStar;
     }
   }
 
@@ -1142,7 +1145,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
   Widget _buildTransactionItem(LoyaltyTransaction tx) {
     final isPositive = tx.isEarned;
     final color = isPositive ? const Color(0xFF4CAF50) : const Color(0xFFE91E63);
-    final icon = isPositive ? Icons.add_circle_outline : Icons.remove_circle_outline;
+    final icon = isPositive ? FontAwesomeIcons.circlePlus : FontAwesomeIcons.circleMinus;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1252,7 +1255,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 ),
               ),
               const SizedBox(width: 10),
-              Icon(Icons.bar_chart_rounded, color: _primaryColor, size: 18),
+              FaIcon(FontAwesomeIcons.chartBar, color: _primaryColor, size: 18),
               const SizedBox(width: 8),
               Text(
                 'Statistiques globales',
@@ -1269,7 +1272,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             children: [
               Expanded(
                 child: _buildStatCard(
-                  icon: Icons.star_rounded,
+                  icon: FontAwesomeIcons.solidStar,
                   value: '$totalPoints',
                   label: 'Pts totaux',
                   color: _primaryColor,
@@ -1278,7 +1281,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: _buildStatCard(
-                  icon: Icons.monetization_on_rounded,
+                  icon: FontAwesomeIcons.dollarSign,
                   value: '$totalValue F',
                   label: 'Valeur totale',
                   color: const Color(0xFF4CAF50),
@@ -1287,7 +1290,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: _buildStatCard(
-                  icon: Icons.credit_card_rounded,
+                  icon: FontAwesomeIcons.creditCard,
                   value: '$cardsCount',
                   label: 'Cartes',
                   color: const Color(0xFF2196F3),
@@ -1339,7 +1342,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                 ),
               ),
               const SizedBox(width: 10),
-              Icon(Icons.info_outline_rounded, color: _primaryColor, size: 18),
+              FaIcon(FontAwesomeIcons.circleInfo, color: _primaryColor, size: 18),
               const SizedBox(width: 8),
               Text(
                 'Informations',

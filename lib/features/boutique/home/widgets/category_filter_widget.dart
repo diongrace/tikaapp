@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/models/shop_model.dart';
@@ -144,8 +145,8 @@ class CategoryFilterWidget extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Icon(
-                  Icons.tune_rounded,
+                FaIcon(
+                  FontAwesomeIcons.sliders,
                   color: sortActive ? Colors.white : Colors.grey.shade800,
                   size: 20,
                 ),
@@ -241,6 +242,7 @@ class CategoryFilterWidget extends StatelessWidget {
                 : Colors.grey.shade50,
             shape: BoxShape.circle,
           ),
+          alignment: Alignment.center,
           child: Icon(
             _sortIcon(opt),
             size: 18,
@@ -263,7 +265,8 @@ class CategoryFilterWidget extends StatelessWidget {
                   color: shopTheme.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_rounded,
+                alignment: Alignment.center,
+                child: const FaIcon(FontAwesomeIcons.check,
                     size: 14, color: Colors.white),
               )
             : null,
@@ -282,7 +285,8 @@ class CategoryFilterWidget extends StatelessWidget {
             color: Colors.red.shade50,
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.refresh_rounded, size: 18, color: Colors.red.shade400),
+          alignment: Alignment.center,
+          child: FaIcon(FontAwesomeIcons.arrowsRotate, size: 18, color: Colors.red.shade400),
         ),
         title: Text(
           'Réinitialiser le tri',
@@ -303,15 +307,15 @@ class CategoryFilterWidget extends StatelessWidget {
       case 'Nom (A-Z)':
         return Icons.sort_by_alpha_rounded;
       case 'Prix croissant':
-        return Icons.trending_up_rounded;
+        return FontAwesomeIcons.arrowTrendUp;
       case 'Prix décroissant':
-        return Icons.trending_down_rounded;
+        return FontAwesomeIcons.arrowTrendDown;
       case 'Plus récents':
-        return Icons.new_releases_outlined;
+        return FontAwesomeIcons.certificate;
       case 'En stock':
-        return Icons.inventory_rounded;
+        return FontAwesomeIcons.boxOpen;
       case 'Rupture de stock':
-        return Icons.remove_shopping_cart_rounded;
+        return FontAwesomeIcons.cartShopping;
       default:
         return Icons.sort_rounded;
     }

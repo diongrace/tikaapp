@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -90,8 +90,8 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
     final actions = [
       _SpeedDialItem(icon: Icons.call_rounded,           color: t.primary,                  label: 'Appeler',    onTap: () { _closeAndRun(_call); }),
       _SpeedDialItem(faIcon: FontAwesomeIcons.whatsapp,  color: const Color(0xFF25D366),    label: 'WhatsApp',   onTap: () { _closeAndRun(_whatsapp); }),
-      _SpeedDialItem(icon: Icons.receipt_long_rounded,    color: const Color(0xFF3B82F6),    label: 'Commandes',  onTap: () { _closeAndRun(() => _orders(context)); }),
-      _SpeedDialItem(icon: Icons.card_membership_rounded, color: const Color(0xFFF59E0B),   label: 'Fidélité',   onTap: () { _closeAndRun(() => _loyalty(context)); }),
+      _SpeedDialItem(icon: FontAwesomeIcons.receipt,    color: const Color(0xFF3B82F6),    label: 'Commandes',  onTap: () { _closeAndRun(() => _orders(context)); }),
+      _SpeedDialItem(icon: FontAwesomeIcons.idCard, color: const Color(0xFFF59E0B),   label: 'Fidélité',   onTap: () { _closeAndRun(() => _loyalty(context)); }),
     ];
 
     _overlayEntry = OverlayEntry(
@@ -296,7 +296,7 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
                           const SizedBox(height: 5),
                           Row(
                             children: [
-                              const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                              const FaIcon(FontAwesomeIcons.solidStar, size: 14, color: Color(0xFFF59E0B)),
                               const SizedBox(width: 3),
                               Flexible(
                                 child: Text(
@@ -350,7 +350,7 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
                         ],
                       ),
                       child: Icon(
-                        _isExpanded ? Icons.close : Icons.more_vert_rounded,
+                        _isExpanded ? FontAwesomeIcons.xmark : FontAwesomeIcons.ellipsisVertical,
                         color: Colors.white,
                         size: 22,
                       ),
@@ -370,7 +370,7 @@ class _BoutiqueInfoCardState extends State<BoutiqueInfoCard>
 
   Widget _logoFallback(ShopTheme t) => Container(
         color: t.primary.withOpacity(0.07),
-        child: Icon(Icons.storefront_rounded, size: 28, color: t.primary),
+        child: FaIcon(FontAwesomeIcons.store, size: 28, color: t.primary),
       );
 
 }

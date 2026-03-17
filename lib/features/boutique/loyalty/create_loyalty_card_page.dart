@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'loyalty_card_page.dart';
 import '../../../services/loyalty_service.dart';
@@ -116,8 +117,9 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                 color: const Color(0xFFF3E5F5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.lock_outline_rounded,
+              alignment: Alignment.center,
+              child: const FaIcon(
+                FontAwesomeIcons.lock,
                 size: 36,
                 color: Color(0xFF670C88),
               ),
@@ -203,7 +205,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.white, size: 20),
+              const FaIcon(FontAwesomeIcons.solidCircleCheck, color: Colors.white, size: 20),
               const SizedBox(width: 12),
               const Text('Carte creee avec succes !'),
             ],
@@ -252,7 +254,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const FaIcon(FontAwesomeIcons.circleExclamation, color: Colors.white, size: 20),
               const SizedBox(width: 12),
               Expanded(child: Text(errorMessage)),
             ],
@@ -294,7 +296,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
               color: Colors.grey.shade100,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.grey.shade700),
+            child: FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.grey.shade700),
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -352,8 +354,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                           color: primaryColor.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
-                          Icons.card_membership_rounded,
+                        child: FaIcon(
+                          FontAwesomeIcons.idCard,
                           color: primaryColor,
                           size: 24,
                         ),
@@ -389,8 +391,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _buildBadge('Points cumules', Icons.stars_rounded),
-                      _buildBadge('Reductions', Icons.percent_rounded),
+                      _buildBadge('Points cumules', FontAwesomeIcons.solidStar),
+                      _buildBadge('Reductions', FontAwesomeIcons.percent),
                       _buildBadge('Offres VIP', Icons.diamond_rounded),
                     ],
                   ),
@@ -433,28 +435,28 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                   ),
                   const SizedBox(height: 16),
                   _buildAdvantageItem(
-                    Icons.star_rounded,
+                    FontAwesomeIcons.solidStar,
                     'Cumulez des points',
                     'Gagnez des points a chaque commande',
                     const Color(0xFFFF9800),
                   ),
                   const SizedBox(height: 12),
                   _buildAdvantageItem(
-                    Icons.card_giftcard_rounded,
+                    FontAwesomeIcons.gift,
                     'Debloquez des recompenses',
                     'Livraison gratuite, reductions, produits offerts',
                     const Color(0xFF4CAF50),
                   ),
                   const SizedBox(height: 12),
                   _buildAdvantageItem(
-                    Icons.trending_up_rounded,
+                    FontAwesomeIcons.arrowTrendUp,
                     'Montez de niveau',
                     'Bronze, Argent, Or, Platine',
                     const Color(0xFF2196F3),
                   ),
                   const SizedBox(height: 12),
                   _buildAdvantageItem(
-                    Icons.qr_code_rounded,
+                    FontAwesomeIcons.qrcode,
                     'QR Code personnel',
                     'Scannez en boutique pour cumuler vos points',
                     const Color(0xFF9C27B0),
@@ -481,7 +483,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                       color: const Color(0xFF2196F3).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.info_outline, color: Color(0xFF2196F3), size: 20),
+                    child: const FaIcon(FontAwesomeIcons.circleInfo, color: Color(0xFF2196F3), size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -539,7 +541,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.add_card_rounded, size: 20),
+                            const FaIcon(FontAwesomeIcons.creditCard, size: 20),
                             const SizedBox(width: 10),
                             Text(
                               'Creer ma carte',
@@ -574,7 +576,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.storefront_outlined, size: 18, color: Colors.grey.shade500),
+                    FaIcon(FontAwesomeIcons.store, size: 18, color: Colors.grey.shade500),
                     const SizedBox(width: 8),
                     Text(
                       'Retour a la boutique',
@@ -607,8 +609,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                       color: const Color(0xFF10B981).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
-                      Icons.verified_user_outlined,
+                    child: const FaIcon(
+                      FontAwesomeIcons.shieldHalved,
                       color: Color(0xFF10B981),
                       size: 20,
                     ),

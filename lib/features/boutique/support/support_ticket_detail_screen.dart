@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../services/support_service.dart';
@@ -114,7 +115,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                     children: [
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                        child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 24),
                       ),
                       Expanded(
                         child: Text(
@@ -227,7 +228,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle, color: Color(0xFF16A34A), size: 20),
+                      const FaIcon(FontAwesomeIcons.solidCircleCheck, color: Color(0xFF16A34A), size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -267,7 +268,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
                         child: Row(
                           children: [
-                            Icon(Icons.person_outline, color: Colors.grey.shade500, size: 18),
+                            FaIcon(FontAwesomeIcons.user, color: Colors.grey.shade500, size: 18),
                             const SizedBox(width: 8),
                             Text(
                               'Ma demande',
@@ -288,7 +289,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.help_outline, size: 13, color: Color(0xFF8936A8)),
+                                    const FaIcon(FontAwesomeIcons.circleQuestion, size: 13, color: Color(0xFF8936A8)),
                                     const SizedBox(width: 4),
                                     Text(
                                       _getTypeLabel(ticket.category),
@@ -371,7 +372,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.arrow_back, size: 18, color: Colors.black87),
+                        const FaIcon(FontAwesomeIcons.arrowLeft, size: 18, color: Colors.black87),
                         const SizedBox(width: 8),
                         Text(
                           'Retour',
@@ -447,7 +448,8 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
               color: const Color(0xFF8936A8).withOpacity(0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.access_time, color: Color(0xFF8936A8), size: 32),
+            alignment: Alignment.center,
+            child: const FaIcon(FontAwesomeIcons.clock, color: Color(0xFF8936A8), size: 32),
           ),
           const SizedBox(height: 16),
           Text(
@@ -509,7 +511,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             child: Row(
               children: [
-                const Icon(Icons.support_agent, color: Color(0xFF4CAF50), size: 18),
+                const FaIcon(FontAwesomeIcons.headset, color: Color(0xFF4CAF50), size: 18),
                 const SizedBox(width: 8),
                 Text(
                   'Réponse du support',
@@ -562,7 +564,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const FaIcon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text('Erreur de chargement',
                 style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -588,7 +590,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_off, size: 64, color: Colors.grey),
+          const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
           Text('Ticket introuvable',
               style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold)),

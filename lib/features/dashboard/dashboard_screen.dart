@@ -1,5 +1,6 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/dashboard_service.dart';
 import '../../services/favorites_service.dart';
@@ -263,6 +264,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _client = client ?? AuthService.currentClient;
           _recentOrders = fallbackOrders;
           _favorites = fallbackFavorites;
+          
           _overview = DashboardOverview(
             totalOrders: fallbackOrders.length,
             pendingOrders: 0, completedOrders: 0,
@@ -299,8 +301,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               color: primaryColor.withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
-              Icons.arrow_back_ios_rounded,
+            child: const FaIcon(
+              FontAwesomeIcons.arrowLeft,
               color: primaryColor,
               size: 18,
             ),
@@ -354,8 +356,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                           color: primaryColor.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
-                          Icons.notifications_outlined,
+                        child: const FaIcon(
+                          FontAwesomeIcons.bell,
                           color: primaryColor,
                           size: 20,
                         ),
@@ -409,8 +411,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   color: Colors.red.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.logout_rounded,
+                child: const FaIcon(
+                  FontAwesomeIcons.rightFromBracket,
                   color: Colors.red,
                   size: 20,
                 ),
@@ -501,15 +503,15 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildNavTabs() {
     final tabs = [
-      _NavTab(Icons.receipt_long_outlined, 'Commandes',
+      _NavTab(FontAwesomeIcons.receipt, 'Commandes',
           () => _navigateTo(const GlobalHistoryScreen())),
-      _NavTab(Icons.card_membership_rounded, 'Cartes',
+      _NavTab(FontAwesomeIcons.idCard, 'Cartes',
           () => _openLoyaltyCards()),
-      _NavTab(Icons.favorite_border_rounded, 'Favoris',
+      _NavTab(FontAwesomeIcons.heart, 'Favoris',
           () => _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false))),
-      _NavTab(Icons.analytics_outlined, 'Stats',
+      _NavTab(FontAwesomeIcons.chartBar, 'Stats',
           () => _navigateTo(const DashboardStatsScreen())),
-      _NavTab(Icons.notifications_outlined, 'Notifications',
+      _NavTab(FontAwesomeIcons.bell, 'Notifications',
           () => _navigateTo(const NotificationsListScreen())),
     ];
 
@@ -562,7 +564,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.logout_rounded, color: Colors.red, size: 24),
+            const FaIcon(FontAwesomeIcons.rightFromBracket, color: Colors.red, size: 24),
             const SizedBox(width: 10),
             Text(
               'Déconnexion',
@@ -697,7 +699,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 color: accentColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.add_card_rounded,
+              child: const FaIcon(FontAwesomeIcons.creditCard,
                   color: accentColor, size: 30),
             ),
             const SizedBox(height: 16),
@@ -728,7 +730,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Navigator.pop(ctx);
                     _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false));
                   },
-                  icon: const Icon(Icons.search_rounded, size: 18),
+                  icon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
                   label: Text(
                     'Explorer les boutiques',
                     style: GoogleFonts.inriaSerif(
@@ -770,7 +772,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           color: primaryColor.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.store_rounded,
+                        child: const FaIcon(FontAwesomeIcons.store,
                             color: primaryColor, size: 22),
                       ),
                       title: Text(
@@ -780,7 +782,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      trailing: const FaIcon(FontAwesomeIcons.arrowRight,
                           size: 16, color: Colors.grey),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -823,11 +825,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                   leading: Container(
                     width: 44,
                     height: 44,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: accentColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.card_giftcard_rounded,
+                    child: const FaIcon(FontAwesomeIcons.gift,
                         color: accentColor, size: 22),
                   ),
                   title: Text(
@@ -844,7 +847,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       color: Colors.grey[800],
                     ),
                   ),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                  trailing: const FaIcon(FontAwesomeIcons.arrowRight,
                       size: 16, color: Colors.grey),
                   onTap: () async {
                     Navigator.pop(ctx);
@@ -1019,7 +1022,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Row(
       children: [
         _buildStatCard(
-          icon: Icons.receipt_long_outlined,
+          icon: FontAwesomeIcons.receipt,
           label: 'COMMANDES',
           value: '$actualOrdersCount',
           color: const Color(0xFF42A5F5),
@@ -1033,7 +1036,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         const SizedBox(width: 12),
         _buildStatCard(
-          icon: Icons.favorite_border_rounded,
+          icon: FontAwesomeIcons.heart,
           label: 'FAVORIS',
           value: '$actualFavCount',
           color: const Color(0xFFE91E63),
@@ -1127,7 +1130,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               Flexible(
                 child: Row(
                   children: [
-                    Icon(Icons.shopping_bag_rounded,
+                    FaIcon(FontAwesomeIcons.bagShopping,
                         color: accentColor, size: 20),
                     const SizedBox(width: 8),
                     Flexible(
@@ -1156,7 +1159,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_rounded,
+                    FaIcon(FontAwesomeIcons.arrowRight,
                         color: accentColor, size: 16),
                   ],
                 ),
@@ -1204,7 +1207,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         // Titre
         Row(
           children: [
-            Icon(Icons.storefront_rounded, color: accentColor, size: 20),
+            FaIcon(FontAwesomeIcons.store, color: accentColor, size: 20),
             const SizedBox(width: 8),
             Text(
               'Boutiques visitées',
@@ -1266,15 +1269,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 child: Image.network(
                                   logo,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Icon(
-                                    Icons.store_rounded,
+                                  errorBuilder: (_, __, ___) => FaIcon(
+                                    FontAwesomeIcons.store,
                                     color: accentColor,
                                     size: 26,
                                   ),
                                 ),
                               )
-                            : Icon(
-                                Icons.store_rounded,
+                            : FaIcon(
+                                FontAwesomeIcons.store,
                                 color: accentColor,
                                 size: 26,
                               ),
@@ -1314,7 +1317,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.shopping_cart_outlined,
+              child: FaIcon(FontAwesomeIcons.cartShopping,
                   color: Colors.grey[900], size: 30),
             ),
             const SizedBox(height: 12),
@@ -1337,7 +1340,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.search_rounded, size: 18),
+              icon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
               label: Text(
                 'Découvrir',
                 style: GoogleFonts.inriaSerif(
@@ -1395,15 +1398,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                       child: Image.network(
                         order.shopLogo!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.store_rounded,
+                        errorBuilder: (_, __, ___) => const FaIcon(
+                          FontAwesomeIcons.store,
                           color: primaryColor,
                           size: 22,
                         ),
                       ),
                     )
-                  : const Icon(
-                      Icons.store_rounded,
+                  : const FaIcon(
+                      FontAwesomeIcons.store,
                       color: primaryColor,
                       size: 22,
                     ),
@@ -1480,7 +1483,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       children: [
         Row(
           children: [
-            const Icon(Icons.favorite_rounded,
+            const FaIcon(FontAwesomeIcons.solidHeart,
                 color: Color(0xFFE91E63), size: 20),
             const SizedBox(width: 8),
             Text(
@@ -1548,7 +1551,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 color: const Color(0xFFE91E63).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.favorite_rounded,
+              child: const FaIcon(FontAwesomeIcons.solidHeart,
                   color: Color(0xFFE91E63), size: 30),
             ),
             const SizedBox(height: 12),
@@ -1571,7 +1574,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => _navigateTo(const FavoritesBoutiquesScreen(showBottomNav: false)),
-              icon: const Icon(Icons.search_rounded, size: 18),
+              icon: const FaIcon(FontAwesomeIcons.magnifyingGlass, size: 18),
               label: Text(
                 'Découvrir',
                 style: GoogleFonts.inriaSerif(
@@ -1620,15 +1623,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                       child: Image.network(
                         favorite.shopLogo!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.store_rounded,
+                        errorBuilder: (_, __, ___) => const FaIcon(
+                          FontAwesomeIcons.store,
                           color: primaryColor,
                           size: 22,
                         ),
                       ),
                     )
-                  : const Icon(
-                      Icons.store_rounded,
+                  : const FaIcon(
+                      FontAwesomeIcons.store,
                       color: primaryColor,
                       size: 22,
                     ),
@@ -1666,7 +1669,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
             ),
-            const Icon(Icons.favorite_rounded,
+            const FaIcon(FontAwesomeIcons.solidHeart,
                 color: Color(0xFFE91E63), size: 20),
           ],
         ),
@@ -1704,11 +1707,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             Container(
               width: 44,
               height: 44,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.card_giftcard_rounded,
+              child: const FaIcon(FontAwesomeIcons.gift,
                   color: Colors.white, size: 24),
             ),
             const SizedBox(width: 16),
@@ -1748,8 +1752,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 children: [
                   Icon(
                     _loyaltyCards.isEmpty
-                        ? Icons.qr_code_rounded
-                        : Icons.visibility_rounded,
+                        ? FontAwesomeIcons.qrcode
+                        : FontAwesomeIcons.eye,
                     color: primaryColor,
                     size: 16,
                   ),
@@ -1782,7 +1786,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            FaIcon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.red[300]),
             const SizedBox(height: 16),
             Text(
               'Erreur de chargement',

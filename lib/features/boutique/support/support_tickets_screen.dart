@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../services/support_service.dart';
 import '../../../services/models/support_model.dart';
@@ -77,7 +78,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
   }
 
   IconData _getStatusIcon(SupportTicket ticket) {
-    if (ticket.isResolved) return Icons.check_circle;
+    if (ticket.isResolved) return FontAwesomeIcons.solidCircleCheck;
     if (ticket.isInProgress) return Icons.hourglass_top;
     return Icons.fiber_new;
   }
@@ -113,7 +114,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, size: 24),
+                    child: const FaIcon(FontAwesomeIcons.arrowLeft, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -128,7 +129,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   // Bouton rafraichir
                   GestureDetector(
                     onTap: _loadTickets,
-                    child: const Icon(Icons.refresh, size: 24, color: Color(0xFF8936A8)),
+                    child: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 24, color: Color(0xFF8936A8)),
                   ),
                 ],
               ),
@@ -154,7 +155,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCreateTicket,
         backgroundColor: const Color(0xFF8936A8),
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const FaIcon(FontAwesomeIcons.plus, color: Colors.white),
         label: Text(
           'Nouveau ticket',
           style: GoogleFonts.inriaSerif(
@@ -179,8 +180,9 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                 color: const Color(0xFF8936A8).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.support_agent,
+              alignment: Alignment.center,
+              child: const FaIcon(
+                FontAwesomeIcons.headset,
                 size: 64,
                 color: Color(0xFF8936A8),
               ),
@@ -216,7 +218,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const FaIcon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               'Erreur de chargement',
@@ -377,7 +379,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   ),
                 ],
                 const Spacer(),
-                Icon(Icons.access_time, size: 14, color: Colors.grey.shade400),
+                FaIcon(FontAwesomeIcons.clock, size: 14, color: Colors.grey.shade400),
                 const SizedBox(width: 4),
                 Text(
                   _formatDate(ticket.createdAt),
@@ -394,7 +396,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.reply, size: 16, color: Colors.green.shade600),
+                  FaIcon(FontAwesomeIcons.reply, size: 16, color: Colors.green.shade600),
                   const SizedBox(width: 4),
                   Text(
                     'Reponse disponible',

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../services/utils/api_endpoint.dart';
@@ -177,9 +178,10 @@ class _ProductCardState extends State<ProductCard> {
                                   ),
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.add_rounded,
-                                size: 24,
+                              alignment: Alignment.center,
+                              child: const FaIcon(
+                                FontAwesomeIcons.plus,
+                                size: 16,
                                 color: Color(0xFF1C1C1E),
                               ),
                             ),
@@ -293,8 +295,8 @@ class _ProductCardState extends State<ProductCard> {
   }
 
   Widget _placeholder() => Center(
-        child: Icon(
-          Icons.image_search_rounded,
+        child: FaIcon(
+          FontAwesomeIcons.magnifyingGlass,
           size: 36,
           color: Colors.grey.shade300,
         ),

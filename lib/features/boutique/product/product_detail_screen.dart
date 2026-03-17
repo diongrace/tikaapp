@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../panier/cart_manager.dart';
@@ -119,10 +120,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     color: Colors.black54,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.close,
+                  alignment: Alignment.center,
+                  child: const FaIcon(
+                    FontAwesomeIcons.xmark,
                     color: Colors.white,
-                    size: 24,
+                    size: 18,
                   ),
                 ),
               ),
@@ -165,8 +167,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Container(
           color: Colors.grey[300],
           child: Center(
-            child: Icon(
-              Icons.shopping_bag_outlined,
+            child: FaIcon(
+              FontAwesomeIcons.bagShopping,
               size: 100,
               color: _primaryColor,
             ),
@@ -199,8 +201,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 return Container(
                   color: Colors.grey[300],
                   child: Center(
-                    child: Icon(
-                      Icons.shopping_bag_outlined,
+                    child: FaIcon(
+                      FontAwesomeIcons.bagShopping,
                       size: 100,
                       color: _primaryColor,
                     ),
@@ -305,8 +307,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Center(
-              child: Icon(
-                Icons.image_outlined,
+              child: FaIcon(
+                FontAwesomeIcons.image,
                 size: 40,
                 color: Colors.grey.shade900,
               ),
@@ -446,7 +448,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ],
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
+                          icon: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.black87, size: 20),
                           onPressed: () => Navigator.pop(context),
                           padding: const EdgeInsets.only(left: 4),
                         ),
@@ -510,8 +512,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.local_offer_rounded,
+                              FaIcon(
+                                FontAwesomeIcons.tag,
                                 size: 16,
                                 color: _primaryColor,
                               ),
@@ -664,7 +666,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  isOutOfStock ? Icons.cancel_rounded : Icons.check_circle_rounded,
+                                  isOutOfStock ? FontAwesomeIcons.xmark : FontAwesomeIcons.solidCircleCheck,
                                   color: isOutOfStock
                                       ? const Color(0xFFE91E63)
                                       : const Color(0xFF4CAF50),
@@ -725,9 +727,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         width: 1.5,
                                       ),
                                     ),
-                                    child: Icon(
-                                      Icons.remove_rounded,
-                                      size: 18,
+                                    alignment: Alignment.center,
+                                    child: FaIcon(
+                                      FontAwesomeIcons.minus,
+                                      size: 16,
                                       color: _quantity > 1
                                           ? _primaryColor
                                           : Colors.grey.shade900,
@@ -774,9 +777,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                             ]
                                           : [],
                                     ),
-                                    child: Icon(
-                                      Icons.add_rounded,
-                                      size: 18,
+                                    alignment: Alignment.center,
+                                    child: FaIcon(
+                                      FontAwesomeIcons.plus,
+                                      size: 16,
                                       color: _quantity < stock
                                           ? Colors.white
                                           : Colors.grey.shade900,
@@ -879,11 +883,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               left: 0,
               right: 0,
               child: Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.12),
@@ -1039,8 +1042,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           color: Colors.white.withOpacity(0.2),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(
-                                          Icons.check_circle,
+                                        alignment: Alignment.center,
+                                        child: const FaIcon(
+                                          FontAwesomeIcons.solidCircleCheck,
                                           color: Colors.white,
                                           size: 24,
                                         ),
@@ -1105,8 +1109,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
-                                    Icons.shopping_bag_rounded,
+                                  const FaIcon(
+                                    FontAwesomeIcons.bagShopping,
                                     color: Colors.white,
                                     size: 20,
                                   ),

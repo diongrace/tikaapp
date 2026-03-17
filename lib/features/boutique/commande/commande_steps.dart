@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'form_widgets.dart';
@@ -52,7 +53,7 @@ class Step1ClientInfo extends StatelessWidget {
             controller: nomController,
             label: 'Nom complet',
             hint: 'Entrez votre nom complet',
-            icon: Icons.person_outline,
+            icon: FontAwesomeIcons.user,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZÀ-ÿ\s]')), // Lettres et espaces uniquement
             ],
@@ -74,7 +75,7 @@ class Step1ClientInfo extends StatelessWidget {
             controller: emailController,
             label: 'Email (optionnel)',
             hint: 'example@email.com',
-            icon: Icons.email_outlined,
+            icon: FontAwesomeIcons.envelope,
             required: false,
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
@@ -92,7 +93,7 @@ class Step1ClientInfo extends StatelessWidget {
             controller: phoneController,
             label: 'Numéro de téléphone',
             hint: '07 XX XX XX XX',
-            icon: Icons.phone_outlined,
+            icon: FontAwesomeIcons.phone,
             keyboardType: TextInputType.phone,
             maxLength: 10,
             inputFormatters: [
@@ -236,7 +237,7 @@ class Step2DeliveryMode extends StatelessWidget {
           id: 'Livraison',
           title: 'Livraison',
           description: 'Livraison rapide à votre domicile',
-          icon: Icons.local_shipping,
+          icon: FontAwesomeIcons.truck,
           iconColor: BoutiqueThemeProvider.of(context).primary,
           isSelected: selectedDeliveryMode == 'Livraison',
           onTap: () => onDeliveryModeChanged('Livraison'),
@@ -249,7 +250,7 @@ class Step2DeliveryMode extends StatelessWidget {
           id: 'En boutique',
           title: 'En boutique',
           description: 'Récupérez votre commande en boutique',
-          icon: Icons.store,
+          icon: FontAwesomeIcons.store,
           iconColor: const Color(0xFF10B981),
           isSelected: selectedDeliveryMode == 'En boutique',
           onTap: () => onDeliveryModeChanged('En boutique'),
@@ -264,7 +265,7 @@ class Step2DeliveryMode extends StatelessWidget {
             controller: addressController,
             label: 'Adresse de livraison',
             hint: 'Entrez votre adresse complète (quartier, rue, repère...)',
-            icon: Icons.location_on_outlined,
+            icon: FontAwesomeIcons.locationDot,
             maxLines: 2,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -348,8 +349,8 @@ class Step2DeliveryMode extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
+                  FaIcon(
+                    FontAwesomeIcons.calendarDays,
                     color: selectedPickupDate != null
                         ? BoutiqueThemeProvider.of(context).primary
                         : Colors.grey.shade800,
@@ -381,8 +382,8 @@ class Step2DeliveryMode extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios,
+                  FaIcon(
+                    FontAwesomeIcons.arrowRight,
                     size: 16,
                     color: Colors.grey.shade900,
                   ),
@@ -417,8 +418,8 @@ class Step2DeliveryMode extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.access_time_outlined,
+                  FaIcon(
+                    FontAwesomeIcons.clock,
                     color: selectedPickupTime != null
                         ? BoutiqueThemeProvider.of(context).primary
                         : Colors.grey.shade800,
@@ -450,8 +451,8 @@ class Step2DeliveryMode extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios,
+                  FaIcon(
+                    FontAwesomeIcons.arrowRight,
                     size: 16,
                     color: Colors.grey.shade900,
                   ),
@@ -623,7 +624,7 @@ class Step3PaymentAndSummary extends StatelessWidget {
       //     'name': 'Orange Money',
       //     'image': 'lib/core/assets/orange.png',
       //     'color': const Color(0xFFFF7900),
-      //     'icon': Icons.phone_android,
+      //     'icon': FontAwesomeIcons.mobileScreen,
       //   };
       // case 'moov':
       //   return {
@@ -637,14 +638,14 @@ class Step3PaymentAndSummary extends StatelessWidget {
       //     'name': 'Carte bancaire',
       //     'image': 'lib/core/assets/card.png',
       //     'color': const Color(0xFF424242),
-      //     'icon': Icons.credit_card,
+      //     'icon': FontAwesomeIcons.creditCard,
       //   };
       default:
         return {
           'name': 'Non sélectionné',
           'image': '',
           'color': Colors.grey,
-          'icon': Icons.payment,
+          'icon': FontAwesomeIcons.creditCard,
         };
     }
   }
@@ -874,9 +875,9 @@ class PaymentDropdown extends StatelessWidget {
       // MODES DE PAIEMENT NON DISPONIBLES DANS L'API ACTUELLE
       // Décommenter quand l'API les supportera
       // ============================================================
-      // {'id': 'orange', 'name': 'Orange Money', 'imagePath': 'lib/core/assets/orange.png', 'color': const Color(0xFFFF7900), 'icon': Icons.phone_android},
+      // {'id': 'orange', 'name': 'Orange Money', 'imagePath': 'lib/core/assets/orange.png', 'color': const Color(0xFFFF7900), 'icon': FontAwesomeIcons.mobileScreen},
       // {'id': 'moov', 'name': 'Moov Money', 'imagePath': 'lib/core/assets/moov.png', 'color': const Color(0xFFFF6600), 'icon': Icons.smartphone},
-      // {'id': 'card', 'name': 'Carte bancaire', 'imagePath': 'lib/core/assets/card.png', 'color': const Color(0xFF424242), 'icon': Icons.credit_card},
+      // {'id': 'card', 'name': 'Carte bancaire', 'imagePath': 'lib/core/assets/card.png', 'color': const Color(0xFF424242), 'icon': FontAwesomeIcons.creditCard},
     ];
   }
 
@@ -916,7 +917,7 @@ class PaymentDropdown extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const FaIcon(FontAwesomeIcons.xmark),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -985,8 +986,8 @@ class PaymentDropdown extends StatelessWidget {
                         ),
                         // Indicateur de sélection
                         if (isSelected)
-                          Icon(
-                            Icons.check_circle,
+                          FaIcon(
+                            FontAwesomeIcons.solidCircleCheck,
                             color: BoutiqueThemeProvider.of(context).primary,
                             size: 24,
                           ),
@@ -1086,8 +1087,8 @@ class PaymentDropdown extends StatelessWidget {
               ),
             ],
             // Icône déroulante
-            Icon(
-              Icons.keyboard_arrow_down,
+            FaIcon(
+              FontAwesomeIcons.chevronDown,
               size: 28,
               color: const Color.fromARGB(255, 111, 12, 120),
             ),
@@ -1256,8 +1257,8 @@ class PaymentOptionHorizontal extends StatelessWidget {
             ),
             // Radio button
             if (isSelected)
-              Icon(
-                Icons.check_circle,
+              FaIcon(
+                FontAwesomeIcons.solidCircleCheck,
                 color: BoutiqueThemeProvider.of(context).primary,
                 size: 24,
               ),

@@ -1,6 +1,8 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -39,6 +41,8 @@ class WavePaymentScreen extends StatefulWidget {
   final int? loyaltyCardId;
   final int? loyaltyPointsUsed;
   final double? loyaltyDiscount;
+  final String? giftCardCode;
+  final double? giftCardDiscount;
   final String? pickupDate;
   final String? pickupTime;
   final int? deliveryZoneId;
@@ -65,6 +69,8 @@ class WavePaymentScreen extends StatefulWidget {
     this.loyaltyCardId,
     this.loyaltyPointsUsed,
     this.loyaltyDiscount,
+    this.giftCardCode,
+    this.giftCardDiscount,
     this.pickupDate,
     this.pickupTime,
     this.deliveryZoneId,
@@ -104,56 +110,56 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
 
   /// Ouvrir le lien Wave du vendeur avec le montant pré-rempli
   Future<void> _openWaveApp() async {
+    final amountStr = widget.amount.toStringAsFixed(0);
+
+    // ── 1. Construire l'URL de base ────────────────────────────────────────
     String? urlToOpen = widget.wavePaymentLink;
 
-    // Si le lien est un numero/code (pas une URL), construire le lien Wave
     if (urlToOpen != null && !urlToOpen.startsWith('http')) {
-      urlToOpen = 'https://wave.com/m/$urlToOpen';
+      urlToOpen = 'https://pay.wave.com/m/$urlToOpen';
     }
-
-    // Si pas de lien, essayer avec le numéro Wave du vendeur
     if (urlToOpen == null && widget.vendorWaveNumber != null) {
-      urlToOpen = 'https://wave.com/m/${widget.vendorWaveNumber}';
+      final phone = widget.vendorWaveNumber!.replaceAll(RegExp(r'\s'), '');
+      urlToOpen = 'https://pay.wave.com/m/$phone';
     }
 
-    // Ajouter le montant à l'URL Wave
+    // ── 2. Injecter le montant dans l'URL ─────────────────────────────────
     if (urlToOpen != null) {
       final uri = Uri.tryParse(urlToOpen);
       if (uri != null && !uri.queryParameters.containsKey('amount')) {
         urlToOpen = uri.replace(queryParameters: {
           ...uri.queryParameters,
-          'amount': widget.amount.toStringAsFixed(0),
+          'amount': amountStr,
         }).toString();
       }
     }
 
-    print('[Wave] urlToOpen: $urlToOpen');
+    print('[Wave] URL finale: $urlToOpen');
 
-    if (urlToOpen != null) {
-      try {
-        final uri = Uri.parse(urlToOpen);
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        if (mounted) {
-          setState(() {
-            _waveOpened = true;
-          });
-        }
-        return;
-      } catch (e) {
-        print('[Wave] Erreur ouverture lien: $e');
-        if (mounted) {
-          setState(() {
-            _errorMessage = 'Impossible d\'ouvrir Wave. Vérifiez que l\'app Wave est installée.';
-          });
-        }
-      }
-    } else {
-      // Pas de lien Wave disponible
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Le lien de paiement Wave du vendeur n\'est pas disponible.';
-        });
-      }
+    if (urlToOpen == null) {
+      if (mounted) setState(() => _errorMessage = 'Lien de paiement Wave non configuré pour cette boutique.');
+      return;
+    }
+
+    final uri = Uri.parse(urlToOpen);
+
+    // ── 3. Ouvrir dans l'app Wave (pas le navigateur) ─────────────────────
+    // externalNonBrowserApplication → force Wave app si installée
+    // Le montant ?amount= est honoré par l'app Wave mais pas par le navigateur web
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+      if (mounted) setState(() => _waveOpened = true);
+      return;
+    } catch (_) {
+      // Wave app non installée ou URL non gérée → fallback navigateur
+    }
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (mounted) setState(() => _waveOpened = true);
+    } catch (e) {
+      print('[Wave] Erreur: $e');
+      if (mounted) setState(() => _errorMessage = 'Impossible d\'ouvrir Wave. Vérifiez que l\'app Wave est installée.');
     }
   }
 
@@ -246,6 +252,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
           loyaltyCardId: widget.loyaltyCardId,
           loyaltyPointsUsed: widget.loyaltyPointsUsed,
           loyaltyDiscount: widget.loyaltyDiscount,
+          giftCardCode: widget.giftCardCode,
+          giftCardDiscount: widget.giftCardDiscount,
           pickupDate: widget.pickupDate,
           pickupTime: widget.pickupTime,
           deliveryZoneId: widget.deliveryZoneId,
@@ -352,7 +360,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 28),
+            FaIcon(FontAwesomeIcons.circleExclamation, color: Colors.red, size: 28),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -429,7 +437,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 32),
+            FaIcon(FontAwesomeIcons.solidCircleCheck, color: Colors.green, size: 32),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -469,7 +477,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 32),
+            FaIcon(FontAwesomeIcons.solidCircleCheck, color: Colors.green, size: 32),
             const SizedBox(width: 8),
             Text(
               'Paiement approuvé!',
@@ -506,7 +514,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.cancel, color: Colors.red, size: 32),
+            FaIcon(FontAwesomeIcons.xmark, color: Colors.red, size: 32),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -534,7 +542,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.red.shade700, size: 20),
+                    FaIcon(FontAwesomeIcons.circleInfo, color: Colors.red.shade700, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -582,7 +590,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
         backgroundColor: waveColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white),
           onPressed: () {
             _pollingTimer?.cancel();
             if (widget.onCancel != null) {
@@ -682,9 +690,49 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
           Text(
             '${widget.amount.toStringAsFixed(0)} FCFA',
             style: GoogleFonts.inriaSerif(
-              fontSize: 20,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(
+                  text: widget.amount.toStringAsFixed(0)));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Montant copié — collez-le dans Wave',
+                    style: GoogleFonts.inriaSerif(color: Colors.white),
+                  ),
+                  backgroundColor: Colors.green.shade700,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withOpacity(0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.copy_rounded, color: Colors.white, size: 15),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Copier le montant',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -705,7 +753,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
       child: Row(
         children: [
           Icon(
-            _waveOpened ? Icons.camera_alt : Icons.info_outline,
+            _waveOpened ? FontAwesomeIcons.camera : FontAwesomeIcons.circleInfo,
             color: _waveOpened ? Colors.green.shade700 : waveColor,
             size: 24,
           ),
@@ -762,7 +810,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                   ),
                   child: Center(
                     child: _waveOpened
-                        ? Icon(Icons.check, color: Colors.green, size: 24)
+                        ? FaIcon(FontAwesomeIcons.check, color: Colors.green, size: 24)
                         : Text(
                             '1',
                             style: GoogleFonts.inriaSerif(
@@ -859,7 +907,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                   ),
                   child: Center(
                     child: _screenshot != null
-                        ? Icon(Icons.check, color: Colors.green, size: 24)
+                        ? FaIcon(FontAwesomeIcons.check, color: Colors.green, size: 24)
                         : Text(
                             '2',
                             style: GoogleFonts.inriaSerif(
@@ -911,7 +959,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.photo_library, color: waveColor, size: 20),
+                          FaIcon(FontAwesomeIcons.images, color: waveColor, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             'Galerie',
@@ -937,7 +985,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.camera_alt, color: waveColor, size: 20),
+                          FaIcon(FontAwesomeIcons.camera, color: waveColor, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             'Caméra',
@@ -990,7 +1038,8 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.close, color: Colors.white, size: 16),
+                  alignment: Alignment.center,
+                  child: FaIcon(FontAwesomeIcons.xmark, color: Colors.white, size: 16),
                 ),
               ),
             ),
@@ -1010,7 +1059,7 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+          FaIcon(FontAwesomeIcons.circleExclamation, color: Colors.red.shade700, size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1036,22 +1085,22 @@ class _WavePaymentScreenState extends State<WavePaymentScreen> {
     switch (status) {
       case 'paid':
         statusColor = Colors.green;
-        statusIcon = Icons.check_circle;
+        statusIcon = FontAwesomeIcons.solidCircleCheck;
         statusText = 'Paiement approuvé';
         break;
       case 'rejected':
         statusColor = Colors.red;
-        statusIcon = Icons.cancel;
+        statusIcon = FontAwesomeIcons.xmark;
         statusText = 'Paiement rejeté';
         break;
       case 'pending_verification':
         statusColor = Colors.orange;
-        statusIcon = Icons.hourglass_empty;
+        statusIcon = FontAwesomeIcons.hourglassEmpty;
         statusText = 'En attente de vérification';
         break;
       default:
         statusColor = Colors.blue;
-        statusIcon = Icons.info;
+        statusIcon = FontAwesomeIcons.circleInfo;
         statusText = 'En cours de traitement';
     }
 

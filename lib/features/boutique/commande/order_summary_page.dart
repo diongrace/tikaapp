@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../panier/cart_manager.dart';
 import '../../../core/services/boutique_theme_provider.dart';
@@ -43,9 +44,9 @@ class OrderSummaryPage extends StatelessWidget {
   IconData _paymentIcon(String? method) {
     switch (method) {
       case 'wave':         return Icons.waves_rounded;
-      case 'especes':      return Icons.payments_outlined;
-      case 'mobile_money': return Icons.phone_android_outlined;
-      default:             return Icons.payments_outlined;
+      case 'especes':      return FontAwesomeIcons.moneyBill;
+      case 'mobile_money': return FontAwesomeIcons.mobileScreen;
+      default:             return FontAwesomeIcons.moneyBill;
     }
   }
 
@@ -77,7 +78,8 @@ class OrderSummaryPage extends StatelessWidget {
                         color: Colors.grey.shade100,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.arrow_back_ios_new_rounded,
+                      alignment: Alignment.center,
+                      child: FaIcon(FontAwesomeIcons.arrowLeft,
                           size: 16, color: Colors.grey.shade800),
                     ),
                   ),
@@ -229,8 +231,8 @@ class OrderSummaryPage extends StatelessWidget {
                             ),
                             child: Icon(
                               deliveryMode == 'Livraison'
-                                  ? Icons.local_shipping_outlined
-                                  : Icons.storefront_outlined,
+                                  ? FontAwesomeIcons.truck
+                                  : FontAwesomeIcons.store,
                               color: Colors.grey.shade800,
                               size: 20,
                             ),
@@ -358,19 +360,19 @@ class OrderSummaryPage extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          _infoRow(Icons.person_outline_rounded, customerName),
+                          _infoRow(FontAwesomeIcons.user, customerName),
                           _divider(),
-                          _infoRow(Icons.phone_outlined, customerPhone),
+                          _infoRow(FontAwesomeIcons.phone, customerPhone),
                           if (deliveryAddress != null &&
                               deliveryAddress!.isNotEmpty) ...[
                             _divider(),
                             _infoRow(
-                                Icons.location_on_outlined, deliveryAddress!),
+                                FontAwesomeIcons.locationDot, deliveryAddress!),
                           ],
                           if (customerEmail != null &&
                               customerEmail!.isNotEmpty) ...[
                             _divider(),
-                            _infoRow(Icons.email_outlined, customerEmail!),
+                            _infoRow(FontAwesomeIcons.envelope, customerEmail!),
                           ],
                         ],
                       ),
@@ -478,7 +480,7 @@ class OrderSummaryPage extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.check_circle_outline_rounded,
+                        const FaIcon(FontAwesomeIcons.circleCheck,
                             color: Colors.white, size: 22),
                         const SizedBox(width: 10),
                         Text(

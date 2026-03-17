@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/models/boutique_type.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
@@ -90,8 +91,9 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     color: BoutiqueThemeProvider.of(context).primary.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.access_time,
+                  alignment: Alignment.center,
+                  child: FaIcon(
+                    FontAwesomeIcons.clock,
                     color: BoutiqueThemeProvider.of(context).primary,
                     size: 22,
                   ),
@@ -219,7 +221,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                 color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.transparent,
               ),
               child: isSelected
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  ? const FaIcon(FontAwesomeIcons.check, size: 14, color: Colors.white)
                   : null,
             ),
             const SizedBox(width: 8),
@@ -400,7 +402,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                         color: isSelected ? BoutiqueThemeProvider.of(context).primary : Colors.transparent,
                       ),
                       child: isSelected
-                          ? const Icon(Icons.check, size: 14, color: Colors.white)
+                          ? const FaIcon(FontAwesomeIcons.check, size: 14, color: Colors.white)
                           : null,
                     ),
                     const SizedBox(width: 8),
@@ -713,8 +715,9 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                     color: BoutiqueThemeProvider.of(context).primary.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.schedule,
+                  alignment: Alignment.center,
+                  child: FaIcon(
+                    FontAwesomeIcons.clock,
                     color: BoutiqueThemeProvider.of(context).primary,
                     size: 22,
                   ),
@@ -751,7 +754,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
         // Spécialiste
         if (_getSpecialist() != null) ...[
           _buildInfoCard(
-            icon: Icons.person_outline,
+            icon: FontAwesomeIcons.user,
             label: 'Spécialiste',
             value: _getSpecialist()!,
           ),

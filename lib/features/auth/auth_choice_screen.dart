@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
@@ -78,11 +79,11 @@ class AuthChoiceScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildAdvantage(Icons.notifications_active, 'Notifications en temps réel'),
+                    _buildAdvantage(FontAwesomeIcons.solidBell, 'Notifications en temps réel'),
                     const SizedBox(height: 12),
                     _buildAdvantage(Icons.sync, 'Synchronisation des commandes'),
                     const SizedBox(height: 12),
-                    _buildAdvantage(Icons.card_giftcard, 'Programme de fidélité'),
+                    _buildAdvantage(FontAwesomeIcons.gift, 'Programme de fidélité'),
                     const SizedBox(height: 12),
                     _buildAdvantage(Icons.history, 'Historique sur tous vos appareils'),
                   ],
@@ -222,8 +223,8 @@ class AuthChoiceScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
+                    FaIcon(
+                      FontAwesomeIcons.circleInfo,
                       color: Colors.grey.shade800,
                       size: 18,
                     ),
@@ -258,6 +259,7 @@ class AuthChoiceScreen extends StatelessWidget {
             color: const Color(0xFF8936A8).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
+          alignment: Alignment.center,
           child: Icon(
             icon,
             size: 18,

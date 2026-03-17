@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../support/support_tickets_screen.dart';
@@ -119,7 +120,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                      child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 24),
                     ),
                     const Spacer(),
                     Text(
@@ -160,7 +161,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             color: const Color(0xFF8936A8).withOpacity(0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.support_agent, color: Color(0xFF8936A8), size: 22),
+                          alignment: Alignment.center,
+                          child: const FaIcon(FontAwesomeIcons.headset, color: Color(0xFF8936A8), size: 22),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -221,7 +223,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.add, color: Colors.white, size: 22),
+                            child: const FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 22),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -247,7 +249,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                          const FaIcon(FontAwesomeIcons.chevronRight, color: Colors.grey, size: 20),
                         ],
                       ),
                     ),
@@ -303,6 +305,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                       color: Color(0xFF25D366),
                                       shape: BoxShape.circle,
                                     ),
+                                    alignment: Alignment.center,
                                     child: const Icon(Icons.chat_bubble, color: Colors.white, size: 18),
                                   ),
                                   const SizedBox(width: 10),
@@ -353,7 +356,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                       color: Color(0xFF2196F3),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.phone, color: Colors.white, size: 18),
+                                    alignment: Alignment.center,
+                                    child: const FaIcon(FontAwesomeIcons.phone, color: Colors.white, size: 18),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
@@ -453,7 +457,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               color: Colors.grey.shade100,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.inbox_outlined, size: 32, color: Colors.grey.shade400),
+                            alignment: Alignment.center,
+                            child: FaIcon(FontAwesomeIcons.inbox, size: 32, color: Colors.grey.shade400),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -489,7 +494,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.add, color: Colors.white, size: 18),
+                                  const FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 18),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Faire une demande',
@@ -536,7 +541,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                     color: const Color(0xFF8936A8).withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.help_outline, color: Color(0xFF8936A8), size: 22),
+                                  alignment: Alignment.center,
+                                  child: const FaIcon(FontAwesomeIcons.circleQuestion, color: Color(0xFF8936A8), size: 22),
                                 ),
                                 const SizedBox(width: 12),
                                 // Sujet + message + date
@@ -604,7 +610,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
+                                const FaIcon(FontAwesomeIcons.chevronRight, color: Colors.grey, size: 18),
                               ],
                             ),
                           ),

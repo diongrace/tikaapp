@@ -1,5 +1,6 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Écran de chargement pour les commandes
@@ -54,8 +55,8 @@ class OrderLoadingScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.shopping_bag_outlined,
+                  child: const FaIcon(
+                    FontAwesomeIcons.bagShopping,
                     size: 60,
                     color: Color(0xFF8936A8),
                   ),

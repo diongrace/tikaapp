@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Écran de chargement pour les favoris
@@ -32,8 +33,8 @@ class FavoritesLoadingScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           // Icône coeur
-          Icon(
-            Icons.favorite_border_rounded,
+          FaIcon(
+            FontAwesomeIcons.heart,
             size: 48,
             color: const Color(0xFF8936A8).withOpacity(0.6),
           ),

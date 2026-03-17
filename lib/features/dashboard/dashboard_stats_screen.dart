@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/dashboard_service.dart';
 import '../../services/models/dashboard_model.dart';
@@ -62,8 +63,8 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
               color: primaryColor.withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
-              Icons.arrow_back_ios_rounded,
+            child: const FaIcon(
+              FontAwesomeIcons.arrowLeft,
               color: primaryColor,
               size: 18,
             ),
@@ -127,7 +128,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+              FaIcon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.red[300]),
               const SizedBox(height: 16),
               Text(
                 _errorMessage ?? 'Une erreur est survenue',
@@ -168,7 +169,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Row(
               children: [
                 _buildStatTile(
-                  icon: Icons.receipt_long_outlined,
+                  icon: FontAwesomeIcons.receipt,
                   label: 'Commandes',
                   value: '${stats.ordersThisMonth}',
                   color: const Color(0xFF42A5F5),
@@ -190,14 +191,14 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Row(
               children: [
                 _buildStatTile(
-                  icon: Icons.receipt_long_outlined,
+                  icon: FontAwesomeIcons.receipt,
                   label: 'Total commandes',
                   value: '${stats.totalOrders}',
                   color: accentColor,
                 ),
                 const SizedBox(width: 12),
                 _buildStatTile(
-                  icon: Icons.shopping_cart_outlined,
+                  icon: FontAwesomeIcons.cartShopping,
                   label: 'Panier moyen',
                   value: '${fmtAmount(stats.averageOrderAmount)} F',
                   color: const Color(0xFFFF9800),
@@ -208,7 +209,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
             Row(
               children: [
                 _buildStatTile(
-                  icon: Icons.card_membership_rounded,
+                  icon: FontAwesomeIcons.idCard,
                   label: 'Points fidélité',
                   value: '${stats.totalLoyaltyPoints}',
                   color: const Color(0xFFE91E63),
@@ -231,7 +232,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
               const SizedBox(height: 12),
               if (stats.favoriteShop != null)
                 _buildPreferenceCard(
-                  icon: Icons.store_rounded,
+                  icon: FontAwesomeIcons.store,
                   label: 'Boutique préférée',
                   value: stats.favoriteShop!,
                   color: accentColor,
@@ -239,7 +240,7 @@ class _DashboardStatsScreenState extends State<DashboardStatsScreen> {
               if (stats.favoriteCategory != null) ...[
                 const SizedBox(height: 10),
                 _buildPreferenceCard(
-                  icon: Icons.category_rounded,
+                  icon: FontAwesomeIcons.layerGroup,
                   label: 'Catégorie préférée',
                   value: stats.favoriteCategory!,
                   color: const Color(0xFFFF9800),

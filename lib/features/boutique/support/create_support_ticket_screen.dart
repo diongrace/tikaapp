@@ -1,5 +1,6 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../services/support_service.dart';
@@ -120,7 +121,7 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                       children: [
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                          child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 24),
                         ),
                         const Spacer(),
                         Text(
@@ -354,7 +355,7 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                                 ? Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.image_outlined, size: 28, color: Colors.grey.shade400),
+                                      FaIcon(FontAwesomeIcons.image, size: 28, color: Colors.grey.shade400),
                                       const SizedBox(height: 6),
                                       Text(
                                         'Touchez ici pour choisir des photos',
@@ -398,7 +399,7 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                                                       shape: BoxShape.circle,
                                                       color: Colors.red,
                                                     ),
-                                                    child: const Icon(Icons.close, size: 18, color: Colors.white),
+                                                    child: const FaIcon(FontAwesomeIcons.xmark, size: 18, color: Colors.white),
                                                   ),
                                                 ),
                                               ),
@@ -443,7 +444,7 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.send, color: Colors.white, size: 18),
+                                  const FaIcon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 18),
                                   const SizedBox(width: 10),
                                   Text(
                                     'Envoyer',

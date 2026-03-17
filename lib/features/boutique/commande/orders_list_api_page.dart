@@ -1,6 +1,7 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import '../../../services/order_service.dart';
@@ -136,7 +137,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.replay_rounded, color: Colors.white, size: 40),
+                  const FaIcon(FontAwesomeIcons.arrowsRotate, color: Colors.white, size: 40),
                   const SizedBox(height: 8),
                   Text(
                     'Recommander',
@@ -384,7 +385,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.star_rounded, color: Colors.white, size: 40),
+                      const FaIcon(FontAwesomeIcons.solidStar, color: Colors.white, size: 40),
                       const SizedBox(height: 8),
                       Text(
                         'Notez votre commande',
@@ -419,7 +420,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: Icon(
-                              i < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                              i < selectedRating ? FontAwesomeIcons.solidStar : FontAwesomeIcons.solidStar,
                               color: i < selectedRating ? const Color(0xFFF59E0B) : Colors.grey.shade300,
                               size: 38,
                             ),
@@ -838,7 +839,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
-                  child: Icon(Icons.arrow_back_ios_new, size: 16, color: Colors.grey.shade700),
+                  child: FaIcon(FontAwesomeIcons.arrowLeft, size: 16, color: Colors.grey.shade700),
                 ),
               ),
             ),
@@ -850,12 +851,13 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                   child: Container(
                     width: 40,
                     height: 40,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey.shade200),
                     ),
-                    child: Icon(Icons.refresh_rounded, size: 20, color: Colors.grey.shade600),
+                    child: FaIcon(FontAwesomeIcons.arrowsRotate, size: 20, color: Colors.grey.shade600),
                   ),
                 ),
               ),
@@ -965,6 +967,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 color: const Color(0xFFFEE2E2),
                 shape: BoxShape.circle,
               ),
+              alignment: Alignment.center,
               child: const Icon(
                 Icons.cloud_off_rounded,
                 size: 48,
@@ -992,7 +995,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => _loadOrders(),
-              icon: const Icon(Icons.refresh_rounded, size: 20),
+              icon: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 20),
               label: Text(
                 'Réessayer',
                 style: GoogleFonts.inriaSerif(
@@ -1028,8 +1031,9 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 color: const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.receipt_long_rounded,
+              alignment: Alignment.center,
+              child: FaIcon(
+                FontAwesomeIcons.receipt,
                 size: 56,
                 color: Colors.grey.shade900,
               ),
@@ -1056,7 +1060,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
             const SizedBox(height: 32),
             OutlinedButton.icon(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.storefront_outlined, size: 20),
+              icon: const FaIcon(FontAwesomeIcons.store, size: 20),
               label: Text(
                 'Découvrir la boutique',
                 style: GoogleFonts.inriaSerif(
@@ -1098,7 +1102,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.expand_more_rounded, size: 20, color: Colors.grey.shade600),
+                  FaIcon(FontAwesomeIcons.chevronDown, size: 20, color: Colors.grey.shade600),
                   const SizedBox(width: 8),
                   Text(
                     'Voir plus de commandes',
@@ -1152,6 +1156,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                     Container(
                       width: 42,
                       height: 42,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(12),
@@ -1179,7 +1184,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              Icon(Icons.access_time_rounded, size: 12, color: Colors.grey.shade400),
+                              FaIcon(FontAwesomeIcons.clock, size: 12, color: Colors.grey.shade400),
                               const SizedBox(width: 4),
                               Text(
                                 _formatDate(order.createdAt),
@@ -1240,7 +1245,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       Expanded(
                         child: Row(
                           children: [
-                            Icon(Icons.payments_outlined, size: 17, color: Colors.grey.shade500),
+                            FaIcon(FontAwesomeIcons.moneyBill, size: 17, color: Colors.grey.shade500),
                             const SizedBox(width: 8),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1272,7 +1277,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.shopping_bag_outlined, size: 17, color: Colors.grey.shade500),
+                            FaIcon(FontAwesomeIcons.bagShopping, size: 17, color: Colors.grey.shade500),
                             const SizedBox(width: 8),
                             Flexible(
                               child: Column(
@@ -1324,7 +1329,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.grey.shade500),
+                            FaIcon(FontAwesomeIcons.arrowRight, size: 10, color: Colors.grey.shade500),
                           ],
                         ),
                       ),
@@ -1337,14 +1342,14 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 Row(
                   children: [
                     _buildActionChip(
-                      icon: Icons.receipt_long_rounded,
+                      icon: FontAwesomeIcons.receipt,
                       label: 'Recu',
                       isDestructive: false,
                       onTap: () => _viewReceipt(order),
                     ),
                     const SizedBox(width: 8),
                     _buildActionChip(
-                      icon: Icons.replay_rounded,
+                      icon: FontAwesomeIcons.arrowsRotate,
                       label: 'Recommander',
                       isDestructive: false,
                       onTap: () => _reorder(order),
@@ -1353,7 +1358,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                         order.status == 'prete' || order.status == 'prête') ...[
                       const SizedBox(width: 8),
                       _buildActionChip(
-                        icon: Icons.star_outline_rounded,
+                        icon: FontAwesomeIcons.solidStar,
                         label: 'Noter',
                         isDestructive: false,
                         onTap: () => _rateOrder(order),
@@ -1362,7 +1367,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                     if (_canCancel(order)) ...[
                       const SizedBox(width: 8),
                       _buildActionChip(
-                        icon: Icons.cancel_outlined,
+                        icon: FontAwesomeIcons.xmark,
                         label: _cancelMinutesLeft(order) > 0
                             ? 'Annuler (${_cancelMinutesLeft(order)}m)'
                             : 'Annuler',
@@ -1441,7 +1446,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
         return {
           'color': const Color(0xFFF59E0B),
           'label': 'Reçue',
-          'icon': Icons.inbox_rounded,
+          'icon': FontAwesomeIcons.inbox,
         };
       case 'en_traitement':
         return {
@@ -1454,33 +1459,33 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
         return {
           'color': const Color(0xFF8B5CF6),
           'label': 'Prête',
-          'icon': Icons.inventory_2_rounded,
+          'icon': FontAwesomeIcons.boxOpen,
         };
       case 'en_livraison':
         return {
           'color': const Color(0xFFF97316),
           'label': 'En livraison',
-          'icon': Icons.local_shipping_rounded,
+          'icon': FontAwesomeIcons.truck,
         };
       case 'livree':
       case 'livrée':
         return {
           'color': const Color(0xFF10B981),
           'label': 'Livrée',
-          'icon': Icons.check_circle_rounded,
+          'icon': FontAwesomeIcons.solidCircleCheck,
         };
       case 'annulee':
       case 'annulée':
         return {
           'color': const Color(0xFFEF4444),
           'label': 'Annulée',
-          'icon': Icons.cancel_rounded,
+          'icon': FontAwesomeIcons.xmark,
         };
       default:
         return {
           'color': Colors.grey,
           'label': status,
-          'icon': Icons.help_outline_rounded,
+          'icon': FontAwesomeIcons.circleQuestion,
         };
     }
   }

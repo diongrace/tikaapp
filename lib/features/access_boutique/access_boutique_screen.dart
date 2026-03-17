@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../boutique/favorites/favorites_boutiques_screen.dart';
 import '../qr_scanner/qr_scanner_screen.dart';
@@ -87,7 +88,8 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                 color: const Color(0xFFFF9800).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.card_giftcard, color: Color(0xFFFF9800), size: 30),
+              alignment: Alignment.center,
+              child: const FaIcon(FontAwesomeIcons.gift, color: Color(0xFFFF9800), size: 30),
             ),
             const SizedBox(height: 16),
             Text(
@@ -113,7 +115,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                 onPressed: () {
                   Navigator.pop(ctx);
                 },
-                icon: const Icon(Icons.qr_code_scanner, size: 18),
+                icon: const FaIcon(FontAwesomeIcons.qrcode, size: 18),
                 label: Text(
                   'Scanner une boutique',
                   style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w600),
@@ -220,11 +222,12 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                   leading: Container(
                     width: 44,
                     height: 44,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: const Color(0xFF8936A8).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.card_giftcard, color: Color(0xFF8936A8), size: 22),
+                    child: const FaIcon(FontAwesomeIcons.gift, color: Color(0xFF8936A8), size: 22),
                   ),
                   title: Text(
                     card.shopName,
@@ -237,7 +240,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                     '${card.points} points',
                     style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey),
                   ),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                  trailing: const FaIcon(FontAwesomeIcons.chevronRight, color: Colors.grey),
                   onTap: () async {
                     Navigator.pop(ctx);
                     final deleted = await Navigator.push<bool>(
@@ -380,11 +383,19 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                                     fontSize: 14,
                                     color: Colors.grey[900],
                                   ),
-                                  prefixIcon: const Icon(
-                                    Icons.link,
-                                    color: Color(0xFF8936A8),
-                                    size: 18,
+                                  prefixIcon: Align(
+                                    alignment: Alignment.center,
+                                    widthFactor: 1.0,
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 14),
+                                      child: FaIcon(
+                                        FontAwesomeIcons.link,
+                                        color: Color(0xFF8936A8),
+                                        size: 18,
+                                      ),
+                                    ),
                                   ),
+                                  prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 46),
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 18,
@@ -469,36 +480,27 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                         ),
                       ],
                     ),
-                    child: IconButton(
-                      icon: Icon(
-                        AuthService.isAuthenticated ? Icons.person : Icons.person_outline,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      padding: EdgeInsets.zero,
-                      onPressed: () async {
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      child: const FaIcon(FontAwesomeIcons.user, color: Colors.white, size: 16),
+                      onTap: () async {
                         if (AuthService.isAuthenticated) {
-                          // Si connecté, aller au dashboard
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const DashboardScreen(),
                             ),
                           );
-                          // Rafraîchir l'état après retour du profil
                           if (mounted) setState(() {});
                         } else {
-                          // Si non connecté, afficher le choix d'authentification
                           final result = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const AuthChoiceScreen(),
                             ),
                           );
-                          // Rafraîchir l'état si l'utilisateur s'est connecté
-                          if (result == true && mounted) {
-                            setState(() {});
-                          }
+                          if (result == true && mounted) setState(() {});
                         }
                       },
                     ),
@@ -521,17 +523,12 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                         ),
                       ],
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.favorite, color: Colors.white, size: 18),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const FavoritesBoutiquesScreen(showBottomNav: false),
-                          ),
-                        );
-                      },
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      child: const FaIcon(FontAwesomeIcons.solidHeart, color: Colors.white, size: 16),
+                      onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => const FavoritesBoutiquesScreen(showBottomNav: false))),
                     ),
                   ),
 
@@ -552,10 +549,11 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                         ),
                       ],
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.card_giftcard, color: Colors.white, size: 18),
-                      padding: EdgeInsets.zero,
-                      onPressed: () => _openLoyaltyCard(),
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      child: const FaIcon(FontAwesomeIcons.gift, color: Colors.white, size: 16),
+                      onTap: () => _openLoyaltyCard(),
                     ),
                   ),
 
@@ -576,12 +574,11 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                         ),
                       ],
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.history, color: Colors.white, size: 18),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/history');
-                      },
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      child: const FaIcon(FontAwesomeIcons.clockRotateLeft, color: Colors.white, size: 16),
+                      onTap: () => Navigator.pushNamed(context, '/history'),
                     ),
                   ),
                 ],

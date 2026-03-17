@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../services/push_notification_service.dart';
@@ -93,7 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+            alignment: Alignment.center,
+            child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.black87, size: 20),
           ),
           onPressed: () => Navigator.pushReplacement(
             context,
@@ -196,16 +198,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontSize: 13,
                             color: Colors.grey.shade900,
                           ),
-                          prefixIcon: Icon(
-                            Icons.lock_outline,
+                          prefixIcon: FaIcon(
+                            FontAwesomeIcons.lock,
                             color: Colors.grey.shade800,
                             size: 22,
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
                               color: Colors.grey.shade800,
                               size: 22,
                             ),

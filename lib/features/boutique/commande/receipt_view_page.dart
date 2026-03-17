@@ -1,5 +1,6 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -34,7 +35,7 @@ class ReceiptViewPage extends StatelessWidget {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.download_rounded),
+            icon: const FaIcon(FontAwesomeIcons.download),
             onPressed: () => _downloadPdf(context, receipt),
             tooltip: 'Télécharger PDF',
           ),
@@ -71,7 +72,7 @@ class ReceiptViewPage extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.receipt_long, color: Colors.white, size: 36),
+                      const FaIcon(FontAwesomeIcons.receipt, color: Colors.white, size: 36),
                       const SizedBox(height: 12),
                       Text(
                         shop['name']?.toString() ?? 'Boutique',

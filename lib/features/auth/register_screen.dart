@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../core/messages/message_modal.dart';
@@ -143,7 +144,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+            alignment: Alignment.center,
+            child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.black87, size: 20),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -202,7 +204,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _firstNameController,
                   label: 'Prenom',
                   hint: 'Ex: Jean',
-                  icon: Icons.person_outline,
+                  icon: FontAwesomeIcons.user,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez entrer votre prenom';
@@ -221,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _lastNameController,
                   label: 'Nom',
                   hint: 'Ex: Kouame',
-                  icon: Icons.person_outline,
+                  icon: FontAwesomeIcons.user,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez entrer votre nom';
@@ -248,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   label: 'Email',
                   hint: 'votre@email.com',
-                  icon: Icons.email_outlined,
+                  icon: FontAwesomeIcons.envelope,
                   keyboardType: TextInputType.emailAddress,
                   required: false,
                   validator: (value) {
@@ -566,14 +568,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 fontSize: 13,
                 color: Colors.grey.shade900,
               ),
-              prefixIcon: Icon(
-                Icons.lock_outline,
+              prefixIcon: FaIcon(
+                FontAwesomeIcons.lock,
                 color: Colors.grey.shade800,
                 size: 22,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
-                  obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  obscure ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
                   color: Colors.grey.shade800,
                   size: 22,
                 ),

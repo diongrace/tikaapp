@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/shop_service.dart';
@@ -164,7 +165,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             builder: (_, value, __) {
                               final on = value.torchState == TorchState.on;
                               return Icon(
-                                on ? Icons.flash_on : Icons.flash_off,
+                                on ? FontAwesomeIcons.bolt : Icons.flash_off,
                                 color: on ? Colors.amber : Colors.white,
                                 size: 24,
                               );
@@ -174,7 +175,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         ),
                         const SizedBox(width: 24),
                         _CamBtn(
-                          icon: const Icon(Icons.cameraswitch,
+                          icon: const FaIcon(FontAwesomeIcons.cameraRotate,
                               color: Colors.white, size: 24),
                           onTap: () => _controller.switchCamera(),
                         ),

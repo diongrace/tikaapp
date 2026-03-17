@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/services/storage_service.dart';
 
@@ -22,7 +23,7 @@ class OnboardingScreen4 extends StatelessWidget {
                     width: double.infinity,
                     height: double.infinity,
                     child: Image.asset(
-                      'lib/core/assets/mage.jpeg',
+                      'lib/core/assets/q.jpeg',
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
@@ -54,8 +55,8 @@ class OnboardingScreen4 extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Icône carte cadeau
-                        const Icon(
-                          Icons.card_giftcard,
+                        const FaIcon(
+                          FontAwesomeIcons.gift,
                           color: Color(0xFF7B2CBF),
                           size: 60,
                         ),

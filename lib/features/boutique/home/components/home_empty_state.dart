@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../services/models/shop_model.dart';
 
@@ -103,6 +104,7 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
                         Container(
                           width: 70,
                           height: 70,
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: widget.primaryColor,
@@ -117,7 +119,7 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
                           child: Icon(
                             widget.shop?.isRestaurant == true
                                 ? Icons.restaurant_menu
-                                : Icons.shopping_bag_outlined,
+                                : FontAwesomeIcons.bagShopping,
                             size: 36,
                             color: Colors.white,
                           ),

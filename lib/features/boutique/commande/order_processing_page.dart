@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/models/shop_model.dart';
@@ -70,8 +71,8 @@ class _OrderProcessingPageState extends State<OrderProcessingPage>
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     // Fallback vers une icône simple
-                    return Icon(
-                      Icons.shopping_bag_outlined,
+                    return FaIcon(
+                      FontAwesomeIcons.bagShopping,
                       size: 100,
                       color: Colors.grey.shade900,
                     );
