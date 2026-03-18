@@ -223,11 +223,27 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
   // ── Wave flow methods ──────────────────────────────────────────────────────
 
   Future<void> _openWaveUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      _showDialog('Wave introuvable', 'Impossible d\'ouvrir Wave. Vérifiez que l\'application est installée.');
+    // Injecter le montant dans l'URL pour que Wave pré-remplisse le champ
+    String urlToOpen = url;
+    if (_waveTotalAmount != null) {
+      final uri = Uri.tryParse(url);
+      if (uri != null && !uri.queryParameters.containsKey('amount')) {
+        urlToOpen = uri.replace(queryParameters: {
+          ...uri.queryParameters,
+          'amount': _waveTotalAmount.toString(),
+        }).toString();
+      }
+    }
+
+    final uri = Uri.parse(urlToOpen);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+    } catch (_) {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _showDialog('Wave introuvable', 'Impossible d\'ouvrir Wave. Vérifiez que l\'application est installée.');
+      }
     }
   }
 

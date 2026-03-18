@@ -17,7 +17,7 @@ class OnboardingScreen3 extends StatelessWidget {
                 Expanded(
                   flex: 6,
                   child: Image.asset(
-                    'lib/core/assets/livreur.jpg',
+                    'lib/core/assets/livraeurTika.jpeg',
                     width: double.infinity,
                     fit: BoxFit.cover,
                     alignment: Alignment.center,

@@ -198,11 +198,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontSize: 13,
                             color: Colors.grey.shade900,
                           ),
-                          prefixIcon: FaIcon(
-                            FontAwesomeIcons.lock,
-                            color: Colors.grey.shade800,
-                            size: 22,
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: FaIcon(
+                              FontAwesomeIcons.lock,
+                              color: Colors.grey.shade600,
+                              size: 16,
+                            ),
                           ),
+                          prefixIconConstraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword

@@ -23,7 +23,7 @@ class OnboardingScreen4 extends StatelessWidget {
                     width: double.infinity,
                     height: double.infinity,
                     child: Image.asset(
-                      'lib/core/assets/q.jpeg',
+                      'lib/core/assets/carteTika.jpeg',
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
