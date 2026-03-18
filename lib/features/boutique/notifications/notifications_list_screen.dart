@@ -12,11 +12,12 @@ class NotificationsListScreen extends StatefulWidget {
 }
 
 class _NotificationsListScreenState extends State<NotificationsListScreen> {
-  List<NotificationItem> _allNotifications = [];
-  List<NotificationItem> _notifications = [];
+  List<NotificationItem> _allNotifications = []; // toutes les notifs chargées
+  List<NotificationItem> _notifications = [];    // filtrées côté client
   bool _isLoading = true;
   String? _errorMessage;
   int _unreadCount = 0;
+  Map<String, int> _countByType = {};
   String _selectedFilter = 'all';
 
   final List<Map<String, dynamic>> _filters = [
@@ -45,27 +46,26 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     setState(() { _isLoading = true; _errorMessage = null; });
 
     try {
-      final response = await NotificationService.getNotifications(status: 'all');
-      final unreadCount = await NotificationService.getUnreadCount();
+      // Toujours charger TOUTES les notifs (sans filtre type) — filtrage client-side
+      final response = await NotificationService.getNotifications(
+        status: 'all',
+      );
       if (!mounted) return;
 
-      // Debug: types
-      for (final n in response.notifications) {
-        print('[Notif] id=${n.id} type="${n.type}" -> ${_detectNotificationType(n)}');
-      }
-
-      // Dédupliquer
-      final seen = <String>{};
-      final dedup = <NotificationItem>[];
-      for (final n in response.notifications) {
-        final key = '${n.title}|${n.message}|${n.createdAt}';
-        if (seen.add(key)) dedup.add(n);
+      // Calcul countByType côté client si l'API ne le fournit pas
+      final all = response.notifications;
+      // countByType calculé avec le type résolu (détection par mots-clés si API type inconnu)
+      final Map<String, int> counts = {};
+      for (final n in all) {
+        final t = _resolveType(n);
+        counts[t] = (counts[t] ?? 0) + 1;
       }
 
       setState(() {
-        _allNotifications = dedup;
-        _notifications = _filterNotifications(_allNotifications, _selectedFilter);
-        _unreadCount = unreadCount;
+        _allNotifications = all;
+        _unreadCount = response.unreadCount;
+        _countByType = response.countByType ?? counts;
+        _applyFilter();
         _isLoading = false;
       });
     } catch (e) {
@@ -77,40 +77,118 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     }
   }
 
-  List<NotificationItem> _filterNotifications(List<NotificationItem> all, String filter) {
-    if (filter == 'all') return all;
-    return all.where((n) => _detectNotificationType(n) == filter).toList();
-  }
-
-  String _detectNotificationType(NotificationItem n) {
-    final type = n.type.toLowerCase();
-    if (type == 'wave_payment' || type == 'payment') return 'payment';
-    if (type == 'loyalty') return 'loyalty';
-    if (type == 'promo' || type == 'promotion') return 'promo';
-    if (type == 'delivery') return 'order';
-
-    final content = '${n.title} ${n.message}'.toLowerCase();
-    if (content.contains('paiement') || content.contains('payment') ||
-        content.contains('wave') || content.contains('payé') ||
-        content.contains('remboursement') || content.contains('reçu')) return 'payment';
-    if (content.contains('fidélité') || content.contains('loyalty') ||
-        content.contains('points') || content.contains('récompense')) return 'loyalty';
-    if (content.contains('promo') || content.contains('réduction') ||
-        content.contains('offre') || content.contains('solde')) return 'promo';
-    if (content.contains('commande') || content.contains('order') ||
-        content.contains('#tk') || content.contains('prête') ||
-        content.contains('livrée') || content.contains('confirmée') ||
-        content.contains('en préparation') || content.contains('en cours de livraison')) return 'order';
-    return 'other';
-  }
-
-  Future<void> _markAsRead(int id) async {
-    try {
-      await NotificationService.markAsRead(id);
-      await _loadNotifications();
-    } catch (e) {
-      if (mounted) _showError(e.toString());
+  void _applyFilter() {
+    if (_selectedFilter == 'all') {
+      _notifications = List.from(_allNotifications);
+    } else {
+      _notifications = _allNotifications
+          .where((n) => _resolveType(n) == _selectedFilter)
+          .toList();
     }
+  }
+
+  Future<void> _openNotificationDetail(NotificationItem notification) async {
+    // Marquer comme lu si nécessaire
+    if (!notification.isRead) {
+      await NotificationService.markAsRead(notification.id);
+      _loadNotifications(); // rafraîchir toute la liste
+    }
+
+    // Appel API détail pour infos enrichies (shop, read_at)
+    final detail = await NotificationService.getNotificationDetail(notification.id);
+    final item = detail ?? notification;
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _buildDetailSheet(item),
+    );
+  }
+
+  Widget _buildDetailSheet(NotificationItem n) {
+    final resolvedType = _resolveType(n);
+    final color = _getColorForType(resolvedType);
+    final icon = _getIconForType(resolvedType);
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // Icône + type
+          Row(children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                _getTypeLabelForDisplay(resolvedType),
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 12, color: color, fontWeight: FontWeight.w700),
+              ),
+              Text(
+                n.createdAtHuman ?? n.createdAt,
+                style: GoogleFonts.inriaSerif(fontSize: 11, color: Colors.grey.shade500),
+              ),
+            ]),
+          ]),
+          const SizedBox(height: 16),
+          // Titre
+          Text(
+            n.title,
+            style: GoogleFonts.inriaSerif(
+              fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF1C1C1E)),
+          ),
+          const SizedBox(height: 8),
+          // Message
+          Text(
+            n.message,
+            style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+          ),
+          const SizedBox(height: 24),
+          // Bouton fermer
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFF0EDF6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: Text('Fermer',
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 14, fontWeight: FontWeight.w600, color: _purple)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _markAllAsRead() async {
@@ -124,11 +202,23 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
   }
 
   Future<void> _deleteNotification(int id) async {
-
     try {
       await NotificationService.deleteNotification(id);
-      await _loadNotifications();
+      setState(() {
+        _allNotifications.removeWhere((n) => n.id == id);
+        _applyFilter();
+      });
       if (mounted) _showSnack('Notification supprimée', Colors.grey.shade900);
+    } catch (e) {
+      if (mounted) _showError(e.toString());
+    }
+  }
+
+  Future<void> _clearRead() async {
+    try {
+      final count = await NotificationService.clearRead();
+      await _loadNotifications();
+      if (mounted) _showSnack('$count notification(s) supprimée(s)', Colors.grey.shade900);
     } catch (e) {
       if (mounted) _showError(e.toString());
     }
@@ -234,18 +324,28 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
               ),
 
               // Menu actions
-              if (_notifications.isNotEmpty && _unreadCount > 0)
+              if (_notifications.isNotEmpty)
                 PopupMenuButton<String>(
                   onSelected: (value) {
                     if (value == 'mark_all') _markAllAsRead();
+                    if (value == 'clear_read') _clearRead();
                   },
                   itemBuilder: (ctx) => [
+                    if (_unreadCount > 0)
+                      PopupMenuItem(
+                        value: 'mark_all',
+                        child: Row(children: [
+                          const FaIcon(FontAwesomeIcons.checkDouble, size: 16, color: _purple),
+                          const SizedBox(width: 12),
+                          Text('Tout marquer comme lu', style: GoogleFonts.inriaSerif(fontSize: 14)),
+                        ]),
+                      ),
                     PopupMenuItem(
-                      value: 'mark_all',
+                      value: 'clear_read',
                       child: Row(children: [
-                        const FaIcon(FontAwesomeIcons.checkDouble, size: 20, color: _purple),
+                        const FaIcon(FontAwesomeIcons.trashCan, size: 16, color: Colors.redAccent),
                         const SizedBox(width: 12),
-                        Text('Tout marquer comme lu', style: GoogleFonts.inriaSerif(fontSize: 14)),
+                        Text('Supprimer les lues', style: GoogleFonts.inriaSerif(fontSize: 14)),
                       ]),
                     ),
                   ],
@@ -287,10 +387,12 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
             final filter = _filters[i];
             final isSelected = _selectedFilter == filter['id'];
             return GestureDetector(
-              onTap: () => setState(() {
-                _selectedFilter = filter['id'];
-                _notifications = _filterNotifications(_allNotifications, _selectedFilter);
-              }),
+              onTap: () {
+                setState(() {
+                  _selectedFilter = filter['id'];
+                  _applyFilter(); // filtrage côté client, pas de rechargement réseau
+                });
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
                 curve: Curves.easeInOut,
@@ -330,6 +432,25 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                         color: isSelected ? Colors.white : Colors.grey.shade800,
                       ),
                     ),
+                    // Compteur par type depuis l'API
+                    if (filter['id'] != 'all' && (_countByType[filter['id']] ?? 0) > 0) ...[
+                      const SizedBox(width: 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white.withOpacity(0.3) : _purple.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${_countByType[filter['id']]}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected ? Colors.white : _purple,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -365,9 +486,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
 
   Widget _buildNotificationCard(NotificationItem notification) {
     final isRead = notification.isRead;
-    final detectedType = _detectNotificationType(notification);
-    final iconData = _getIconForType(detectedType);
-    final color = _getColorForType(detectedType);
+    final resolvedType = _resolveType(notification);
+    final iconData = _getIconForType(resolvedType);
+    final color = _getColorForType(resolvedType);
 
     return Dismissible(
       key: Key(notification.id.toString()),
@@ -401,9 +522,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
         ),
       ),
       child: GestureDetector(
-        onTap: () {
-          if (!isRead) _markAsRead(notification.id);
-        },
+        onTap: () => _openNotificationDetail(notification),
         child: Container(
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
@@ -489,7 +608,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                                         borderRadius: BorderRadius.circular(5),
                                       ),
                                       child: Text(
-                                        _getTypeLabelForDisplay(detectedType),
+                                        _getTypeLabelForDisplay(resolvedType),
                                         style: GoogleFonts.inriaSerif(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w700,
@@ -664,14 +783,33 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
 
   // ── Helpers type ───────────────────────────────────────────────────────────
 
+  /// Résout le type réel d'une notification.
+  /// Utilise le champ type de l'API si connu, sinon détecte depuis titre/message.
+  String _resolveType(NotificationItem n) {
+    const known = {'order', 'payment', 'wave_payment', 'loyalty', 'promo', 'promotion', 'delivery', 'system'};
+    if (known.contains(n.type)) return n.type;
+
+    // Détection par mots-clés dans titre + message
+    final text = '${n.title} ${n.message}'.toLowerCase();
+    if (text.contains('commande') || text.contains('order')) return 'order';
+    if (text.contains('paiement') || text.contains('payment') || text.contains('wave')) return 'payment';
+    if (text.contains('point') || text.contains('fidélité') || text.contains('loyalty')) return 'loyalty';
+    if (text.contains('promo') || text.contains('réduction') || text.contains('offre')) return 'promo';
+    if (text.contains('livraison') || text.contains('delivery') || text.contains('livreur')) return 'delivery';
+    return 'system';
+  }
+
   String _getTypeLabelForDisplay(String type) {
     switch (type) {
-      case 'order':   return 'Commande';
-      case 'payment': return 'Paiement';
-      case 'loyalty': return 'Fidélité';
-      case 'promo':   return 'Promotion';
-      case 'delivery':return 'Livraison';
-      default:        return 'Notification';
+      case 'order':              return 'Commande';
+      case 'payment':
+      case 'wave_payment':       return 'Paiement';
+      case 'loyalty':            return 'Fidélité';
+      case 'promo':
+      case 'promotion':          return 'Promotion';
+      case 'delivery':           return 'Livraison';
+      case 'system':             return 'Système';
+      default:                   return 'Notification';
     }
   }
 

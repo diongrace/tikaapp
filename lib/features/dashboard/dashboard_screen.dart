@@ -22,6 +22,7 @@ import '../boutique/loyalty/loyalty_card_page.dart';
 import '../boutique/loyalty/create_loyalty_card_page.dart';
 import '../boutique/notifications/notifications_list_screen.dart';
 import '../boutique/commande/order_tracking_api_page.dart';
+import '../boutique/profile/profile_screen.dart';
 // Ecran dashboard unique (pas d'equivalent boutique)
 import 'dashboard_stats_screen.dart';
 import '../../core/utils/format_utils.dart';
@@ -401,23 +402,57 @@ class _DashboardScreenState extends State<DashboardScreen>
               );
             },
           ),
-          // Deconnexion
+          // Paramètres (Profil + Déconnexion)
           Container(
             margin: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              icon: Container(
+            child: PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'profile') _navigateTo(const ProfileScreen());
+                if (value == 'logout') _showLogoutDialog();
+              },
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              offset: const Offset(0, 48),
+              itemBuilder: (ctx) => [
+                PopupMenuItem(
+                  value: 'profile',
+                  child: Row(children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const FaIcon(FontAwesomeIcons.user, size: 14, color: primaryColor),
+                    ),
+                    const SizedBox(width: 12),
+                    Text('Mon profil', style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600)),
+                  ]),
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'logout',
+                  child: Row(children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const FaIcon(FontAwesomeIcons.rightFromBracket, size: 14, color: Colors.red),
+                    ),
+                    const SizedBox(width: 12),
+                    Text('Déconnexion', style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.red)),
+                  ]),
+                ),
+              ],
+              child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.08),
+                  color: primaryColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const FaIcon(
-                  FontAwesomeIcons.rightFromBracket,
-                  color: Colors.red,
-                  size: 20,
-                ),
+                child: const FaIcon(FontAwesomeIcons.gear, color: primaryColor, size: 20),
               ),
-              onPressed: _showLogoutDialog,
             ),
           ),
         ],

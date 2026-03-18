@@ -124,6 +124,7 @@ class Endpoints {
   static const String notificationsMarkAllRead = '$baseUrl/client/notifications/read-all';
   static const String notificationsSettings = '$baseUrl/client/notifications/settings';
   static const String notificationsRegisterDevice = '$baseUrl/client/notifications/register-device';
+  static const String notificationsClearRead = '$baseUrl/client/notifications/clear-read';
 
   // Support Tickets (nécessite authentification Bearer Token)
   static const String support = '$baseUrl/client/support';

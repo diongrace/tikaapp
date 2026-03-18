@@ -275,6 +275,22 @@ class NotificationService {
     return true;
   }
 
+  /// Marquer plusieurs notifications comme lues — POST /client/notifications/read
+  static Future<bool> markMultipleAsRead(List<int> ids) async {
+    if (!isAuthenticated) return false;
+    try {
+      final response = await http.post(
+        Uri.parse('${Endpoints.notifications}/read'),
+        headers: _headers,
+        body: jsonEncode({'notification_ids': ids}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('❌ Erreur markMultipleAsRead: $e');
+      return false;
+    }
+  }
+
   /// Marquer toutes les notifications comme lues
   static Future<bool> markAllAsRead() async {
     if (!isAuthenticated) {
@@ -297,6 +313,26 @@ class NotificationService {
 
     await StorageService.markAllNotificationsAsRead();
     return true;
+  }
+
+  /// Récupérer le détail complet d'une notification — GET /client/notifications/{id}
+  /// Retourne des infos enrichies : shop (logo, nom), read_at, données complètes
+  static Future<NotificationItem?> getNotificationDetail(int id) async {
+    if (!isAuthenticated) return null;
+    try {
+      final response = await http.get(
+        Uri.parse(Endpoints.notificationDetails(id)),
+        headers: _headers,
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final notif = data['data']?['notification'];
+        if (notif != null) return NotificationItem.fromJson(notif);
+      }
+    } catch (e) {
+      print('❌ Erreur getNotificationDetail: $e');
+    }
+    return null;
   }
 
   // ============================================================
@@ -325,6 +361,24 @@ class NotificationService {
 
     await StorageService.deleteNotification(notificationId.toString());
     return true;
+  }
+
+  /// Supprimer toutes les notifications lues — DELETE /client/notifications/clear-read
+  static Future<int> clearRead() async {
+    if (!isAuthenticated) return 0;
+    try {
+      final response = await http.delete(
+        Uri.parse(Endpoints.notificationsClearRead),
+        headers: _headers,
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data']?['deleted_count'] ?? 0;
+      }
+    } catch (e) {
+      print('❌ Erreur clearRead: $e');
+    }
+    return 0;
   }
 
   // ============================================================

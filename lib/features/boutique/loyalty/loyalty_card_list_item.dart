@@ -27,6 +27,16 @@ class LoyaltyCardListItem extends StatelessWidget {
 
   Color get _accent => _accentColors[index % _accentColors.length];
 
+  /// Couleur fixe selon le niveau de fidélité
+  Color get _tierColor {
+    switch (card.tier.toLowerCase()) {
+      case 'silver':   return const Color(0xFF78909C); // Gris acier
+      case 'gold':     return const Color(0xFFFFB300); // Or
+      case 'platinum': return const Color(0xFF546E7A); // Gris platine
+      default:         return const Color(0xFF8D6E63); // Bronze brun
+    }
+  }
+
   Widget _buildLogo() {
     final hasLogo = card.shopLogo != null && card.shopLogo!.isNotEmpty;
     final initial = card.shopName.isNotEmpty ? card.shopName[0].toUpperCase() : '?';
@@ -101,31 +111,22 @@ class LoyaltyCardListItem extends StatelessWidget {
                   color: const Color(0xFF1C1C1E)),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 3),
-              Row(children: [
-                Container(
-                  width: 8, height: 8,
-                  decoration: BoxDecoration(
-                    color: card.points > 0 ? _accent : Colors.grey.shade300,
-                    shape: BoxShape.circle),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  card.points > 0 ? '${card.points} pts' : 'Aucun point',
-                  style: GoogleFonts.inriaSerif(
-                    fontSize: 12, color: Colors.grey.shade600)),
-              ]),
+              Text(
+                '${card.points} pt${card.points > 1 ? 's' : ''}',
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 12, color: Colors.grey.shade500)),
             ],
           )),
-          // Tier badge
+          // Tier badge — couleur fixe selon le niveau
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: _accent.withOpacity(0.1),
+              color: _tierColor.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(card.tierLabel,
               style: GoogleFonts.inriaSerif(
-                fontSize: 10, fontWeight: FontWeight.w800, color: _accent)),
+                fontSize: 10, fontWeight: FontWeight.w800, color: _tierColor)),
           ),
           const SizedBox(width: 8),
           Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400, size: 20),

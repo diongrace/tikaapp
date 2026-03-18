@@ -142,76 +142,80 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
 
     return Stack(
       children: [
-        // Image de couverture (banner) - Sans padding et sans border radius
-        Container(
-          height: 200,
-          width: double.infinity,
-          child: Stack(
-            children: [
-              // Afficher uniquement le banner de l'API ou un fond de couleur
-              if (hasCoverPage)
-                // Si la boutique a une page de couverture, l'afficher
-                Image.network(
-                  fullImageUrl,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('❌ Erreur chargement banner depuis API: $error');
-                    // En cas d'erreur, afficher la couleur naturelle de la boutique
-                    return Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      color: shopTheme.primary,
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) {
-                      return child;
-                    }
-                    // Pendant le chargement, afficher un indicateur avec couleur boutique
-                    return Container(
-                      color: shopTheme.primaryLight,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: shopTheme.primary,
-                          strokeWidth: 3,
+        // ── Banner avec arrondi bas ───────────────────────────
+        ClipRRect(
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+          child: Container(
+            height: 210,
+            width: double.infinity,
+            child: Stack(
+              children: [
+                // Banner API ou couleur boutique
+                if (hasCoverPage)
+                  Image.network(
+                    fullImageUrl,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('❌ Erreur chargement banner depuis API: $error');
+                      return Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: shopTheme.primary,
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: shopTheme.primaryLight,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            color: shopTheme.primary,
+                            strokeWidth: 3,
+                          ),
                         ),
+                      );
+                    },
+                  )
+                else
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [shopTheme.primary, shopTheme.gradientEnd],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    );
-                  },
-                )
-              else
-                // Pas de page de couverture → couleur naturelle de la boutique (sans dégradé)
-                Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: shopTheme.primary,
-                ),
+                    ),
+                  ),
 
-              // ── Gradient overlay bas → transition douce banner→carte ──
-              Positioned(
-                bottom: 0, left: 0, right: 0,
-                child: Container(
-                  height: 100,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Color(0x66000000)],
+                // Gradient overlay bas → transition douce
+                Positioned(
+                  bottom: 0, left: 0, right: 0,
+                  child: Container(
+                    height: 90,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Colors.black.withOpacity(0.45)],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-        // ── Boutons glassmorphisme ────────────────────────────
+
+        // ── Boutons glass — style unifié ─────────────────────
         SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
@@ -221,40 +225,38 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // ── Gauche : ← + 🏠 ──────────────────────────────
+                // Gauche : ← + 🏠
                 Row(
                   children: [
-                    _buildFaBtn(
+                    _buildGlassBtn(
                       icon: FontAwesomeIcons.arrowLeft,
                       onPressed: widget.onBackPressed,
-                      bgColors: const [Color(0xFF3A3A3C), Color(0xFF2C2C2E)],
                     ),
                     if (widget.onHomeTap != null) ...[
                       const SizedBox(width: 8),
-                      _buildFaBtn(
+                      _buildGlassBtn(
                         icon: FontAwesomeIcons.house,
                         onPressed: widget.onHomeTap!,
-                        bgColors: const [Color(0xFF0A84FF), Color(0xFF0055D4)],
                       ),
                     ],
                   ],
                 ),
 
-                // ── Droite : 🎁 + ❤️ + 🔔 ───────────────────────
+                // Droite : 🎁 + ❤️ + 🔔
                 Row(
                   children: [
-                    _buildFaBtn(
+                    _buildGlassBtn(
                       icon: FontAwesomeIcons.gift,
                       onPressed: () => GiftBottomSheet.show(context, currentShop: widget.currentShop),
-                      bgColors: const [Color(0xFFE91E8C), Color(0xFFFF5252)],
                     ),
                     const SizedBox(width: 8),
-                    _buildFaBtn(
-                      icon: widget.isFavorite ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+                    _buildGlassBtn(
+                      icon: widget.isFavorite
+                          ? FontAwesomeIcons.solidHeart
+                          : FontAwesomeIcons.heart,
                       onPressed: widget.onFavoriteToggle,
-                      bgColors: widget.isFavorite
-                          ? const [Color(0xFFFF3B30), Color(0xFFCC0000)]
-                          : const [Color(0xFF3A3A3C), Color(0xFF2C2C2E)],
+                      // Cœur rouge si favori, sinon glass normal
+                      activeColor: widget.isFavorite ? const Color(0xFFFF3B30) : null,
                     ),
                     const SizedBox(width: 8),
                     _buildNotificationIconBtn(context),
@@ -268,11 +270,11 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
     );
   }
 
-  // ── Bouton FontAwesome avec fond dégradé ─────────────────────────────────
-  Widget _buildFaBtn({
+  // ── Bouton glassmorphisme unifié ─────────────────────────────────────────
+  Widget _buildGlassBtn({
     required IconData icon,
     required VoidCallback onPressed,
-    List<Color> bgColors = const [Color(0xFF3A3A3C), Color(0xFF2C2C2E)],
+    Color? activeColor, // couleur de l'icône si état actif (ex: cœur favori)
   }) {
     return GestureDetector(
       onTap: onPressed,
@@ -281,16 +283,18 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: bgColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          color: activeColor != null
+              ? activeColor.withOpacity(0.85)
+              : Colors.white.withOpacity(0.22),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.55),
+            width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: bgColors.first.withOpacity(0.45),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.18),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -320,19 +324,20 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                   angle: count > 0 ? _shakeAnimation.value : 0,
                   child: child,
                 ),
+                // Même style glass que les autres boutons
                 child: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFF9500), Color(0xFFFF6B00)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                    color: Colors.white.withOpacity(0.22),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.55),
+                      width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF9500).withOpacity(0.4),
+                        color: Colors.black.withOpacity(0.18),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -348,8 +353,8 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
               ),
               if (count > 0)
                 Positioned(
-                  right: 2,
-                  top: 2,
+                  right: -2,
+                  top: -2,
                   child: AnimatedBuilder(
                     animation: _pulseAnimation,
                     builder: (context, child) => Transform.scale(

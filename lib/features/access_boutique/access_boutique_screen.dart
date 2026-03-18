@@ -335,7 +335,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Image de fond
+            // Image de fond plein écran
             Positioned.fill(
               child: Image.asset(
                 'lib/core/assets/imgbt.jpeg',
@@ -402,28 +402,42 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                               ),
                             ],
                           ),
-                          child: Center(
-                            child: Text(
-                              'Scanner Un Qr Code',
-                              style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const FaIcon(FontAwesomeIcons.qrcode, color: Colors.white, size: 16),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Scanner un QR code',
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '-ou-',
-                        style: GoogleFonts.inriaSerif(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[800],
-                        ),
+                      const SizedBox(height: 14),
+                      // Séparateur avec lignes
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              'ou',
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 13,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                        ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       // Champ de saisie du lien boutique
                       Row(
                         children: [
