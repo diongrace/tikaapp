@@ -48,6 +48,9 @@ class GiftBottomSheet extends StatelessWidget {
     );
   }
 
+  static const Color _kPink = Color(0xFFE91E8C);
+  static const Color _kPurple = Color(0xFF7C3AED);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -95,12 +98,12 @@ class GiftBottomSheet extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFE91E8C), Color(0xFFFF5252)],
+                  colors: [_kPink, Color(0xFFFF6BB5)],
                   begin: Alignment.centerLeft, end: Alignment.centerRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [BoxShadow(
-                  color: const Color(0xFFE91E8C).withOpacity(0.3),
+                  color: _kPink.withOpacity(0.3),
                   blurRadius: 12, offset: const Offset(0, 4))],
               ),
               child: Row(children: [
@@ -127,10 +130,10 @@ class GiftBottomSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
               decoration: BoxDecoration(
-                color: const Color(0xFF6B21A8),
+                color: _kPurple,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [BoxShadow(
-                  color: const Color(0xFF6B21A8).withOpacity(0.3),
+                  color: _kPurple.withOpacity(0.3),
                   blurRadius: 12, offset: const Offset(0, 4))],
               ),
               child: Row(children: [

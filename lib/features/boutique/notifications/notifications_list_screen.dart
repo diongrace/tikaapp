@@ -27,8 +27,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     {'id': 'promo',   'label': 'Promos',    'icon': FontAwesomeIcons.tag},
   ];
 
-  static const _purple = Color.fromARGB(255, 151, 24, 210);
-  static const _purpleLight = Color(0xFFAB47BC);
+  static const _purple = Color(0xFF7C5CBF);
+  static const _purpleLight = Color(0xFF9E82CC);
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -155,7 +155,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F8),
+      backgroundColor: const Color(0xFFF6F6FA),
       body: Column(
         children: [
           _buildHeader(),
@@ -172,7 +172,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF4A0072), _purple],
+          colors: [Color(0xFF5E3A9E), _purpleLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -298,12 +298,12 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                 decoration: BoxDecoration(
                   gradient: isSelected
                       ? const LinearGradient(
-                          colors: [Color(0xFF4A0072), _purpleLight],
+                          colors: [_purple, _purpleLight],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                         )
                       : null,
-                  color: isSelected ? null : const Color(0xFFF2F2F8),
+                  color: isSelected ? null : const Color(0xFFEDEDF4),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: isSelected
                       ? [BoxShadow(
@@ -405,7 +405,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
           if (!isRead) _markAsRead(notification.id);
         },
         child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -434,7 +434,9 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
                     width: 4,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [color, color.withOpacity(0.35)],
+                        colors: isRead
+                            ? [color.withOpacity(0.30), color.withOpacity(0.10)]
+                            : [color, color.withOpacity(0.45)],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -689,14 +691,14 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
 
   Color _getColorForType(String type) {
     switch (type) {
-      case 'order':        return const Color(0xFF1565C0);
+      case 'order':        return const Color(0xFF5585C8);
       case 'payment':
-      case 'wave_payment': return const Color(0xFF00838F);
-      case 'loyalty':      return const Color(0xFF6A1B9A);
+      case 'wave_payment': return const Color(0xFF3DA8B4);
+      case 'loyalty':      return const Color(0xFF8B5CB3);
       case 'promo':
-      case 'promotion':    return const Color(0xFFE65100);
-      case 'delivery':     return const Color(0xFF2E7D32);
-      case 'system':       return const Color(0xFF546E7A);
+      case 'promotion':    return const Color(0xFFEE8A50);
+      case 'delivery':     return const Color(0xFF4CAF6A);
+      case 'system':       return const Color(0xFF7A96A4);
       default:             return _purple;
     }
   }

@@ -191,19 +191,10 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
           : null,
       body: Stack(
         children: [
-          // Fond avec gradient subtil
+          // Fond header — couleur de la boutique
           Container(
             height: 220,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _shopPrimary,
-                  _shopPrimary,
-                ],
-              ),
-            ),
+            color: _shopPrimary,
           ),
           // Contenu
           SafeArea(
@@ -298,7 +289,7 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
                                     physics: const BouncingScrollPhysics(),
                                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 2,
-                                      childAspectRatio: 0.75,
+                                      childAspectRatio: 0.95,
                                       crossAxisSpacing: 12,
                                       mainAxisSpacing: 12,
                                     ),
@@ -558,7 +549,6 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
 
   /// Carte d'une boutique favorite
   Widget _buildBoutiqueCard(Shop shop) {
-    // Construire l'URL complète du logo
     String logoUrl = shop.logoUrl;
     if (!logoUrl.startsWith('http')) {
       logoUrl = logoUrl.startsWith('/')
@@ -574,137 +564,85 @@ class _FavoritesBoutiquesScreenState extends State<FavoritesBoutiquesScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.07),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image de la boutique
-            Expanded(
-              child: Stack(
-                children: [
-                  // Background clean
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 85,
-                        height: 85,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 15,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Image.network(
-                            logoUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return FaIcon(
-                                FontAwesomeIcons.store,
-                                size: 45,
-                                color: _shopPrimary.withOpacity(0.5),
-                              );
-                            },
-                          ),
-                        ),
+            // Zone logo
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Container(
+                height: 85,
+                color: Colors.grey.shade50,
+                child: Stack(children: [
+                  Center(
+                    child: Container(
+                      width: 62, height: 62,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8)],
+                      ),
+                      child: ClipOval(
+                        child: Image.network(logoUrl, fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => FaIcon(
+                            FontAwesomeIcons.store, size: 28,
+                            color: _shopPrimary.withOpacity(0.5))),
                       ),
                     ),
                   ),
-                  // Badge favori
+                  // Bouton retirer favori
                   Positioned(
-                    top: 10,
-                    right: 10,
+                    top: 8, right: 8,
                     child: GestureDetector(
                       onTap: () => _removeFavorite(shop),
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          boxShadow: [BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 6)],
                         ),
-                        child: const FaIcon(
-                          FontAwesomeIcons.solidHeart,
-                          size: 18,
-                          color: Color(0xFFE91E63),
-                        ),
+                        child: const FaIcon(FontAwesomeIcons.solidHeart,
+                          size: 13, color: Color(0xFFE91E63)),
                       ),
                     ),
                   ),
-                ],
+                ]),
               ),
             ),
-            // Informations
+            // Infos
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    shop.name,
+                  Text(shop.name,
                     style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2D2D2D),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                      fontSize: 13, fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1C1C1E)),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: _shopPrimary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _shopPrimary.withOpacity(0.3),
-                        width: 1,
-                      ),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        FaIcon(FontAwesomeIcons.layerGroup, size: 12, color: _shopPrimary),
-                        const SizedBox(width: 5),
-                        Flexible(
-                          child: Text(
-                            shop.category,
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: _shopPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: Text(shop.category,
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 11, fontWeight: FontWeight.w700,
+                        color: _shopPrimary),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),

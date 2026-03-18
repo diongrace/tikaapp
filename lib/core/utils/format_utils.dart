@@ -18,3 +18,22 @@ double sp(double base, double screenWidth) {
   final scale = (screenWidth / 390).clamp(0.85, 1.25);
   return base * scale;
 }
+
+/// Traduit le type de service (livraison/retrait) en français
+String translateServiceType(String? type) {
+  switch (type?.toLowerCase().trim()) {
+    case 'delivery':
+    case 'livraison':
+      return 'Livraison';
+    case 'pickup':
+    case 'click_and_collect':
+    case 'retrait':
+      return 'Retrait en boutique';
+    case 'sur_place':
+    case 'on_site':
+      return 'Sur place';
+    default:
+      final s = type ?? '';
+      return s.isNotEmpty ? s : 'Non spécifié';
+  }
+}

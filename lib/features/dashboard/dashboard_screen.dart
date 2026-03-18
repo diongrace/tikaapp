@@ -516,7 +516,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     ];
 
     return SizedBox(
-      height: 40,
+      height: 42,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: tabs.length,
@@ -528,20 +528,25 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: primaryColor.withOpacity(0.15)),
+                gradient: LinearGradient(
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    accentColor.withOpacity(0.06),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(21),
+                border: Border.all(color: primaryColor.withOpacity(0.25)),
               ),
               child: Row(
                 children: [
-                  Icon(tab.icon, color: accentColor, size: 16),
-                  const SizedBox(width: 6),
+                  Icon(tab.icon, color: primaryColor, size: 14),
+                  const SizedBox(width: 7),
                   Text(
                     tab.label,
                     style: GoogleFonts.inriaSerif(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF374151),
+                      color: primaryColor,
                     ),
                   ),
                 ],
@@ -1053,14 +1058,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.1),
-              blurRadius: 10,
+              color: color.withOpacity(0.12),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
@@ -1068,11 +1073,11 @@ class _DashboardScreenState extends State<DashboardScreen>
         child: Column(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 20),
             ),
@@ -1080,19 +1085,22 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(
               value,
               style: GoogleFonts.inriaSerif(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1E1E2E),
+                color: color,
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            const SizedBox(height: 2),
             Text(
               label,
               style: GoogleFonts.inriaSerif(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[800],
-                letterSpacing: 0.5,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+                letterSpacing: 0.3,
               ),
               textAlign: TextAlign.center,
             ),
@@ -1223,7 +1231,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
         // Liste horizontale
         SizedBox(
-          height: 120,
+          height: 132,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -1240,7 +1248,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ? () => _navigateTo(HomeScreen(shopId: shopId))
                     : null,
                 child: Container(
-                  width: 130,
+                  width: 142,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -1378,12 +1386,16 @@ class _DashboardScreenState extends State<DashboardScreen>
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: const Color(0xFFF8F9FA),
           borderRadius: BorderRadius.circular(12),
+          border: Border(
+            left: BorderSide(color: statusColor, width: 3),
+          ),
         ),
-        child: Row(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
           children: [
             Container(
               width: 44,
@@ -1468,6 +1480,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ],
             ),
           ],
+          ),
         ),
       ),
     );

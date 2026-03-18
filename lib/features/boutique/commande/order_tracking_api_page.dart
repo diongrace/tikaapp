@@ -11,6 +11,7 @@ import '../../../services/models/order_model.dart';
 import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/utils/format_utils.dart';
 
 /// Page de suivi de commande utilisant l'API
 class OrderTrackingApiPage extends StatefulWidget {
@@ -271,6 +272,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = BoutiqueThemeProvider.of(context).primary;
@@ -458,7 +460,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${_order!.totalAmount.toInt()} FCFA',
+                            '${fmtAmount(_order!.totalAmount)} FCFA',
                             style: GoogleFonts.inriaSerif(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -881,7 +883,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                   ],
                 ),
                 Text(
-                  '${order.totalAmount.toInt()} FCFA',
+                  '${fmtAmount(order.totalAmount)} FCFA',
                   style: GoogleFonts.inriaSerif(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -993,8 +995,8 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
           // Étapes grisées
           _buildGreyedStep(FontAwesomeIcons.cartArrowDown, 'Commande reçue', isFirst: true),
           _buildGreyedStep(Icons.restaurant_rounded, 'En préparation'),
-          _buildGreyedStep(FontAwesomeIcons.boxOpen, 'Prête à récupérer'),
-          _buildGreyedStep(FontAwesomeIcons.truckFast, 'En livraison', isLast: true),
+          _buildGreyedStep(FontAwesomeIcons.boxOpen, 'Prête'),
+          _buildGreyedStep(FontAwesomeIcons.circleCheck, 'Livrée', isLast: true),
         ],
       ),
     );
@@ -1238,31 +1240,31 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
       return _buildTimelineFromBackend(order.timeline!);
     }
 
-    final statuses = ['recue', 'en_traitement', 'prete', 'en_livraison'];
+    final statuses = ['recue', 'en_traitement', 'prete', 'livree'];
     final statusLabels = {
       'recue': 'Commande reçue',
       'en_traitement': 'En préparation',
-      'prete': 'Prête à récupérer',
-      'en_livraison': 'En livraison',
+      'prete': 'Prête',
+      'livree': 'Livrée',
     };
     final statusDescriptions = {
       'recue': 'Votre commande a été enregistrée',
       'en_traitement': 'La boutique prépare votre commande',
-      'prete': 'Votre commande vous attend',
-      'en_livraison': 'Le livreur est en route',
+      'prete': 'Votre commande est prête',
+      'livree': 'Commande livrée avec succès',
     };
     final statusIcons = {
       'recue': FontAwesomeIcons.cartArrowDown,
       'en_traitement': Icons.restaurant_rounded,
       'prete': FontAwesomeIcons.boxOpen,
-      'en_livraison': FontAwesomeIcons.truckFast,
+      'livree': FontAwesomeIcons.circleCheck,
     };
     // Couleurs spécifiques pour chaque étape
     final statusColors = {
       'recue': const Color(0xFF4CAF50),          // Vert
       'en_traitement': const Color(0xFFFF9800),  // Orange
       'prete': const Color(0xFF2196F3),          // Bleu
-      'en_livraison': const Color(0xFF4CAF50),   // Vert
+      'livree': const Color(0xFF4CAF50),         // Vert
     };
 
     // Mapper le statut de l'API vers nos étapes
@@ -1512,7 +1514,7 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 : FontAwesomeIcons.store,
             iconColor: primaryColor,
             label: 'Mode de récupération',
-            value: order.serviceType.isNotEmpty ? order.serviceType : 'Retrait en boutique',
+            value: translateServiceType(order.serviceType),
           ),
           if (order.deliveryAddress != null && order.deliveryAddress!.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -1816,21 +1818,16 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
       return 2;
     }
 
-    // Index 3: en_livraison
-    if (statusLower == 'en_livraison' ||
-        statusLower == 'en livraison' ||
-        statusLower == 'livraison' ||
-        statusLower == 'delivering' ||
-        statusLower == 'shipped' ||
-        statusLower == 'delivery' ||
-        statusLower == 'out_for_delivery' ||
+    // Index 3: livree (commande livrée)
+    if (statusLower == 'livree' ||
         statusLower == 'livrée' ||
-        statusLower == 'livree' ||
         statusLower == 'delivered' ||
         statusLower == 'terminée' ||
         statusLower == 'terminee' ||
         statusLower == 'completed' ||
-        statusLower == 'done') {
+        statusLower == 'done' ||
+        statusLower == 'en_livraison' ||
+        statusLower == 'out_for_delivery') {
       return 3;
     }
 

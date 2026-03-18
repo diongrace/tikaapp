@@ -317,6 +317,26 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Color(0xFF0D0D26)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    onSelected: (value) {
+                      if (value == 'delete') _deleteCard();
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(children: [
+                          const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 20),
+                          const SizedBox(width: 10),
+                          Text('Supprimer la carte',
+                              style: GoogleFonts.inriaSerif(
+                                  fontSize: 14, color: const Color(0xFFEF4444))),
+                        ]),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -336,10 +356,6 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                       _buildCardVisual(),
                       const SizedBox(height: 20),
 
-                      // Stats rapides
-                      _buildStatsRow(),
-                      const SizedBox(height: 20),
-
                       // QR Code
                       _buildQRCodeSection(),
                       const SizedBox(height: 20),
@@ -356,102 +372,6 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                         const SizedBox(height: 20),
                       ],
 
-                      // Stats globales (toutes cartes confondues)
-                      if (_stats.isNotEmpty) ...[
-                        _buildGlobalStats(),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Infos de la carte
-                      _buildCardInfo(),
-                      const SizedBox(height: 20),
-
-                      // Bouton retour boutique (gradient)
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Container(
-                          width: double.infinity,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: _cardGradient,
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _cardGradient.first.withOpacity(0.38),
-                                blurRadius: 14,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const FaIcon(FontAwesomeIcons.store, size: 18, color: Colors.white),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Retour à la boutique',
-                                style: GoogleFonts.inriaSerif(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Bouton supprimer la carte
-                      const SizedBox(height: 4),
-                      GestureDetector(
-                        onTap: _isDeleting ? null : _deleteCard,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: double.infinity,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: const Color(0xFFEF4444).withOpacity(0.28),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _isDeleting
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        color: Color(0xFFEF4444),
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const FaIcon(
-                                      FontAwesomeIcons.trash,
-                                      size: 18,
-                                      color: Color(0xFFEF4444),
-                                    ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Supprimer la carte',
-                                style: GoogleFonts.inriaSerif(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFFEF4444),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 16),
                     ],
                   ),
@@ -639,34 +559,65 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           ),
                         ],
                       ),
-                      Column(
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            'POINTS',
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.60),
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          Text(
-                            '${_card.points}',
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              height: 1.0,
-                            ),
-                          ),
-                          if (_card.pointsValue > 0)
-                            Text(
-                              '= ${_card.pointsValue} FCFA',
-                              style: GoogleFonts.inriaSerif(
-                                fontSize: 13,
-                                color: Colors.white.withOpacity(0.72),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'POINTS',
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 12,
+                                  color: Colors.white.withOpacity(0.60),
+                                  letterSpacing: 1.0,
+                                ),
                               ),
+                              Text(
+                                '${_card.points}',
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  height: 1.0,
+                                ),
+                              ),
+                              if (_card.pointsValue > 0)
+                                Text(
+                                  '= ${_card.pointsValue} FCFA',
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 13,
+                                    color: Colors.white.withOpacity(0.72),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (_card.visitsCount > 0) ...[
+                            const SizedBox(width: 18),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'VISITES',
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 12,
+                                    color: Colors.white.withOpacity(0.60),
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                                Text(
+                                  '${_card.visitsCount}',
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ],
                             ),
+                          ],
                         ],
                       ),
                     ],
@@ -868,34 +819,6 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
               color: Colors.grey.shade800,
             ),
           ),
-          if (_card.pinCodeHint != null) ...[
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF8F0),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFF9800).withOpacity(0.28), width: 1),
-              ),
-              child: Row(
-                children: [
-                  const FaIcon(FontAwesomeIcons.lock, size: 14, color: Color(0xFFFF9800)),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      _card.pinCodeHint!,
-                      style: GoogleFonts.inriaSerif(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFFE65100),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );

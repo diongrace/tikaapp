@@ -19,6 +19,7 @@ import '../../auth/auth_choice_screen.dart';
 import '../history/global_history_screen.dart';
 import '../favorites/favorites_boutiques_screen.dart';
 import '../loyalty/loyalty_card_page.dart';
+import '../loyalty/loyalty_card_list_item.dart';
 import '../home/components/home_bottom_navigation.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 
@@ -374,25 +375,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Divider(color: Colors.grey.shade100, thickness: 1),
             const SizedBox(height: 8),
 
-            // Liste des cartes - style carte bancaire
+            // Liste des cartes
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                 itemCount: cards.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 14),
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final card = cards[index];
-                  final hasPoints = card.points > 0;
-                  // Palette de couleurs alternées
-                  final palettes = [
-                    [const Color(0xFF8936A8), const Color(0xFFD44CDA)],
-                    [const Color(0xFF1A73E8), const Color(0xFF4FC3F7)],
-                    [const Color(0xFF00897B), const Color(0xFF80CBC4)],
-                    [const Color(0xFFF57C00), const Color(0xFFFFCC80)],
-                  ];
-                  final colors = palettes[index % palettes.length];
-                  return GestureDetector(
+                  return LoyaltyCardListItem(
+                    card: card,
+                    index: index,
                     onTap: () {
                       Navigator.pop(ctx);
                       Navigator.push(
@@ -405,131 +399,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     },
-                    child: Container(
-                      height: 140,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: colors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colors[0].withOpacity(0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          // Cercles décoratifs
-                          Positioned(
-                            right: -20,
-                            top: -20,
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.08),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            right: 30,
-                            bottom: -30,
-                            child: Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.06),
-                              ),
-                            ),
-                          ),
-                          // Contenu
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Ligne du haut: logo + nom boutique + badge TIKA
-                                Row(
-                                  children: [
-                                    _buildShopAvatar(card),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        card.shopName,
-                                        style: GoogleFonts.inriaSerif(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        'TIKA',
-                                        style: GoogleFonts.inriaSerif(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
-                                          color: Colors.white,
-                                          letterSpacing: 1.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // Ligne du bas: points + icone
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Points fidélité',
-                                          style: GoogleFonts.inriaSerif(
-                                            fontSize: 11,
-                                            color: Colors.white.withOpacity(0.75),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          hasPoints ? '${card.points} pts' : '0 pt',
-                                          style: GoogleFonts.inriaSerif(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w800,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const Spacer(),
-                                    FaIcon(
-                                      FontAwesomeIcons.idCard,
-                                      color: Colors.white.withOpacity(0.5),
-                                      size: 32,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   );
                 },
               ),
@@ -803,21 +672,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatCard(
-                            _loyaltyPoints.toString(),
-                            'Points',
-                            locked: !_isAuthenticated,
-                            onTap: () {
-                              if (!_isAuthenticated) {
-                                _goToAuth();
-                                return;
-                              }
-                              _navigateToLoyalty();
-                            },
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -858,7 +712,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       const FaIcon(FontAwesomeIcons.creditCard, color: Colors.white, size: 24),
                                       const SizedBox(width: 12),
                                       Text(
-                                        'Programme de fidelite',
+                                        'Programme de fidélité',
                                         style: GoogleFonts.inriaSerif(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
@@ -880,29 +734,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   Text(
                                     _loyaltyPoints > 0
                                         ? 'Valeur: ${(_loyaltyPoints * 5).toStringAsFixed(0)} FCFA'
-                                        : 'Creez une carte pour gagner des points',
+                                        : 'Créez une carte pour gagner des points',
                                     style: GoogleFonts.inriaSerif(
                                       fontSize: 13,
                                       color: Colors.white.withOpacity(0.9),
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  ElevatedButton(
-                                    onPressed: () => _navigateToLoyalty(),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white.withOpacity(0.3),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () => _navigateToLoyalty(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: _shopPrimary,
+                                        padding: const EdgeInsets.symmetric(vertical: 13),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        elevation: 0,
                                       ),
-                                      elevation: 0,
-                                    ),
-                                    child: Text(
-                                      'Voir mes cartes',
-                                      style: GoogleFonts.inriaSerif(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
+                                      child: Text(
+                                        'Voir mes cartes',
+                                        style: GoogleFonts.inriaSerif(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: _shopPrimary,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -917,7 +775,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Programme de fidelite',
+                                          'Programme de fidélité',
                                           style: GoogleFonts.inriaSerif(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
@@ -926,7 +784,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
-                                          'Connectez-vous pour gagner des points et des recompenses',
+                                          'Connectez-vous pour gagner des points et des récompenses',
                                           style: GoogleFonts.inriaSerif(
                                             fontSize: 13,
                                             color: Colors.white.withOpacity(0.85),
@@ -1078,7 +936,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// Avatar boutique : logo si disponible, initiale sinon
-  Widget _buildShopAvatar(dynamic card) {
+  Widget _buildShopAvatar(dynamic card, Color accent) {
     final hasLogo = card.shopLogo != null && card.shopLogo!.isNotEmpty;
     final logoUrl = hasLogo
         ? (card.shopLogo!.startsWith('http')
@@ -1088,54 +946,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final initial = card.shopName.isNotEmpty ? card.shopName[0].toUpperCase() : '?';
 
     if (hasLogo) {
-      // Fond blanc pour ne pas colorer les PNG transparents
       return Container(
-        width: 52,
-        height: 52,
+        width: 46, height: 46,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6)],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(13),
-          child: Image.network(
-            logoUrl!,
-            fit: BoxFit.contain,
-            width: 52,
-            height: 52,
-            errorBuilder: (_, __, ___) => _buildInitialAvatar(initial),
-            loadingBuilder: (_, child, progress) =>
-                progress == null ? child : _buildInitialAvatar(initial),
-          ),
+          borderRadius: BorderRadius.circular(11),
+          child: Image.network(logoUrl!, fit: BoxFit.contain, width: 46, height: 46,
+            errorBuilder: (_, __, ___) => _buildInitialAvatar(initial, accent)),
         ),
       );
     }
-
-    return _buildInitialAvatar(initial);
+    return _buildInitialAvatar(initial, accent);
   }
 
-  Widget _buildInitialAvatar(String initial) {
+  Widget _buildInitialAvatar(String initial, Color accent) {
     return Container(
-      width: 52,
-      height: 52,
+      width: 46, height: 46,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [_shopPrimary.withOpacity(0.6), _shopPrimary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(14),
+        color: accent.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
-        child: Text(
-          initial,
-          style: GoogleFonts.inriaSerif(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        child: Text(initial, style: GoogleFonts.inriaSerif(
+          fontSize: 18, fontWeight: FontWeight.bold, color: accent)),
       ),
     );
   }

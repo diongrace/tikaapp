@@ -10,10 +10,6 @@ import '../panier/cart_manager.dart';
 import '../../../services/models/shop_model.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/gift_service.dart';
-
-const Color _kPink = Color(0xFFE91E8C);
-const Color _kPinkLight = Color(0xFFFF5252);
-
 class OfferProductScreen extends StatefulWidget {
   final Shop? currentShop;
   const OfferProductScreen({super.key, this.currentShop});
@@ -33,6 +29,9 @@ class OfferProductScreen extends StatefulWidget {
 }
 
 class _OfferProductScreenState extends State<OfferProductScreen> {
+  static const Color _kPink = Color(0xFFE91E8C);
+  static const Color _kPinkLight = Color(0xFFFF6BB5);
+
   final _formKey = GlobalKey<FormState>();
   final CartManager _cart = CartManager();
 
@@ -129,7 +128,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                       colors: [_kPink, _kPinkLight]),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -207,7 +206,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 13),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [_kPink, _kPinkLight]),
+                gradient: LinearGradient(colors: [_kPink, _kPinkLight]),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text('OK', textAlign: TextAlign.center,
@@ -356,7 +355,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
             width: 40, height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [_kPink, _kPinkLight]),
+              gradient: LinearGradient(colors: [_kPink, _kPinkLight]),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const FaIcon(FontAwesomeIcons.gift, color: Colors.white, size: 20),
@@ -401,7 +400,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
                         Navigator.pop(context);
                         _showDialog('Copié !', 'Numéro de suivi copié dans le presse-papiers.');
                       },
-                      child: const Icon(Icons.copy_rounded, size: 18, color: _kPink),
+                      child: Icon(Icons.copy_rounded, size: 18, color: _kPink),
                     ),
                   ]),
                 ],
@@ -439,7 +438,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 13),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [_kPink, _kPinkLight]),
+                gradient: LinearGradient(colors: [_kPink, _kPinkLight]),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text('Fermer', textAlign: TextAlign.center,
@@ -498,7 +497,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: _kPink, width: 2),
+                borderSide: BorderSide(color: _kPink, width: 2),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -541,7 +540,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
                   width: 26, height: 26,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [_kPink, _kPinkLight]),
+                    gradient: LinearGradient(colors: [_kPink, _kPinkLight]),
                     borderRadius: BorderRadius.circular(7),
                   ),
                   child: Text('$number',
@@ -726,7 +725,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const FaIcon(FontAwesomeIcons.receipt, size: 15, color: _kPink),
+          FaIcon(FontAwesomeIcons.receipt, size: 15, color: _kPink),
           const SizedBox(width: 6),
           Text('Récapitulatif', style: GoogleFonts.inriaSerif(
             fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF1C1C1E))),
@@ -967,7 +966,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
 
               // ── Header gradient ─────────────────────────────────
               Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [_kPink, _kPinkLight],
                     begin: Alignment.centerLeft,
@@ -1044,7 +1043,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
                     decoration: BoxDecoration(
                       gradient: _isLoading
                           ? null
-                          : const LinearGradient(colors: [_kPink, _kPinkLight],
+                          : LinearGradient(colors: [_kPink, _kPinkLight],
                               begin: Alignment.centerLeft, end: Alignment.centerRight),
                       color: _isLoading ? Colors.grey.shade300 : null,
                       borderRadius: BorderRadius.circular(16),

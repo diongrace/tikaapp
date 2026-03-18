@@ -12,7 +12,8 @@ import '../../services/models/loyalty_card_model.dart';
 import '../auth/auth_choice_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../boutique/loyalty/loyalty_card_page.dart';
-import '../boutique/loyalty/create_loyalty_card_page.dart';
+import '../boutique/loyalty/loyalty_card_list_item.dart';
+import '../../core/services/boutique_theme_provider.dart';
 
 class AccessBoutiqueScreen extends StatefulWidget {
   const AccessBoutiqueScreen({super.key});
@@ -195,67 +196,131 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
     }
   }
 
+  Widget _buildShopLogo(LoyaltyCard card, Color accentColor) {
+    final hasLogo = card.shopLogo != null && card.shopLogo!.isNotEmpty;
+    final logoUrl = hasLogo
+        ? (card.shopLogo!.startsWith('http')
+            ? card.shopLogo!
+            : 'https://prepro.tika-ci.com/storage/${card.shopLogo!}')
+        : null;
+    final initial = card.shopName.isNotEmpty ? card.shopName[0].toUpperCase() : '?';
+
+    if (hasLogo) {
+      return Container(
+        width: 46, height: 46,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6)],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(11),
+          child: Image.network(logoUrl!, fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => _buildLogoFallback(initial, accentColor)),
+        ),
+      );
+    }
+    return _buildLogoFallback(initial, accentColor);
+  }
+
+  Widget _buildLogoFallback(String initial, Color color) {
+    return Container(
+      width: 46, height: 46,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(child: Text(initial, style: GoogleFonts.inriaSerif(
+        fontSize: 18, fontWeight: FontWeight.bold, color: color))),
+    );
+  }
+
   void _showLoyaltyCardPicker(List<LoyaltyCard> cards) {
+    const accentColors = [
+      Color(0xFF8936A8),
+      Color(0xFF1A73E8),
+      Color(0xFF00897B),
+      Color(0xFFF57C00),
+      Color(0xFFE91E63),
+      Color(0xFF0288D1),
+    ];
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Mes cartes de fidelite',
-              style: GoogleFonts.inriaSerif(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.55,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, scrollCtrl) => Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8F8FB),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(children: [
+            // Handle
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2)),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+              child: Row(children: [
+                Container(
+                  width: 38, height: 38,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8936A8), Color(0xFFD44CDA)]),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: const FaIcon(FontAwesomeIcons.award, color: Colors.white, size: 16),
+                ),
+                const SizedBox(width: 12),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Mes cartes de fidélité', style: GoogleFonts.inriaSerif(
+                    fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF1C1C1E))),
+                  Text('${cards.length} carte${cards.length > 1 ? 's' : ''}',
+                    style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade500)),
+                ]),
+              ]),
+            ),
+            // Liste
+            Expanded(
+              child: ListView.separated(
+                controller: scrollCtrl,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                itemCount: cards.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (_, index) {
+                  final card = cards[index];
+                  return LoyaltyCardListItem(
+                    card: card,
+                    index: index,
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      final deleted = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BoutiqueThemeProvider(
+                            shop: null,
+                            child: LoyaltyCardPage(loyaltyCard: card),
+                          ),
+                        ),
+                      );
+                      if (deleted == true && mounted) _showCreateCardDialog();
+                    },
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 16),
-            ...cards.map((card) => ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  tileColor: const Color(0xFFF5F5F5),
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8936A8).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const FaIcon(FontAwesomeIcons.gift, color: Color(0xFF8936A8), size: 22),
-                  ),
-                  title: Text(
-                    card.shopName,
-                    style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${card.points} points',
-                    style: GoogleFonts.inriaSerif(fontSize: 13, color: Colors.grey),
-                  ),
-                  trailing: const FaIcon(FontAwesomeIcons.chevronRight, color: Colors.grey),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    final deleted = await Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoyaltyCardPage(loyaltyCard: card),
-                      ),
-                    );
-                    if (deleted == true && mounted) {
-                      _showCreateCardDialog();
-                    }
-                  },
-                )),
-            const SizedBox(height: 8),
-          ],
+          ]),
         ),
       ),
     );
@@ -552,7 +617,7 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
                     alignment: Alignment.center,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      child: const FaIcon(FontAwesomeIcons.gift, color: Colors.white, size: 16),
+                      child: const FaIcon(FontAwesomeIcons.idCard, color: Colors.white, size: 16),
                       onTap: () => _openLoyaltyCard(),
                     ),
                   ),

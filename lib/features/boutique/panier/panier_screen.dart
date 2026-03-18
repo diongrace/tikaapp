@@ -197,20 +197,20 @@ class _PanierScreenState extends State<PanierScreen> {
       // 1. Vérifier le PIN via l'API
       await LoyaltyService.verifyPin(cardId: _autoLoadedCard!.id, pinCode: pin);
 
-      // 2. Calculer la réduction avec les points disponibles
-      LoyaltyDiscount? discount;
+      // 2. Calculer la réduction localement : pointsValue = points × point_value (en FCFA)
+      // Pas d'appel API — la valeur est déjà dans le modèle LoyaltyCard
+      int discountAmount = 0;
+      int pointsUsed = 0;
       if (_autoLoadedCard!.points > 0) {
-        discount = await LoyaltyService.calculateDiscount(
-          cardId: _autoLoadedCard!.id,
-          pointsToUse: _autoLoadedCard!.points,
-          orderTotal: total,
-        );
+        // Ne peut pas dépasser le total de la commande
+        discountAmount = _autoLoadedCard!.pointsValue.clamp(0, total);
+        pointsUsed = _autoLoadedCard!.points;
       }
 
       setState(() {
         _verifiedLoyaltyCard = _autoLoadedCard;
-        _loyaltyDiscount = discount?.discountAmount.toInt() ?? 0;
-        _loyaltyPointsUsed = discount?.pointsToUse ?? 0;
+        _loyaltyDiscount = discountAmount;
+        _loyaltyPointsUsed = pointsUsed;
         _isVerifyingLoyalty = false;
       });
     } catch (e) {
@@ -529,7 +529,7 @@ class _PanierScreenState extends State<PanierScreen> {
 
                           // Section Code promo
                           Container(
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
@@ -613,8 +613,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                       onTap: _isValidatingCoupon ? null : () => _applyPromoCode(total),
                                       child: AnimatedContainer(
                                         duration: const Duration(milliseconds: 200),
-                                        height: 48,
-                                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        height: 40,
+                                        padding: const EdgeInsets.symmetric(horizontal: 14),
                                         decoration: BoxDecoration(
                                           color: _primaryColor,
                                           borderRadius: BorderRadius.circular(12),
@@ -706,7 +706,7 @@ class _PanierScreenState extends State<PanierScreen> {
 
                           // Section Carte de fidélité
                           Container(
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
@@ -983,7 +983,7 @@ class _PanierScreenState extends State<PanierScreen> {
 
                           // Résumé de la commande
                           Container(
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
@@ -1105,14 +1105,14 @@ class _PanierScreenState extends State<PanierScreen> {
                                   children: [
                                     Text(
                                       'Total',
-                                      style: GoogleFonts.inriaSerif(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                                      style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                                     ),
                                     Row(
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
                                         Text(
                                           fmtAmount(_totalAfterDiscounts(total)),
-                                          style: GoogleFonts.inriaSerif(fontSize: sp(26, MediaQuery.of(context).size.width), fontWeight: FontWeight.bold, color: const Color(0xFF0D0D26), height: 1),
+                                          style: GoogleFonts.inriaSerif(fontSize: sp(20, MediaQuery.of(context).size.width), fontWeight: FontWeight.bold, color: const Color(0xFF0D0D26), height: 1),
                                         ),
                                         const SizedBox(width: 4),
                                         Padding(
@@ -1235,7 +1235,7 @@ class _PanierScreenState extends State<PanierScreen> {
 
   Widget _buildGiftCardSection(int total) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1387,10 +1387,10 @@ class _PanierScreenState extends State<PanierScreen> {
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                       color: Colors.grey.shade100,
                     ),
                     child: ClipRRect(
@@ -1503,7 +1503,7 @@ class _PanierScreenState extends State<PanierScreen> {
                         Text(
                           '${item['price']}',
                           style: GoogleFonts.inriaSerif(
-                            fontSize: 20,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: const Color.fromARGB(255, 9, 9, 9),
                           ),
@@ -1542,8 +1542,8 @@ class _PanierScreenState extends State<PanierScreen> {
                               },
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
-                                width: 36,
-                                height: 36,
+                                width: 30,
+                                height: 30,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
@@ -1564,7 +1564,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                 ),
                                 child: FaIcon(
                                   FontAwesomeIcons.minus,
-                                  size: 16,
+                                  size: 13,
                                   color: item['quantity'] > 1
                                       ? Colors.grey.shade900
                                       : Colors.grey.shade900,
@@ -1606,8 +1606,8 @@ class _PanierScreenState extends State<PanierScreen> {
                               },
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
-                                width: 36,
-                                height: 36,
+                                width: 30,
+                                height: 30,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
@@ -1626,7 +1626,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                 ),
                                 child: const FaIcon(
                                   FontAwesomeIcons.plus,
-                                  size: 16,
+                                  size: 13,
                                   color: Colors.white,
                                 ),
                               ),
@@ -1642,12 +1642,12 @@ class _PanierScreenState extends State<PanierScreen> {
                             _cartManager.removeItem(index);
                           },
                           child: Container(
-                            width: 40,
-                            height: 40,
+                            width: 32,
+                            height: 32,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: const Color(0xFFFEE2E2),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.red.withOpacity(0.18),
@@ -1658,7 +1658,7 @@ class _PanierScreenState extends State<PanierScreen> {
                             ),
                             child: const FaIcon(
                               FontAwesomeIcons.trash,
-                              size: 20,
+                              size: 14,
                               color: Color(0xFFEF4444),
                             ),
                           ),

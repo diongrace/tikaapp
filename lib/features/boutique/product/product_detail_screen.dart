@@ -344,14 +344,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 // Fond dégradé + image + thumbnails
                 Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        _primaryColor.withOpacity(0.07),
+                        Color(0xFFF8F8F8),
                         Colors.white,
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                   ),
                   child: Column(
@@ -381,7 +381,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             children: [
                               // Conteneur image
                               Container(
-                                height: 300,
+                                height: 320,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(24),
@@ -408,11 +408,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           onPageChanged: (i) => setState(() => _similarPageIndex = i),
                                           itemBuilder: (_, i) {
                                             final url = allImages[i];
-                                            return Image.network(
-                                              url,
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (_, __, ___) => Center(
-                                                child: FaIcon(FontAwesomeIcons.image, size: 48, color: Colors.grey.shade300),
+                                            final fullUrl = _getFullImageUrl(url) ?? url;
+                                            return GestureDetector(
+                                              onTap: () => _showZoomableImage(fullUrl),
+                                              child: Stack(
+                                                children: [
+                                                  Image.network(
+                                                    fullUrl,
+                                                    fit: BoxFit.contain,
+                                                    width: double.infinity,
+                                                    height: double.infinity,
+                                                    errorBuilder: (_, __, ___) => Center(
+                                                      child: FaIcon(FontAwesomeIcons.image, size: 48, color: Colors.grey.shade300),
+                                                    ),
+                                                  ),
+                                                  Positioned(
+                                                    bottom: 12,
+                                                    left: 12,
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(7),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black45,
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                      child: const Icon(Icons.zoom_in, color: Colors.white, size: 20),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             );
                                           },
@@ -506,7 +528,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         return Padding(
                           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14),
                           child: SizedBox(
-                            height: 62,
+                            height: 74,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: allImages.length,
@@ -524,26 +546,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   },
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 200),
-                                    width: 58,
-                                    height: 58,
-                                    margin: const EdgeInsets.only(right: 8),
+                                    width: 70,
+                                    height: 70,
+                                    margin: const EdgeInsets.only(right: 10),
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: isSelected ? _primaryColor : Colors.grey.shade300,
-                                        width: isSelected ? 2.5 : 1,
+                                        color: isSelected ? _primaryColor : Colors.transparent,
+                                        width: isSelected ? 2.5 : 0,
                                       ),
                                       color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.06),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: _primaryColor.withOpacity(0.30),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 4),
+                                                spreadRadius: 1,
+                                              ),
+                                            ]
+                                          : [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.10),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 3),
+                                                spreadRadius: 0,
+                                              ),
+                                            ],
                                     ),
                                     child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(10),
                                       child: Image.network(img, fit: BoxFit.contain,
                                           errorBuilder: (_, __, ___) => Icon(
                                               Icons.image_not_supported,
@@ -597,7 +629,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
             // Carte blanche avec infos
             Transform.translate(
-              offset: const Offset(0, -20),
+              offset: const Offset(0, 0),
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -615,21 +647,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       // ── Catégorie + Nom ──────────────────────────────────
                       if (widget.product['category'] != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
-                            color: _primaryColor.withOpacity(0.10),
-                            borderRadius: BorderRadius.circular(8),
+                            color: _primaryColor.withOpacity(0.07),
+                            borderRadius: BorderRadius.circular(50),
+                            border: Border.all(color: _primaryColor.withOpacity(0.25), width: 1),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               FaIcon(FontAwesomeIcons.tag, size: 11, color: _primaryColor),
-                              const SizedBox(width: 5),
+                              const SizedBox(width: 6),
                               Text(
                                 widget.product['category'],
                                 style: GoogleFonts.inriaSerif(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   color: _primaryColor,
                                 ),
                               ),
@@ -640,8 +673,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       Text(
                         widget.product['name'] ?? '',
                         style: GoogleFonts.inriaSerif(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           color: const Color(0xFF1A1A2E),
                           height: 1.25,
                         ),
@@ -694,8 +727,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Text(
                               _formatPrice(price),
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
                                 color: _primaryColor,
                                 height: 1,
                               ),
@@ -706,7 +739,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Text(
                                 'FCFA',
                                 style: GoogleFonts.inriaSerif(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: _primaryColor.withOpacity(0.75),
                                 ),
@@ -974,15 +1007,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.12),
-                      blurRadius: 24,
-                      offset: const Offset(0, -8),
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, -6),
                       spreadRadius: 0,
                     ),
                   ],
@@ -999,26 +1032,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'TOTAL',
+                              'Total',
                               style: GoogleFonts.inriaSerif(
-                                fontSize: 12,
-                                color: Colors.grey.shade800,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1.2,
+                                fontSize: 11,
+                                color: Colors.grey.shade500,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 1),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 // Afficher le prix total seulement si le prix existe
                                 if (totalPrice != null) ...[
                                   Text(
-                                    '$totalPrice',
+                                    _formatPrice(totalPrice),
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                      color: const Color(0xFF2D2D2D),
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w900,
+                                      color: const Color(0xFF1A1A2E),
                                       height: 1,
                                     ),
                                   ),
@@ -1028,9 +1061,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     child: Text(
                                       'FCFA',
                                       style: GoogleFonts.inriaSerif(
-                                        fontSize: 12,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.grey.shade900,
+                                        color: Colors.grey.shade600,
                                       ),
                                     ),
                                   ),
@@ -1038,7 +1071,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   Text(
                                     'Prix non disponible',
                                     style: GoogleFonts.inriaSerif(
-                                      fontSize: 14,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey.shade800,
                                       fontStyle: FontStyle.italic,
@@ -1178,21 +1211,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             scale: _isPressed ? 0.96 : 1.0,
                             duration: const Duration(milliseconds: 150),
                             child: Container(
-                              height: 44,
+                              height: 50,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
                                     _primaryColor,
-                                    _primaryColor.withOpacity(0.85),
+                                    _theme.gradientEnd,
                                   ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
                                 ),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(25),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _primaryColor.withOpacity(0.4),
-                                    blurRadius: 12,
+                                    color: _primaryColor.withOpacity(0.35),
+                                    blurRadius: 14,
                                     offset: const Offset(0, 6),
                                   ),
                                 ],

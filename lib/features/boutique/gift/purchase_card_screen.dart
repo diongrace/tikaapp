@@ -10,9 +10,6 @@ import '../../../services/models/gift_model.dart';
 import '../../../services/auth_service.dart';
 import 'gift_card_track_screen.dart';
 
-const Color _kPurple      = Color(0xFF6B21A8);
-const Color _kPurpleLight = Color(0xFF9333EA);
-
 class PurchaseCardScreen extends StatefulWidget {
   final dynamic currentShop;
   const PurchaseCardScreen({super.key, this.currentShop});
@@ -32,6 +29,9 @@ class PurchaseCardScreen extends StatefulWidget {
 }
 
 class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
+  static const Color _kPurple = Color(0xFF7C3AED);
+  static const Color _kPurpleLight = Color(0xFFA78BFA);
+
   int _step = 0;
   final PageController _pageCtrl = PageController();
 
@@ -126,7 +126,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 13),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                     colors: [_kPurple, _kPurpleLight]),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -308,7 +308,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
           Container(
             width: 40, height: 40, alignment: Alignment.center,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [_kPurple, _kPurpleLight]),
+              gradient: LinearGradient(colors: [_kPurple, _kPurpleLight]),
               borderRadius: BorderRadius.circular(12)),
             child: const FaIcon(FontAwesomeIcons.creditCard, color: Colors.white, size: 20),
           ),
@@ -354,7 +354,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
                     GestureDetector(
                       onTap: () => Clipboard.setData(
                           ClipboardData(text: result.trackingToken!)),
-                      child: const Icon(Icons.copy_rounded, size: 18, color: _kPurple),
+                      child: Icon(Icons.copy_rounded, size: 18, color: _kPurple),
                     ),
                   ]),
                 ],
@@ -395,7 +395,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [_kPurple, _kPurpleLight]),
+                    gradient: LinearGradient(colors: [_kPurple, _kPurpleLight]),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -469,7 +469,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: _kPurple, width: 2),
+              borderSide: BorderSide(color: _kPurple, width: 2),
             ),
           ),
         ),
@@ -507,7 +507,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             colors: [_kPurple, _kPurpleLight],
             begin: Alignment.centerLeft, end: Alignment.centerRight),
           borderRadius: BorderRadius.circular(14),
@@ -645,7 +645,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
                   borderSide: BorderSide(color: Colors.grey.shade400, width: 1.2)),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: _kPurple, width: 2)),
+                  borderSide: BorderSide(color: _kPurple, width: 2)),
               ),
             ),
           ]),
@@ -925,7 +925,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
 
         // Header purple
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [_kPurple, _kPurpleLight],
               begin: Alignment.centerLeft, end: Alignment.centerRight),

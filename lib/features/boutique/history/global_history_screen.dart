@@ -13,6 +13,7 @@ import '../../../services/models/order_model.dart';
 import '../../../services/models/product_model.dart';
 import '../../../services/utils/api_endpoint.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/utils/format_utils.dart';
 import '../commande/order_tracking_api_page.dart';
 import '../commande/receipt_view_page.dart';
 import '../commande/commande_screen.dart';
@@ -1100,49 +1101,73 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
 
   // Obtenir la couleur du statut
   Color _getStatusColor(String status) {
-    switch (status) {
+    switch (status.toLowerCase().trim()) {
       case 'recue':
       case 'reçue':
+      case 'received':
+      case 'pending':
         return const Color(0xFFFFA726);
       case 'en_traitement':
+      case 'en_preparation':
+      case 'en_cours':
+      case 'processing':
+      case 'en cours de preparation':
         return const Color(0xFF42A5F5);
       case 'prete':
       case 'prête':
+      case 'ready':
         return const Color(0xFF9C27B0);
       case 'en_livraison':
+      case 'shipped':
+      case 'en cours de livraison':
         return const Color(0xFFFF9800);
       case 'livree':
       case 'livrée':
+      case 'delivered':
         return const Color(0xFF4CAF50);
       case 'annulee':
       case 'annulée':
+      case 'cancelled':
+      case 'canceled':
         return const Color(0xFFE91E63);
       default:
-        return Colors.grey;
+        return const Color(0xFF78909C);
     }
   }
 
   // Obtenir le label et l'icône du statut
   Map<String, dynamic> _getStatusInfo(String status) {
-    switch (status) {
+    switch (status.toLowerCase().trim()) {
       case 'recue':
       case 'reçue':
+      case 'received':
+      case 'pending':
         return {'label': 'Reçue', 'icon': '📥'};
       case 'en_traitement':
-        return {'label': 'En préparation', 'icon': '⏳'};
+      case 'en_preparation':
+      case 'en_cours':
+      case 'processing':
+      case 'en cours de preparation':
+        return {'label': 'Préparation', 'icon': '⏳'};
       case 'prete':
       case 'prête':
+      case 'ready':
         return {'label': 'Prête', 'icon': '✅'};
       case 'en_livraison':
+      case 'shipped':
+      case 'en cours de livraison':
         return {'label': 'En livraison', 'icon': '🚚'};
       case 'livree':
       case 'livrée':
+      case 'delivered':
         return {'label': 'Livrée', 'icon': '✅'};
       case 'annulee':
       case 'annulée':
+      case 'cancelled':
+      case 'canceled':
         return {'label': 'Annulée', 'icon': '❌'};
       default:
-        return {'label': status, 'icon': '📦'};
+        return {'label': 'En cours', 'icon': '📦'};
     }
   }
 
@@ -1394,6 +1419,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
     );
   }
 
+
   Widget _buildOrderCard(Order order) {
     // Utiliser le logo du cache ou celui de la commande
     final shopLogo = _shopLogosCache[order.shopId] ?? order.shopLogo;
@@ -1403,10 +1429,10 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
     const Color primaryColor = Color(0xFF670C88);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
             color: primaryColor.withOpacity(0.08),
@@ -1418,10 +1444,10 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           onTap: () => _showOrderDetails(order),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               children: [
                 // En-tête avec boutique et statut
@@ -1429,11 +1455,11 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   children: [
                     // Logo de la boutique
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(11),
                         border: Border.all(
                           color: primaryColor.withOpacity(0.15),
                           width: 1.5,
@@ -1491,17 +1517,17 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                           ),
                           const SizedBox(height: 5),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: Colors.grey[200],
+                              color: primaryColor.withOpacity(0.08),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               '#${order.orderNumber}',
                               style: GoogleFonts.robotoMono(
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF4B5563),
+                                color: primaryColor,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1512,10 +1538,10 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     ),
                     // Badge statut
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
+                        color: statusColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -1542,7 +1568,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
 
                 // Séparateur
                 Container(
-                  margin: const EdgeInsets.symmetric(vertical: 14),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
                   height: 1,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -1563,8 +1589,8 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     // Date et heure
                     FaIcon(
                       FontAwesomeIcons.clock,
-                      size: 16,
-                      color: primaryColor,
+                      size: 13,
+                      color: Colors.grey.shade400,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -1598,7 +1624,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     const SizedBox(width: 12),
                     // Total
                     Text(
-                      '${order.totalAmount.toInt()} F',
+                      '${fmtAmount(order.totalAmount)} FCFA',
                       style: GoogleFonts.inriaSerif(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
@@ -1617,25 +1643,37 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
 
   // Obtenir l'icône du statut
   IconData _getStatusIcon(String status) {
-    switch (status) {
+    switch (status.toLowerCase().trim()) {
       case 'recue':
       case 'reçue':
+      case 'received':
+      case 'pending':
         return FontAwesomeIcons.inbox;
       case 'en_traitement':
+      case 'en_preparation':
+      case 'en_cours':
+      case 'processing':
+      case 'en cours de preparation':
         return Icons.hourglass_top_rounded;
       case 'prete':
       case 'prête':
+      case 'ready':
         return FontAwesomeIcons.solidCircleCheck;
       case 'en_livraison':
+      case 'shipped':
+      case 'en cours de livraison':
         return FontAwesomeIcons.truck;
       case 'livree':
       case 'livrée':
+      case 'delivered':
         return FontAwesomeIcons.solidCircleCheck;
       case 'annulee':
       case 'annulée':
+      case 'cancelled':
+      case 'canceled':
         return FontAwesomeIcons.xmark;
       default:
-        return FontAwesomeIcons.boxOpen;
+        return FontAwesomeIcons.clockRotateLeft;
     }
   }
 
@@ -1669,9 +1707,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         return Container(
                           color: Colors.grey[200],
                           child: Icon(
-                            Icons.lunch_dining_outlined,
-                            size: 28,
-                            color: Colors.grey[900],
+                            FontAwesomeIcons.bagShopping,
+                            size: 24,
+                            color: Colors.grey[400],
                           ),
                         );
                       },
@@ -1718,7 +1756,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${(price * quantity).toInt()} F',
+                '${fmtAmount(price * quantity)} FCFA',
                 style: GoogleFonts.inriaSerif(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -2157,7 +2195,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               : FontAwesomeIcons.store,
                           iconColor: const Color(0xFF8936A8),
                           label: 'Récupération',
-                          value: order.serviceType.isNotEmpty ? order.serviceType : 'Non spécifié',
+                          value: translateServiceType(order.serviceType),
                         ),
                       ),
                     ],
@@ -2252,7 +2290,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${order.totalAmount.toInt()} FCFA',
+                              '${fmtAmount(order.totalAmount)} FCFA',
                               style: GoogleFonts.inriaSerif(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -2596,20 +2634,22 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey[100],
-                          child: Icon(
-                            Icons.lunch_dining_outlined,
-                            size: 28,
-                            color: Colors.grey[900],
+                          alignment: Alignment.center,
+                          child: FaIcon(
+                            FontAwesomeIcons.box,
+                            size: 20,
+                            color: Colors.grey[400],
                           ),
                         );
                       },
                     )
                   : Container(
                       color: Colors.grey[100],
-                      child: Icon(
-                        Icons.lunch_dining_outlined,
-                        size: 28,
-                        color: Colors.grey[900],
+                      alignment: Alignment.center,
+                      child: FaIcon(
+                        FontAwesomeIcons.box,
+                        size: 20,
+                        color: Colors.grey[400],
                       ),
                     ),
             ),
@@ -2655,7 +2695,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${(price * quantity).toInt()} F',
+                '${fmtAmount(price * quantity)} FCFA',
                 style: GoogleFonts.inriaSerif(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -2664,7 +2704,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
               ),
               if (quantity > 1)
                 Text(
-                  '${price.toInt()} F/u',
+                  '${fmtAmount(price)} FCFA/u',
                   style: GoogleFonts.inriaSerif(
                     fontSize: 12,
                     color: Colors.grey[800],
