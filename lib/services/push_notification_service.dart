@@ -1,11 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../firebase_options.dart';
 import './notification_service.dart';
+import '../features/boutique/gift/gift_order_track_screen.dart';
+import '../features/boutique/gift/gift_card_track_screen.dart';
+import '../features/boutique/notifications/notifications_list_screen.dart';
 
 /// Handler pour les messages en arriere-plan (doit etre une fonction top-level)
 /// Quand l'app est fermee, Flutter cree un isolate separe - Firebase doit etre reinitialise
@@ -92,8 +97,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// Construit le titre depuis les champs data du backend Tika
 /// Payload: { type, order_id, order_number, status, click_action }
 String _buildTitleFromData(Map<String, dynamic> data) {
-  final type   = data['type']   ?? '';
-  final status = data['status'] ?? '';
+  final type        = data['type']         ?? '';
+  final status      = data['status']       ?? '';
+  final clickAction = data['click_action'] ?? '';
 
   if (type == 'order_status') {
     switch (status) {
@@ -107,6 +113,17 @@ String _buildTitleFromData(Map<String, dynamic> data) {
   if (type == 'loyalty')  return 'Points de fidélité ⭐';
   if (type == 'promo')    return 'Nouvelle promotion 🎁';
   if (type == 'payment')  return 'Paiement confirmé 💳';
+
+  // Cartes cadeau
+  if (clickAction == 'OPEN_GIFT_CARD' || type == 'gift_card') {
+    return 'Carte d\'achat activée 🎁';
+  }
+
+  // Commandes cadeaux
+  if (clickAction == 'OPEN_GIFT_TRACKING' || type == 'gift_order') {
+    return 'Cadeau en route 🎁';
+  }
+
   return 'Tika';
 }
 
@@ -115,6 +132,7 @@ String _buildBodyFromData(Map<String, dynamic> data) {
   final type        = data['type']         ?? '';
   final status      = data['status']       ?? '';
   final orderNumber = data['order_number'] ?? '';
+  final clickAction = data['click_action'] ?? '';
 
   if (type == 'order_status' && orderNumber.isNotEmpty) {
     switch (status) {
@@ -125,6 +143,30 @@ String _buildBodyFromData(Map<String, dynamic> data) {
       default:              return 'Votre commande $orderNumber a été mise à jour.';
     }
   }
+
+  // Carte cadeau activée → code + montant + boutique
+  if (clickAction == 'OPEN_GIFT_CARD' || type == 'gift_card') {
+    final code     = data['code']      ?? '';
+    final amount   = data['amount']    ?? '';
+    final shopName = data['shop_name'] ?? '';
+    if (code.isNotEmpty && amount.isNotEmpty) {
+      return 'Votre carte de $amount FCFA chez $shopName est activée ! Code : $code';
+    }
+    if (code.isNotEmpty) return 'Votre carte cadeau est activée ! Code : $code';
+    return 'Votre carte cadeau a été activée.';
+  }
+
+  // Commande cadeau
+  if (clickAction == 'OPEN_GIFT_TRACKING' || type == 'gift_order') {
+    final senderName    = data['sender_name']    ?? '';
+    final shopName      = data['shop_name']      ?? '';
+    final trackingToken = data['tracking_token'] ?? '';
+    if (senderName.isNotEmpty && shopName.isNotEmpty) {
+      return '$senderName vous a envoyé un cadeau chez $shopName ! Réf : $trackingToken';
+    }
+    return 'Vous avez reçu un cadeau !';
+  }
+
   return '';
 }
 
@@ -143,6 +185,9 @@ class PushNotificationService {
   static FlutterLocalNotificationsPlugin? _localNotifications;
   static bool _localNotificationsInitialized = false;
   static Timer? _pollingTimer;
+
+  /// NavigatorKey global — permet de naviguer sans BuildContext (notifications)
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   static String? _fcmToken;
 
@@ -209,10 +254,13 @@ class PushNotificationService {
     // 6. Ecouter les clics sur les notifications
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
-    // 7. Verifier si l'app a ete ouverte via une notification
+    // 7. Verifier si l'app a ete ouverte via une notification (app etait fermee)
+    // Delai necessaire pour que le navigator soit pret avant de naviguer
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
-      _handleNotificationTap(initialMessage);
+      Future.delayed(const Duration(milliseconds: 600), () {
+        _handleNotificationTap(initialMessage);
+      });
     }
 
     // 8. Recuperer le token FCM
@@ -368,15 +416,15 @@ class PushNotificationService {
     // Rafraichir le badge quand un push arrive
     refreshUnreadCount();
 
-    // Extraire titre et body depuis notification OU data
+    // Extraire titre et body depuis notification OU data OU construction depuis data
     final notification = message.notification;
     final String title = notification?.title
         ?? message.data['title']
-        ?? 'Tika';
+        ?? _buildTitleFromData(message.data);
     final String body = notification?.body
         ?? message.data['body']
         ?? message.data['message']
-        ?? '';
+        ?? _buildBodyFromData(message.data);
 
     if (title == 'Tika' && body.isEmpty) return;
 
@@ -405,18 +453,76 @@ class PushNotificationService {
             presentSound: true,
           ),
         ),
-        payload: message.data['action_url'],
+        payload: jsonEncode({
+          'click_action': message.data['click_action'],
+          'tracking_token': message.data['tracking_token'],
+        }),
       );
     }
   }
 
-  /// Gerer le clic sur une notification (app en arriere-plan)
+  /// Gerer le clic sur une notification (app en arriere-plan ou fermee)
   static void _handleNotificationTap(RemoteMessage message) {
     print('[Push] Notification cliquee: ${message.data}');
+    _navigateFromData(message.data);
   }
 
-  /// Gerer le clic sur une notification locale
+  /// Gerer le clic sur une notification locale (app au premier plan)
   static void _onNotificationTapped(NotificationResponse response) {
     print('[Push] Notification locale cliquee: ${response.payload}');
+    if (response.payload == null) return;
+    try {
+      final data = jsonDecode(response.payload!) as Map<String, dynamic>;
+      _navigateFromData(data);
+    } catch (_) {}
+  }
+
+  /// Naviguer vers la bonne page selon le click_action FCM
+  ///
+  /// OPEN_GIFT_TRACKING → suivi commande cadeau (GFT-XXXXXX)
+  /// OPEN_GIFT_ORDER    → meme ecran (token tracking_token)
+  /// OPEN_GIFT_CARD     → suivi carte cadeau (GCA-XXXXXX via tracking_token)
+  /// Tout autre cas     → liste des notifications
+  static void _navigateFromData(Map<String, dynamic> data) {
+    final clickAction = data['click_action'] as String?;
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    print('[Push] Navigation -> click_action: $clickAction');
+
+    switch (clickAction) {
+      case 'OPEN_GIFT_TRACKING':
+        final token = data['tracking_token'] as String?;
+        if (token != null) {
+          GiftOrderTrackScreen.show(context, token: token);
+        } else {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationsListScreen()),
+          );
+        }
+        break;
+      case 'OPEN_GIFT_ORDER':
+        // Notification vendeur : pas de tracking_token dans le payload API
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NotificationsListScreen()),
+        );
+        break;
+      case 'OPEN_GIFT_CARD':
+        final token = data['tracking_token'] as String?;
+        if (token != null) {
+          GiftCardTrackScreen.show(context, token: token);
+        } else {
+          // Payload API ne contient pas tracking_token pour les cartes cadeau
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationsListScreen()),
+          );
+        }
+        break;
+      default:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NotificationsListScreen()),
+        );
+        break;
+    }
   }
 }

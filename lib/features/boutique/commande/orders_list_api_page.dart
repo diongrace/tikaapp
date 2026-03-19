@@ -357,6 +357,11 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
     int selectedRating = 5;
     final commentController = TextEditingController();
+    final hasItems = order.items.isNotEmpty;
+    final Map<int, int> itemRatings = {
+      for (final item in order.items)
+        if (item.id != null) item.id!: 5,
+    };
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -368,160 +373,227 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
           return Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
             insetPadding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ── Header gradient ──────────────────────────────
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 28),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── Header gradient ──────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 28),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                     ),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                  ),
-                  child: Column(
-                    children: [
-                      const FaIcon(FontAwesomeIcons.solidStar, color: Colors.white, size: 40),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Notez votre commande',
-                        style: GoogleFonts.inriaSerif(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '#${order.orderNumber}',
-                        style: GoogleFonts.inriaSerif(
-                          fontSize: 12,
-                          color: Colors.white.withOpacity(0.85),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ── Corps ────────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                  child: Column(
-                    children: [
-                      // Étoiles
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(5, (i) => GestureDetector(
-                          onTap: () => setDialogState(() => selectedRating = i + 1),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Icon(
-                              i < selectedRating ? FontAwesomeIcons.solidStar : FontAwesomeIcons.solidStar,
-                              color: i < selectedRating ? const Color(0xFFF59E0B) : Colors.grey.shade300,
-                              size: 38,
-                            ),
-                          ),
-                        )),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Label dynamique
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        child: Text(
-                          label,
-                          key: ValueKey(label),
+                    child: Column(
+                      children: [
+                        const FaIcon(FontAwesomeIcons.solidStar, color: Colors.white, size: 40),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Notez votre commande',
                           style: GoogleFonts.inriaSerif(
                             fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFFF59E0B),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Commentaire
-                      TextField(
-                        controller: commentController,
-                        maxLines: 3,
-                        style: GoogleFonts.inriaSerif(fontSize: 12),
-                        decoration: InputDecoration(
-                          hintText: 'Partagez votre expérience... (optionnel)',
-                          hintStyle: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade900),
-                          filled: true,
-                          fillColor: Colors.grey.shade50,
-                          contentPadding: const EdgeInsets.all(14),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(color: Colors.grey.shade200),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(color: Colors.grey.shade200),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+                        const SizedBox(height: 4),
+                        Text(
+                          '#${order.orderNumber}',
+                          style: GoogleFonts.inriaSerif(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.85),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
 
-                      // Boutons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                side: BorderSide(color: Colors.grey.shade300),
-                              ),
-                              child: Text('Annuler',
-                                style: GoogleFonts.inriaSerif(color: Colors.grey.shade800, fontWeight: FontWeight.w500)),
+                  // ── Corps ────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Note globale
+                        Center(
+                          child: Text(
+                            'Note globale',
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
-                                ),
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFF59E0B).withOpacity(0.4),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(5, (i) => GestureDetector(
+                            onTap: () => setDialogState(() => selectedRating = i + 1),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(
+                                FontAwesomeIcons.solidStar,
+                                color: i < selectedRating ? const Color(0xFFF59E0B) : Colors.grey.shade300,
+                                size: 34,
+                              ),
+                            ),
+                          )),
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Text(
+                              label,
+                              key: ValueKey(label),
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFF59E0B),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // ── Articles ─────────────────────────────
+                        if (hasItems) ...[
+                          const SizedBox(height: 20),
+                          Divider(color: Colors.grey.shade200),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Notez chaque article',
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ...order.items.where((item) => item.id != null).map((item) {
+                            final itemRating = itemRatings[item.id!] ?? 5;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.productName ?? 'Article',
+                                      style: GoogleFonts.inriaSerif(fontSize: 12),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Row(
+                                    children: List.generate(5, (i) => GestureDetector(
+                                      onTap: () => setDialogState(() => itemRatings[item.id!] = i + 1),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                                        child: Icon(
+                                          FontAwesomeIcons.solidStar,
+                                          color: i < itemRating ? const Color(0xFFF59E0B) : Colors.grey.shade300,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    )),
                                   ),
                                 ],
                               ),
-                              child: ElevatedButton(
-                                onPressed: () => Navigator.pop(ctx, {'rating': selectedRating, 'comment': commentController.text}),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                ),
-                                child: Text('Envoyer mon avis',
-                                  style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                              ),
+                            );
+                          }),
+                        ],
+
+                        const SizedBox(height: 16),
+
+                        // Commentaire global
+                        TextField(
+                          controller: commentController,
+                          maxLines: 3,
+                          style: GoogleFonts.inriaSerif(fontSize: 12),
+                          decoration: InputDecoration(
+                            hintText: 'Partagez votre expérience... (optionnel)',
+                            hintStyle: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade900),
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            contentPadding: const EdgeInsets.all(14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: Colors.grey.shade200),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: Colors.grey.shade200),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Boutons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  side: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                child: Text('Annuler',
+                                  style: GoogleFonts.inriaSerif(color: Colors.grey.shade800, fontWeight: FontWeight.w500)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFF59E0B), Color(0xFFFF6B00)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFF59E0B).withOpacity(0.4),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: () => Navigator.pop(ctx, {
+                                    'rating': selectedRating,
+                                    'global_comment': commentController.text,
+                                    'item_ratings': Map<int, int>.from(itemRatings),
+                                  }),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                  child: Text('Envoyer mon avis',
+                                    style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -532,12 +604,17 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
     try {
       final token = AuthService.authToken!;
+      final itemRatingsResult = result['item_ratings'] as Map<int, int>? ?? {};
+      final itemsList = itemRatingsResult.entries
+          .map((e) => {'order_item_id': e.key, 'rating': e.value})
+          .toList();
 
       final response = await OrderService.rateOrder(
         orderId: order.id,
         token: token,
         rating: result['rating'] as int,
-        comment: result['comment']?.toString(),
+        globalComment: result['global_comment']?.toString(),
+        items: itemsList.isNotEmpty ? itemsList : null,
       );
       if (mounted) {
         final alreadyRated = response['already_rated'] == true;

@@ -232,6 +232,7 @@ class GiftService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final list = data['data'] as List? ?? [];
+      print('🎁 [my-sent] raw first item: ${list.isNotEmpty ? list.first : "vide"}');
       return list.map((e) => SentGift.fromJson(e as Map<String, dynamic>)).toList();
     } else {
       final data = jsonDecode(response.body);

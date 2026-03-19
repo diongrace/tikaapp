@@ -310,7 +310,7 @@ class SentGift {
       shopName: json['shop_name'] ?? '',
       totalAmount: json['total_amount'] is num
           ? (json['total_amount'] as num).toInt()
-          : 0,
+          : int.tryParse(json['total_amount']?.toString() ?? '') ?? 0,
       createdAt: json['created_at'],
       requiresYangoOrder: json['requires_yango_order'] == true,
     );

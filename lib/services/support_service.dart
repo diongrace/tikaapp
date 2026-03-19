@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './utils/api_endpoint.dart';
@@ -25,13 +26,22 @@ class SupportService {
   // 1. GET /client/support - Liste des tickets
   // ============================================================
 
-  static Future<List<SupportTicket>> getTickets() async {
+  static Future<List<SupportTicket>> getTickets({
+    String? status,
+    String? type,
+    int perPage = 10,
+    int page = 1,
+  }) async {
     try {
       print('[Support] GET /client/support');
-      final response = await http.get(
-        Uri.parse(Endpoints.support),
-        headers: _headers,
-      );
+      final queryParams = <String, String>{
+        'per_page': perPage.toString(),
+        'page': page.toString(),
+        if (status != null) 'status': status,
+        if (type != null) 'type': type,
+      };
+      final uri = Uri.parse(Endpoints.support).replace(queryParameters: queryParams);
+      final response = await http.get(uri, headers: _headers);
       print('[Support] Status: ${response.statusCode}');
       print('[Support] Body: ${response.body}');
 
@@ -131,21 +141,44 @@ class SupportService {
     required String message,
     required String category,
     String priority = 'low',
+    List<File>? screenshots,
   }) async {
     try {
       print('[Support] POST /client/support');
       print('[Support] subject=$subject, category=$category, priority=$priority');
 
-      final response = await http.post(
-        Uri.parse(Endpoints.support),
-        headers: _headers,
-        body: jsonEncode({
-          'subject': subject,
-          'message': message,
-          'type': category,
-          'priority': priority,
-        }),
-      );
+      http.Response response;
+
+      if (screenshots != null && screenshots.isNotEmpty) {
+        // multipart/form-data avec screenshots
+        final request = http.MultipartRequest('POST', Uri.parse(Endpoints.support));
+        request.headers.addAll({
+          'Accept': 'application/json',
+          if (AuthService.authToken != null)
+            'Authorization': 'Bearer ${AuthService.authToken}',
+        });
+        request.fields['subject'] = subject;
+        request.fields['message'] = message;
+        request.fields['type'] = category;
+        request.fields['priority'] = priority;
+        for (final file in screenshots) {
+          request.files.add(await http.MultipartFile.fromPath('screenshots[]', file.path));
+        }
+        final streamed = await request.send();
+        response = await http.Response.fromStream(streamed);
+      } else {
+        // JSON simple sans screenshots
+        response = await http.post(
+          Uri.parse(Endpoints.support),
+          headers: _headers,
+          body: jsonEncode({
+            'subject': subject,
+            'message': message,
+            'type': category,
+            'priority': priority,
+          }),
+        );
+      }
       print('[Support] Status: ${response.statusCode}');
       print('[Support] Body: ${response.body}');
 

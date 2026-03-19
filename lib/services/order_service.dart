@@ -739,7 +739,11 @@ class OrderService {
   /// POST /client/orders/{id}/rate
   /// Statut requis: livree ou prete
   ///
-  /// Body: {rating: 1-5, comment?, delivery_rating?: 1-5, food_rating?: 1-5}
+  /// Body: {
+  ///   rating: 1-5,
+  ///   global_comment?,
+  ///   items?: [{order_item_id, rating (1-5), comment?}]
+  /// }
   static Future<Map<String, dynamic>> rateOrder({
     required int orderId,
     required String token,
@@ -747,15 +751,19 @@ class OrderService {
     String? comment,
     int? deliveryRating,
     int? foodRating,
+    List<Map<String, dynamic>>? items,
+    String? globalComment,
   }) async {
     final headers = Map<String, String>.from(_headers);
     headers['Authorization'] = 'Bearer $token';
 
-    final body = {
+    final body = <String, dynamic>{
       'rating': rating,
       if (comment != null && comment.isNotEmpty) 'comment': comment,
+      if (globalComment != null && globalComment.isNotEmpty) 'global_comment': globalComment,
       if (deliveryRating != null) 'delivery_rating': deliveryRating,
       if (foodRating != null) 'food_rating': foodRating,
+      if (items != null && items.isNotEmpty) 'items': items,
     };
 
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

@@ -45,6 +45,9 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
   bool _isLoading = false;
   String _paymentMode = 'especes';
 
+  // Zone de livraison sélectionnée (si le shop a des zones configurées)
+  DeliveryZone? _selectedZone;
+
   // Wave flow state
   bool _showWaveUpload = false;
   String? _pendingId;
@@ -144,6 +147,13 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
     }
     if (!_formKey.currentState!.validate()) return;
 
+    // Validate zone selection when shop has delivery zones
+    final zones = widget.currentShop?.deliveryZones?.where((z) => z.isActive).toList();
+    if (zones != null && zones.isNotEmpty && _selectedZone == null) {
+      _showDialog('Zone requise', 'Veuillez sélectionner une zone de livraison.');
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -155,7 +165,9 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
         recipientPhone: _recipientPhoneCtrl.text.trim(),
         items: _buildGiftItems(),
         paymentMethod: _paymentMode,
-        deliveryAddress: _addressCtrl.text.trim(),
+        deliveryAddress: _selectedZone != null
+            ? '${_selectedZone!.name} — ${_addressCtrl.text.trim()}'
+            : _addressCtrl.text.trim(),
         giftMessage: _messageCtrl.text.trim().isEmpty
             ? null
             : _messageCtrl.text.trim(),
@@ -663,12 +675,95 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
     ]),
   );
 
-  Widget _buildDeliverySection() => _sectionCard(
-    number: 4, title: 'Livraison & paiement', icon: FontAwesomeIcons.truck,
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _field(ctrl: _addressCtrl, label: 'Adresse de livraison',
-        hint: 'Ex: Cocody, Rue des Jardins, Abidjan'),
-      const SizedBox(height: 4),
+  Widget _buildDeliverySection() {
+    final zones = widget.currentShop?.deliveryZones
+        ?.where((z) => z.isActive)
+        .toList();
+    final hasZones = zones != null && zones.isNotEmpty;
+
+    return _sectionCard(
+      number: 4, title: 'Livraison & paiement', icon: FontAwesomeIcons.truck,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        if (hasZones) ...[
+          Row(children: [
+            const Icon(Icons.map_outlined, size: 16, color: Color(0xFF1C1C1E)),
+            const SizedBox(width: 6),
+            Text('Sélectionnez une zone de livraison', style: GoogleFonts.inriaSerif(
+              fontSize: 14, fontWeight: FontWeight.w700,
+              color: const Color(0xFF1C1C1E),
+            )),
+          ]),
+          const SizedBox(height: 8),
+          ...zones.map((zone) {
+            final sel = _selectedZone?.id == zone.id;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedZone = zone),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: sel ? _kPink.withOpacity(0.07) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: sel ? _kPink : Colors.grey.shade300,
+                    width: sel ? 2 : 1.2,
+                  ),
+                ),
+                child: Row(children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: 20, height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: sel ? _kPink : Colors.transparent,
+                      border: Border.all(
+                        color: sel ? _kPink : Colors.grey.shade400,
+                        width: 2,
+                      ),
+                    ),
+                    child: sel
+                        ? const Icon(Icons.check, color: Colors.white, size: 13)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(zone.name, style: GoogleFonts.inriaSerif(
+                        fontSize: 14, fontWeight: FontWeight.w700,
+                        color: sel ? _kPink : const Color(0xFF1C1C1E),
+                      )),
+                      if (zone.estimatedTime != null && zone.estimatedTime!.isNotEmpty)
+                        Text(zone.estimatedTime!, style: GoogleFonts.inriaSerif(
+                          fontSize: 12, color: Colors.grey.shade500,
+                        )),
+                    ],
+                  )),
+                  if (zone.deliveryFee > 0)
+                    Text(_fmt(zone.deliveryFee), style: GoogleFonts.inriaSerif(
+                      fontSize: 13, fontWeight: FontWeight.w800,
+                      color: sel ? _kPink : Colors.grey.shade700,
+                    ))
+                  else
+                    Text('Gratuit', style: GoogleFonts.inriaSerif(
+                      fontSize: 13, fontWeight: FontWeight.w700,
+                      color: Colors.green.shade600,
+                    )),
+                ]),
+              ),
+            );
+          }),
+          const SizedBox(height: 8),
+          _field(ctrl: _addressCtrl, label: 'Adresse complète',
+            hint: 'Adresse de livraison pour le bénéficiaire',
+            maxLines: 2),
+          const SizedBox(height: 4),
+        ] else ...[
+          _field(ctrl: _addressCtrl, label: 'Adresse de livraison',
+            hint: 'Ex: Cocody, Rue des Jardins, Abidjan'),
+          const SizedBox(height: 4),
+        ],
       Text('Mode de paiement', style: GoogleFonts.inriaSerif(
         fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF1C1C1E))),
       const SizedBox(height: 10),
@@ -689,7 +784,8 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
       const SizedBox(height: 14),
       _buildSummary(),
     ]),
-  );
+    );
+  }
 
   Widget _payCard(String mode, String label, Color color,
       {required Widget Function(bool selected) iconBuilder}) {

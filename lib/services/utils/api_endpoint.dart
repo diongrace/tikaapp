@@ -133,19 +133,19 @@ class Endpoints {
   static String supportStatus(int id) => '$baseUrl/client/support/$id/status';
 
   // Gifts — Commandes cadeaux (public, sans auth)
-  static const String gifts = '$baseUrl/gifts';
-  static const String giftsValidateWavePending = '$baseUrl/gifts/validate-wave-pending';
-  static const String giftsMySent = '$baseUrl/gifts/my-sent';
-  static const String giftsCancelPending = '$baseUrl/gifts/cancel-pending';
-  static String giftWaveProof(int id) => '$baseUrl/gifts/$id/wave-proof';
-  static String giftConfirmPayment(String token) => '$baseUrl/gifts/$token/confirm-payment';
-  static String giftTrack(String token) => '$baseUrl/gifts/$token/track';
-  static String giftConfirmYango(String token) => '$baseUrl/gifts/$token/confirm-yango';
-  static String giftCancel(int id) => '$baseUrl/gifts/$id/cancel';
+  static const String gifts = '$baseUrl/client/gifts';
+  static const String giftsValidateWavePending = '$baseUrl/client/gifts/validate-wave-pending';
+  static const String giftsMySent = '$baseUrl/client/gifts/my-sent';
+  static const String giftsCancelPending = '$baseUrl/client/gifts/cancel-pending';
+  static String giftWaveProof(int id) => '$baseUrl/client/gifts/$id/wave-proof';
+  static String giftConfirmPayment(String token) => '$baseUrl/client/gifts/$token/confirm-payment';
+  static String giftTrack(String token) => '$baseUrl/client/gifts/$token/track';
+  static String giftConfirmYango(String token) => '$baseUrl/client/gifts/$token/confirm-yango';
+  static String giftCancel(int id) => '$baseUrl/client/gifts/$id/cancel';
 
   // Gift Cards — Cartes d'achat (public, sans auth)
-  static const String giftCards = '$baseUrl/gift-cards';
-  static const String giftCardsValidate = '$baseUrl/gift-cards/validate';
-  static String giftCardTrack(String token) => '$baseUrl/gift-cards/track/$token';
+  static const String giftCards = '$baseUrl/client/gift-cards';
+  static const String giftCardsValidate = '$baseUrl/client/gift-cards/validate';
+  static String giftCardTrack(String token) => '$baseUrl/client/gift-cards/track/$token';
 
 }

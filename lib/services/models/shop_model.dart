@@ -417,19 +417,14 @@ class ShopTheme {
   /// Obtient la couleur secondaire comme Color Flutter
   Color get secondary => hexToColor(secondaryColor);
 
-  /// Couleur de fin de dégradé — dérive automatiquement du primary si le
-  /// secondary n'est pas configuré par la boutique (valeur par défaut violette).
-  /// Utiliser ce getter dans tous les LinearGradient au lieu de [secondary].
+  /// Couleur de fin de dégradé — dérive toujours du primary pour ne jamais
+  /// mélanger une couleur violette par défaut avec la couleur personnalisée.
   Color get gradientEnd {
-    if (secondaryColor == '#CE93D8') {
-      // secondary non configuré → teinte plus sombre du primary
-      final hsl = HSLColor.fromColor(primary);
-      return hsl
-          .withLightness((hsl.lightness - 0.12).clamp(0.0, 1.0))
-          .withSaturation((hsl.saturation + 0.05).clamp(0.0, 1.0))
-          .toColor();
-    }
-    return secondary;
+    final hsl = HSLColor.fromColor(primary);
+    return hsl
+        .withLightness((hsl.lightness - 0.12).clamp(0.0, 1.0))
+        .withSaturation((hsl.saturation + 0.05).clamp(0.0, 1.0))
+        .toColor();
   }
 
   /// Obtient la couleur d'accent comme Color Flutter

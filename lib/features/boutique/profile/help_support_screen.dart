@@ -215,6 +215,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           Container(
                             width: 42,
                             height: 42,
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF8936A8), Color(0xFFE040A0)],

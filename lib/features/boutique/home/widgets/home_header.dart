@@ -196,6 +196,21 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                     ),
                   ),
 
+                // Gradient overlay haut → scrim derrière les boutons
+                Positioned(
+                  top: 0, left: 0, right: 0,
+                  child: Container(
+                    height: 90,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.black.withOpacity(0.45), Colors.transparent],
+                      ),
+                    ),
+                  ),
+                ),
+
                 // Gradient overlay bas → transition douce
                 Positioned(
                   bottom: 0, left: 0, right: 0,
@@ -285,15 +300,15 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
           shape: BoxShape.circle,
           color: activeColor != null
               ? activeColor.withOpacity(0.85)
-              : Colors.white.withOpacity(0.22),
+              : Colors.white.withOpacity(0.50),
           border: Border.all(
-            color: Colors.white.withOpacity(0.55),
-            width: 1.2,
+            color: Colors.white.withOpacity(0.85),
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.18),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.35),
+              blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
@@ -330,15 +345,15 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.22),
+                    color: Colors.white.withOpacity(0.50),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.55),
-                      width: 1.2,
+                      color: Colors.white.withOpacity(0.85),
+                      width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.18),
-                        blurRadius: 8,
+                        color: Colors.black.withOpacity(0.35),
+                        blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
                     ],

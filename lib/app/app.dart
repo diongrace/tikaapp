@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_router.dart';
+import '../services/push_notification_service.dart';
 
 class TikaApp extends StatefulWidget {
   const TikaApp({super.key});
@@ -56,6 +57,7 @@ class _TikaAppState extends State<TikaApp> with WidgetsBindingObserver {
         ),
         fontFamily: GoogleFonts.inriaSerif().fontFamily,
       ),
+      navigatorKey: PushNotificationService.navigatorKey,
       initialRoute: RouteNames.splash,
       onGenerateRoute: onGenerateRoute,
       builder: (context, child) => MediaQuery(

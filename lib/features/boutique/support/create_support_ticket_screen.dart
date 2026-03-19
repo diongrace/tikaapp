@@ -19,6 +19,32 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
   bool _isSubmitting = false;
   final List<XFile> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
+  String _selectedType = 'other';
+  List<String> _types = ['bug', 'question', 'suggestion', 'other'];
+  Map<String, String> _typeLabels = {
+    'bug': 'Bug / Erreur',
+    'question': 'Question',
+    'suggestion': 'Suggestion',
+    'other': 'Autre',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOptions();
+  }
+
+  Future<void> _loadOptions() async {
+    try {
+      final options = await SupportService.getOptions();
+      if (mounted && options.categories.isNotEmpty) {
+        setState(() {
+          _types = options.categories;
+          _typeLabels = options.categoryLabels;
+        });
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -59,8 +85,9 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
       await SupportService.createTicket(
         subject: subject,
         message: message,
-        category: 'other',
+        category: _selectedType,
         priority: 'low',
+        screenshots: _selectedImages.map((x) => File(x.path)).toList(),
       );
 
       if (mounted) {
@@ -156,6 +183,73 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
+                  // Section 0 : Type de demande
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('🗂️', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Type de demande',
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _types.map((type) {
+                            final label = _typeLabels[type] ?? type;
+                            final isSelected = _selectedType == type;
+                            return GestureDetector(
+                              onTap: () => setState(() => _selectedType = type),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFF8936A8) : const Color(0xFFF8F8F8),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF8936A8) : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Text(
+                                  label,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    color: isSelected ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
                   // Section 1 : Sujet court
                   Container(
                     padding: const EdgeInsets.all(18),
