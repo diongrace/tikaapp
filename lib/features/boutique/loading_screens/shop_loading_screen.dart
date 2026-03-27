@@ -39,14 +39,15 @@ class _ShopLoadingScreenState extends State<ShopLoadingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
+      body: Align(
+        alignment: const Alignment(0, -0.12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Logo TIKA
             Image.asset(
               'lib/core/assets/logo_tika.png',
-              width: 140,
+              width: 160,
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 40),

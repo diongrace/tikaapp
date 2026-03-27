@@ -84,7 +84,7 @@ class FormFieldWidget extends StatelessWidget {
               ),
               prefixIcon: Icon(icon, color: Colors.grey.shade600, size: 22),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color(0xFFF8F9FA),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 16,

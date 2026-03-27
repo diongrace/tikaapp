@@ -577,7 +577,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
         title: Column(
           children: [
             Text(
-              'Carte de fidelite',
+              'Carte de fidélité',
               style: GoogleFonts.inriaSerif(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -603,15 +603,15 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E293B), Color(0xFF334155)],
+                gradient: LinearGradient(
+                  colors: [primaryColor, shopTheme.gradientEnd],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1E293B).withOpacity(0.3),
+                    color: primaryColor.withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -640,7 +640,7 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Programme Fidelite',
+                              'Programme Fidélité',
                               style: GoogleFonts.inriaSerif(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -665,8 +665,8 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _buildBadge('Points cumules', FontAwesomeIcons.solidStar),
-                      _buildBadge('Reductions', FontAwesomeIcons.percent),
+                      _buildBadge('Points cumulés', FontAwesomeIcons.solidStar),
+                      _buildBadge('Réductions', FontAwesomeIcons.percent),
                       _buildBadge('Offres VIP', Icons.diamond_rounded),
                     ],
                   ),
@@ -711,21 +711,21 @@ class _CreateLoyaltyCardPageState extends State<CreateLoyaltyCardPage> {
                   _buildAdvantageItem(
                     FontAwesomeIcons.solidStar,
                     'Cumulez des points',
-                    'Gagnez des points a chaque commande',
+                    'Gagnez des points à chaque commande',
                     const Color(0xFFFF9800),
                   ),
                   const SizedBox(height: 12),
                   _buildAdvantageItem(
                     FontAwesomeIcons.gift,
-                    'Debloquez des recompenses',
-                    'Livraison gratuite, reductions, produits offerts',
+                    'Débloquez des récompenses',
+                    'Livraison gratuite, réductions, produits offerts',
                     const Color(0xFF4CAF50),
                   ),
                   const SizedBox(height: 12),
                   _buildAdvantageItem(
                     FontAwesomeIcons.arrowTrendUp,
                     'Montez de niveau',
-                    'Bronze, Argent, Or, Platine',
+                    'Bronze, Silver, Gold, Platinum',
                     const Color(0xFF2196F3),
                   ),
                   const SizedBox(height: 12),

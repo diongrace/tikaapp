@@ -1229,19 +1229,19 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                 // -- Header: icône + Numéro + Status badge --
                 Row(
                   children: [
-                    // Icône statut neutre
+                    // Icône statut colorée
                     Container(
                       width: 42,
                       height: 42,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: statusColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         statusInfo['icon'],
                         size: 20,
-                        color: Colors.grey.shade800,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1275,34 +1275,20 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                         ],
                       ),
                     ),
-                    // Badge statut — seul élément coloré
+                    // Badge statut — fond solide + texte blanc
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.10),
+                        color: statusColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            statusInfo['label'],
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: statusColor,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        statusInfo['label'],
+                        style: GoogleFonts.inriaSerif(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],

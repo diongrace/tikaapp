@@ -790,7 +790,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF2F3F5),
       body: SafeArea(
         child: Column(
           children: [
@@ -963,7 +963,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: isActive ? _primaryColor : Colors.grey.shade200,
+            color: isActive ? _primaryColor : Colors.grey.shade300,
             shape: BoxShape.circle,
             boxShadow: isActive
                 ? [
@@ -983,7 +983,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
                     style: GoogleFonts.inriaSerif(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isActive ? Colors.white : Colors.grey.shade800,
+                      color: isActive ? Colors.white : Colors.grey.shade600,
                     ),
                   ),
           ),
@@ -1429,7 +1429,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
               duration: const Duration(milliseconds: 200),
               child: isSelected
                   ? FaIcon(FontAwesomeIcons.solidCircleCheck, color: color, size: 26, key: const ValueKey('checked'))
-                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade400, size: 26, key: const ValueKey('unchecked')),
             ),
           ],
         ),
@@ -1464,7 +1464,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
           color: isSelected ? null : Colors.white,
           border: Border.all(color: isSelected ? _primaryColor : Colors.grey.shade200, width: isSelected ? 2 : 1),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: isSelected ? _primaryColor.withOpacity(0.15) : Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: isSelected ? _primaryColor.withOpacity(0.15) : Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
@@ -1492,7 +1492,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
               duration: const Duration(milliseconds: 200),
               child: isSelected
                   ? FaIcon(FontAwesomeIcons.solidCircleCheck, color: _primaryColor, size: 26, key: const ValueKey('checked'))
-                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade400, size: 26, key: const ValueKey('unchecked')),
             ),
           ],
         ),
@@ -1658,7 +1658,7 @@ class _CommandeScreenState extends State<CommandeScreen> {
               duration: const Duration(milliseconds: 200),
               child: isSelected
                   ? FaIcon(FontAwesomeIcons.solidCircleCheck, color: _primaryColor, size: 26, key: const ValueKey('checked'))
-                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade300, size: 26, key: const ValueKey('unchecked')),
+                  : FaIcon(FontAwesomeIcons.circle, color: Colors.grey.shade400, size: 26, key: const ValueKey('unchecked')),
             ),
           ],
         ),

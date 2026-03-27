@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../notifications/notifications_list_screen.dart';
-import '../../gift/gift_bottom_sheet.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../services/utils/api_endpoint.dart';
@@ -21,6 +20,7 @@ class HomeHeader extends StatefulWidget {
   final VoidCallback? onHomeTap;
   final String? bannerUrl;
   final Shop? currentShop;
+  final bool showButtons;
 
   const HomeHeader({
     super.key,
@@ -30,6 +30,7 @@ class HomeHeader extends StatefulWidget {
     this.onHomeTap,
     this.bannerUrl,
     this.currentShop,
+    this.showButtons = true,
   });
 
   @override
@@ -146,7 +147,7 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
         ClipRRect(
           borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
           child: Container(
-            height: 210,
+            height: double.infinity,
             width: double.infinity,
             child: Stack(
               children: [
@@ -231,7 +232,7 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
         ),
 
         // ── Boutons glass — style unifié ─────────────────────
-        SafeArea(
+        if (widget.showButtons) SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
               Responsive.horizontalPadding(context), 6,
@@ -260,11 +261,6 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                 // Droite : 🎁 + ❤️ + 🔔
                 Row(
                   children: [
-                    _buildGlassBtn(
-                      icon: FontAwesomeIcons.gift,
-                      onPressed: () => GiftBottomSheet.show(context, currentShop: widget.currentShop),
-                    ),
-                    const SizedBox(width: 8),
                     _buildGlassBtn(
                       icon: widget.isFavorite
                           ? FontAwesomeIcons.solidHeart
@@ -300,16 +296,16 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
           shape: BoxShape.circle,
           color: activeColor != null
               ? activeColor.withOpacity(0.85)
-              : Colors.white.withOpacity(0.50),
+              : Colors.black.withOpacity(0.35),
           border: Border.all(
-            color: Colors.white.withOpacity(0.85),
-            width: 1.5,
+            color: Colors.white.withOpacity(0.40),
+            width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.35),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: Colors.black.withOpacity(0.30),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -345,16 +341,16 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.50),
+                    color: Colors.black.withOpacity(0.35),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.85),
-                      width: 1.5,
+                      color: Colors.white.withOpacity(0.40),
+                      width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.35),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                        color: Colors.black.withOpacity(0.30),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),

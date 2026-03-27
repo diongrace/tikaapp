@@ -1530,20 +1530,20 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                   children: [
                     // Logo de la boutique
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(11),
+                        borderRadius: BorderRadius.circular(13),
                         border: Border.all(
-                          color: primaryColor.withOpacity(0.15),
+                          color: primaryColor.withOpacity(0.20),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: primaryColor.withOpacity(0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            color: primaryColor.withOpacity(0.12),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -1615,7 +1615,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.12),
+                        color: statusColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -1623,16 +1623,16 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                         children: [
                           Icon(
                             _getStatusIcon(order.status),
-                            size: 16,
-                            color: statusColor,
+                            size: 14,
+                            color: Colors.white,
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           Text(
                             statusInfo['label'],
                             style: GoogleFonts.inriaSerif(
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: statusColor,
+                              color: Colors.white,
                             ),
                           ),
                         ],
@@ -1701,9 +1701,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                     Text(
                       '${fmtAmount(order.totalAmount)} FCFA',
                       style: GoogleFonts.inriaSerif(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: const Color.fromARGB(255, 49, 49, 49),
+                        color: const Color(0xFF670C88),
                       ),
                     ),
                   ],
@@ -2014,7 +2014,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                       width: 28,
                                       height: 28,
                                       decoration: BoxDecoration(
-                                        color: statusColor.withOpacity(0.12),
+                                        color: statusColor,
                                         borderRadius: BorderRadius.circular(7),
                                       ),
                                       child: Center(
@@ -2459,7 +2459,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey[300]!, width: 1.5),
+                                color: Colors.grey[100],
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Center(
@@ -2468,7 +2468,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                   style: GoogleFonts.inriaSerif(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.grey[900],
+                                    color: Colors.grey[600],
                                   ),
                                 ),
                               ),
@@ -2591,9 +2591,9 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
+            color: color.withOpacity(0.15),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: color.withOpacity(0.2)),
+            border: Border.all(color: color.withOpacity(0.35)),
           ),
           child: Column(
             children: [
@@ -2603,7 +2603,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                 label,
                 style: GoogleFonts.inriaSerif(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: color,
                 ),
               ),
@@ -2804,6 +2804,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
             Container(
               width: 120,
               height: 120,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: primaryColor.withOpacity(0.08),
                 shape: BoxShape.circle,

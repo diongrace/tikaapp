@@ -354,7 +354,11 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                     children: [
                       // Carte visuelle
                       _buildCardVisual(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
+
+                      // Progression tier
+                      _buildTierProgress(),
+                      const SizedBox(height: 14),
 
                       // QR Code
                       _buildQRCodeSection(),
@@ -549,7 +553,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _card.cardNumber,
+                            _formatCardNumber(_card.cardNumber),
                             style: GoogleFonts.robotoMono(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -627,6 +631,120 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Formatage numéro de carte par groupes de 4 ───────────────
+  String _formatCardNumber(String number) {
+    final digits = number.replaceAll(RegExp(r'\s+'), '');
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      if (i > 0 && i % 4 == 0) buffer.write(' ');
+      buffer.write(digits[i]);
+    }
+    return buffer.toString();
+  }
+
+  // ── Barre de progression vers le prochain tier ───────────────
+  Widget _buildTierProgress() {
+    const tiers = ['bronze', 'silver', 'gold', 'platinum'];
+    const thresholds = {
+      'bronze': 0,
+      'silver': 100,
+      'gold': 300,
+      'platinum': 700,
+    };
+    const tierLabels = {
+      'bronze': 'Bronze',
+      'silver': 'Silver',
+      'gold': 'Gold',
+      'platinum': 'Platinum',
+    };
+
+    final currentTierIndex = tiers.indexOf(_card.tier);
+    final isMaxTier = currentTierIndex == tiers.length - 1;
+
+    if (isMaxTier) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36, height: 36,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: _cardGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Niveau maximum atteint — Félicitations !',
+                style: GoogleFonts.inriaSerif(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF0D0D26)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final nextTier = tiers[currentTierIndex + 1];
+    final currentThreshold = thresholds[_card.tier]!;
+    final nextThreshold = thresholds[nextTier]!;
+    final points = _card.points;
+    final pointsInRange = (points - currentThreshold).clamp(0, nextThreshold - currentThreshold);
+    final rangeSize = nextThreshold - currentThreshold;
+    final progress = pointsInRange / rangeSize;
+    final pointsNeeded = (nextThreshold - points).clamp(0, rangeSize);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Progression vers ${tierLabels[nextTier]}',
+                style: GoogleFonts.inriaSerif(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF0D0D26)),
+              ),
+              Text(
+                '${(progress * 100).round()}%',
+                style: GoogleFonts.inriaSerif(fontSize: 13, fontWeight: FontWeight.w700, color: _cardGradient.first),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: _cardGradient.first.withOpacity(0.12),
+              valueColor: AlwaysStoppedAnimation<Color>(_cardGradient.first),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            pointsNeeded > 0
+                ? '$pointsNeeded points manquants pour atteindre ${tierLabels[nextTier]}'
+                : 'Niveau ${tierLabels[nextTier]} atteint !',
+            style: GoogleFonts.inriaSerif(fontSize: 12, color: const Color(0xFF6C7489)),
+          ),
+        ],
       ),
     );
   }

@@ -715,9 +715,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ],
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       Divider(height: 1, color: Colors.grey.shade100),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
 
                       // ── Prix ─────────────────────────────────────────────
                       if (price != null) ...[
@@ -866,7 +866,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       height: 38,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: _quantity > 1 ? _primaryColor.withOpacity(0.08) : Colors.transparent,
+                                        border: Border.all(
+                                          color: _quantity > 1 ? _primaryColor : Colors.grey.shade300,
+                                          width: 1.5,
+                                        ),
                                       ),
                                       alignment: Alignment.center,
                                       child: FaIcon(
@@ -1013,9 +1016,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 20,
-                      offset: const Offset(0, -6),
+                      color: Colors.black.withOpacity(0.13),
+                      blurRadius: 24,
+                      offset: const Offset(0, -4),
                       spreadRadius: 0,
                     ),
                   ],

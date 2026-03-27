@@ -87,51 +87,39 @@ class LoyaltyCardListItem extends StatelessWidget {
             color: Colors.black.withOpacity(0.05),
             blurRadius: 8, offset: const Offset(0, 2))],
         ),
-        child: Row(children: [
-          // Barre accent gauche
-          Container(
-            width: 5, height: 72,
-            decoration: BoxDecoration(
-              color: _accent,
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
-            ),
-          ),
-          const SizedBox(width: 14),
-          // Logo
-          _buildLogo(),
-          const SizedBox(width: 14),
-          // Infos
-          Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(card.shopName,
-                style: GoogleFonts.inriaSerif(
-                  fontSize: 14, fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1C1C1E)),
-                maxLines: 1, overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 3),
-              Text(
-                '${card.points} pt${card.points > 1 ? 's' : ''}',
-                style: GoogleFonts.inriaSerif(
-                  fontSize: 12, color: Colors.grey.shade500)),
-            ],
-          )),
-          // Tier badge — couleur fixe selon le niveau
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: _tierColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(card.tierLabel,
-              style: GoogleFonts.inriaSerif(
-                fontSize: 10, fontWeight: FontWeight.w800, color: _tierColor)),
-          ),
-          const SizedBox(width: 8),
-          Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400, size: 20),
-          const SizedBox(width: 12),
-        ]),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(children: [
+            // Logo
+            _buildLogo(),
+            const SizedBox(width: 14),
+            // Infos
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(card.shopName,
+                  style: GoogleFonts.inriaSerif(
+                    fontSize: 14, fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1C1C1E)),
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Row(children: [
+                  Container(width: 8, height: 8,
+                    decoration: BoxDecoration(color: _tierColor, shape: BoxShape.circle)),
+                  const SizedBox(width: 5),
+                  Text(card.tierLabel,
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 12, fontWeight: FontWeight.w600, color: _tierColor)),
+                  const SizedBox(width: 8),
+                  Text('· ${card.points} pt${card.points > 1 ? 's' : ''}',
+                    style: GoogleFonts.inriaSerif(
+                      fontSize: 12, color: Colors.grey.shade500)),
+                ]),
+              ],
+            )),
+            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300, size: 20),
+          ]),
+        ),
       ),
     );
   }

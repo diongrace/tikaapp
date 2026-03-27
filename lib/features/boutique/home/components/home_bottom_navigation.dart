@@ -7,6 +7,12 @@ import '../../panier/panier_screen.dart';
 import '../../profile/profile_screen.dart';
 import '../../favorites/favorites_boutiques_screen.dart';
 import '../../../../core/services/boutique_theme_provider.dart';
+import '../../commande/orders_list_api_page.dart';
+import '../../gift/gift_bottom_sheet.dart';
+import '../../loyalty/create_loyalty_card_page.dart';
+import '../../loyalty/loyalty_card_page.dart';
+import '../../../../services/loyalty_service.dart';
+import '../../../../services/auth_service.dart';
 
 /// Navbar flottante pill — panier central gradient, icônes outlined/filled
 /// StatefulWidget : gère CartManager et animation badge en interne.
@@ -117,8 +123,8 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
               icon: FontAwesomeIcons.heart, iconActive: FontAwesomeIcons.solidHeart,
               label: 'Favoris', index: 3),
             _navItem(context, shopTheme: shopTheme,
-              icon: FontAwesomeIcons.user, iconActive: FontAwesomeIcons.solidUser,
-              label: 'Profil', index: 5),
+              icon: FontAwesomeIcons.bars, iconActive: FontAwesomeIcons.bars,
+              label: 'Plus', index: 5),
           ],
         ),
       ),
@@ -297,17 +303,185 @@ class _HomeBottomNavigationState extends State<HomeBottomNavigation>
             )));
         }
         break;
-      case 5: // Profil
-        if (widget.selectedIndex != 5) {
-          Navigator.push(context,
-            MaterialPageRoute(builder: (_) => BoutiqueThemeProvider(
-              shop: widget.currentShop,
-              child: const ProfileScreen(),
-            )));
-        }
+      case 5: // Profil → bottom sheet actions
+        _showActionsSheet(context);
         break;
       default:
         widget.onIndexChanged?.call(index);
+    }
+  }
+
+  void _showActionsSheet(BuildContext context) {
+    final shopTheme = _shopTheme;
+    final shop = widget.currentShop;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(context).padding.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Pill handle
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            _sheetItem(
+              context: context,
+              icon: FontAwesomeIcons.gift,
+              color: const Color(0xFFEC4899),
+              label: 'Offrir un cadeau',
+              subtitle: 'Envoyer un produit en cadeau',
+              onTap: () {
+                Navigator.pop(context);
+                GiftBottomSheet.show(context, currentShop: shop);
+              },
+            ),
+            const SizedBox(height: 12),
+            _sheetItem(
+              context: context,
+              icon: FontAwesomeIcons.receipt,
+              color: const Color(0xFF3B82F6),
+              label: 'Mes commandes',
+              subtitle: 'Suivi de vos commandes',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const OrdersListApiPage()));
+              },
+            ),
+            const SizedBox(height: 12),
+            _sheetItem(
+              context: context,
+              icon: FontAwesomeIcons.idCard,
+              color: const Color(0xFFF59E0B),
+              label: 'Carte fidélité',
+              subtitle: 'Vos points et récompenses',
+              onTap: () {
+                Navigator.pop(context);
+                if (shop != null) _openLoyalty(context, shop);
+              },
+            ),
+            const SizedBox(height: 12),
+            _sheetItem(
+              context: context,
+              icon: FontAwesomeIcons.solidUser,
+              color: shopTheme.primary,
+              label: 'Mon profil',
+              subtitle: 'Informations personnelles',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => BoutiqueThemeProvider(
+                    shop: shop,
+                    child: const ProfileScreen(),
+                  )));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetItem({
+    required BuildContext context,
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.15)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42, height: 42,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(child: FaIcon(icon, color: Colors.white, size: 18)),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: GoogleFonts.inriaSerif(
+                    fontSize: 14, fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0D0D26),
+                  )),
+                  Text(subtitle, style: GoogleFonts.inriaSerif(
+                    fontSize: 12, color: const Color(0xFF6C7489),
+                  )),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: color, size: 22),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openLoyalty(BuildContext ctx, Shop shop) async {
+    try {
+      await AuthService.ensureToken();
+      final card = await LoyaltyService.getCardForShop(shop.id);
+      if (!ctx.mounted) return;
+
+      if (card != null) {
+        final deleted = await Navigator.of(ctx).push<bool>(
+          MaterialPageRoute(builder: (_) => LoyaltyCardPage(loyaltyCard: card)),
+        );
+        if (deleted == true && ctx.mounted) {
+          await Navigator.of(ctx).push(MaterialPageRoute(
+            builder: (_) => CreateLoyaltyCardPage(
+              shopId: shop.id,
+              boutiqueName: shop.name,
+              shop: shop,
+              cardWasDeleted: true,
+            ),
+          ));
+        }
+      } else {
+        await Navigator.of(ctx).push(MaterialPageRoute(
+          builder: (_) => CreateLoyaltyCardPage(
+            shopId: shop.id,
+            boutiqueName: shop.name,
+            shop: shop,
+          ),
+        ));
+      }
+    } catch (_) {
+      if (!ctx.mounted) return;
+      await Navigator.of(ctx).push(MaterialPageRoute(
+        builder: (_) => CreateLoyaltyCardPage(
+          shopId: shop.id,
+          boutiqueName: shop.name,
+          shop: shop,
+        ),
+      ));
     }
   }
 

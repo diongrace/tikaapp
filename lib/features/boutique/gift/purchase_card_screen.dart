@@ -15,12 +15,11 @@ class PurchaseCardScreen extends StatefulWidget {
   const PurchaseCardScreen({super.key, this.currentShop});
 
   static Future<void> show(BuildContext context, {dynamic currentShop}) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5),
-      builder: (_) => PurchaseCardScreen(currentShop: currentShop),
+    return Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PurchaseCardScreen(currentShop: currentShop),
+      ),
     );
   }
 
@@ -906,32 +905,17 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenH = MediaQuery.of(context).size.height;
-    return Container(
-      height: screenH * 0.88,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF2F2F7),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(children: [
-        // Handle
-        Container(
-          width: 40, height: 4,
-          margin: const EdgeInsets.only(top: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(2)),
-        ),
-
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
+      body: Column(children: [
         // Header purple
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [_kPurple, _kPurpleLight],
               begin: Alignment.centerLeft, end: Alignment.centerRight),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+          padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 10, 16, 16),
           child: Column(children: [
             Row(children: [
               GestureDetector(
@@ -942,7 +926,7 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(10)),
-                  child: const FaIcon(FontAwesomeIcons.xmark, color: Colors.white, size: 20),
+                  child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 18),
                 ),
               ),
               const SizedBox(width: 12),
@@ -973,4 +957,5 @@ class _PurchaseCardScreenState extends State<PurchaseCardScreen> {
       ]),
     );
   }
+
 }

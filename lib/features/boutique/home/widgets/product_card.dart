@@ -79,9 +79,9 @@ class _ProductCardState extends State<ProductCard> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.07),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: Colors.black.withOpacity(0.09),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -153,27 +153,23 @@ class _ProductCardState extends State<ProductCard> {
                           ),
                         ),
 
-                      // Bouton + blanc (bas droite)
+                      // Bouton + couleur boutique (bas droite)
                       if (!outOfStock)
                         Positioned(
-                          bottom: 10,
-                          right: 10,
+                          bottom: 14,
+                          right: 14,
                           child: GestureDetector(
                             onTap: widget.onAddToCart ?? widget.onTap,
                             child: Container(
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: shopTheme.primary,
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.grey.shade300,
-                                  width: 1.5,
-                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.20),
-                                    blurRadius: 12,
+                                    color: shopTheme.primary.withOpacity(0.40),
+                                    blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
@@ -182,7 +178,7 @@ class _ProductCardState extends State<ProductCard> {
                               child: const FaIcon(
                                 FontAwesomeIcons.plus,
                                 size: 16,
-                                color: Color(0xFF1C1C1E),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -194,7 +190,7 @@ class _ProductCardState extends State<ProductCard> {
 
             // ── Infos texte libres sous le cadre ──────────────────
             Padding(
-              padding: const EdgeInsets.only(top: 8, left: 2, right: 2),
+              padding: const EdgeInsets.only(top: 8, left: 4, right: 4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -250,6 +246,33 @@ class _ProductCardState extends State<ProductCard> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+
+                  // ⭐ Note
+                  Builder(builder: (_) {
+                    final double? rating = (p['average_rating'] as num?)?.toDouble();
+                    final int ratingCount = (p['rating_count'] as num?)?.toInt() ?? 0;
+                    if (rating == null || rating <= 0) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Row(
+                        children: [
+                          const FaIcon(FontAwesomeIcons.solidStar, size: 10, color: Color(0xFFF59E0B)),
+                          const SizedBox(width: 3),
+                          Text(
+                            rating.toStringAsFixed(1),
+                            style: GoogleFonts.inriaSerif(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF1C1C1E)),
+                          ),
+                          if (ratingCount > 0) ...[
+                            const SizedBox(width: 2),
+                            Text(
+                              '($ratingCount)',
+                              style: GoogleFonts.inriaSerif(fontSize: 10, color: Colors.grey.shade500),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
 
                   // Description / poids
                   if (description != null && description.isNotEmpty) ...[

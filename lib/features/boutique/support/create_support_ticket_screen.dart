@@ -411,11 +411,13 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              '(pas obligatoire)',
-                              style: GoogleFonts.inriaSerif(
-                                fontSize: 14,
-                                color: Colors.grey.shade900,
+                            Flexible(
+                              child: Text(
+                                '(pas obligatoire)',
+                                style: GoogleFonts.inriaSerif(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade900,
+                                ),
                               ),
                             ),
                           ],

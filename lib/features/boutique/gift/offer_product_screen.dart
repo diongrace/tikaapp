@@ -15,12 +15,11 @@ class OfferProductScreen extends StatefulWidget {
   const OfferProductScreen({super.key, this.currentShop});
 
   static Future<void> show(BuildContext context, {Shop? currentShop}) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5),
-      builder: (_) => OfferProductScreen(currentShop: currentShop),
+    return Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OfferProductScreen(currentShop: currentShop),
+      ),
     );
   }
 
@@ -443,7 +442,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
           GestureDetector(
             onTap: () {
               Navigator.pop(context); // dialog
-              Navigator.pop(context); // bottom sheet
+              Navigator.pop(context); // page
               _cart.clear();
             },
             child: Container(
@@ -884,7 +883,6 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
           gradient: LinearGradient(
             colors: [Color(0xFF1A73E8), Color(0xFF0D47A1)],
             begin: Alignment.centerLeft, end: Alignment.centerRight),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 18),
         child: Row(children: [
@@ -1042,35 +1040,19 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenH = MediaQuery.of(context).size.height;
-    return Container(
-      height: screenH * 0.92,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF2F2F7),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: _showWaveUpload ? _buildWaveUploadView() : Column(children: [
-              // ── Handle ─────────────────────────────────────────
-              Container(
-                width: 40, height: 4,
-                margin: const EdgeInsets.only(top: 12, bottom: 0),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
+      body: _showWaveUpload ? _buildWaveUploadView() : Column(children: [
               // ── Header gradient ─────────────────────────────────
               Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [_kPink, _kPinkLight],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 18),
+                padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 10, 16, 18),
                 child: Row(children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -1081,7 +1063,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const FaIcon(FontAwesomeIcons.xmark, color: Colors.white, size: 20),
+                      child: const FaIcon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 18),
                     ),
                   ),
                   const SizedBox(width: 12),

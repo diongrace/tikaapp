@@ -48,7 +48,15 @@ class CategoryFilterWidget extends StatelessWidget {
         Expanded(
           child: SizedBox(
             height: 38,
-            child: ListView.separated(
+            child: ShaderMask(
+              shaderCallback: (bounds) => LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [Colors.white, Colors.white, Colors.transparent],
+                stops: const [0.0, 0.82, 1.0],
+              ).createShader(bounds),
+              blendMode: BlendMode.dstIn,
+              child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.zero,
               itemCount: categories.length,
@@ -112,6 +120,7 @@ class CategoryFilterWidget extends StatelessWidget {
                   ),
                 );
               },
+            ),
             ),
           ),
         ),

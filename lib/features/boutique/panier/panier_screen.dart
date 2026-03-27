@@ -22,21 +22,14 @@ class PanierScreen extends StatefulWidget {
 
   const PanierScreen({super.key, required this.shopId, this.shop});
 
-  /// Affiche le panier comme une modal bottom sheet
+  /// Ouvre le panier comme une page pleine
   static Future<bool?> show(BuildContext context, {required int shopId, Shop? shop}) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useSafeArea: true,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.95,
-          child: BoutiqueThemeProvider(
-            shop: shop,
-            child: PanierScreen(shopId: shopId, shop: shop),
-          ),
+    return Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BoutiqueThemeProvider(
+          shop: shop,
+          child: PanierScreen(shopId: shopId, shop: shop),
         ),
       ),
     );
@@ -340,16 +333,6 @@ class _PanierScreenState extends State<PanierScreen> {
           SafeArea(
             child: Column(
               children: [
-                // Drag handle (modal indicator)
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(top: 10, bottom: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
                 // Header premium
                 Container(
                   padding: EdgeInsets.symmetric(
@@ -551,7 +534,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                       width: 4,
                                       height: 22,
                                       decoration: BoxDecoration(
-                                        color: Colors.grey.shade300,
+                                        color: _primaryColor.withOpacity(0.4),
                                         borderRadius: BorderRadius.circular(2),
                                       ),
                                     ),
@@ -592,11 +575,11 @@ class _PanierScreenState extends State<PanierScreen> {
                                           ),
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(10),
-                                            borderSide: BorderSide(color: Colors.grey.shade900),
+                                            borderSide: BorderSide(color: Colors.grey.shade300),
                                           ),
                                           enabledBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(10),
-                                            borderSide: BorderSide(color: Colors.grey.shade900),
+                                            borderSide: BorderSide(color: Colors.grey.shade300),
                                           ),
                                           focusedBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(10),
@@ -727,7 +710,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                       width: 4,
                                       height: 22,
                                       decoration: BoxDecoration(
-                                        color: Colors.grey.shade300,
+                                        color: _primaryColor.withOpacity(0.4),
                                         borderRadius: BorderRadius.circular(2),
                                       ),
                                     ),
@@ -1036,7 +1019,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                       ),
                                     ),
                                     Text(
-                                      '$total FCFA',
+                                      '${fmtAmount(total)} FCFA',
                                       style: GoogleFonts.inriaSerif(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
@@ -1070,11 +1053,11 @@ class _PanierScreenState extends State<PanierScreen> {
                                     children: [
                                       Text(
                                         'Carte cadeau (${_appliedGiftCard!.code})',
-                                        style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF6B21A8)),
+                                        style: GoogleFonts.inriaSerif(fontSize: 14, color: _primaryColor),
                                       ),
                                       Text(
                                         '-$_giftCardDiscount FCFA',
-                                        style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF6B21A8)),
+                                        style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: _primaryColor),
                                       ),
                                     ],
                                   ),
@@ -1254,12 +1237,12 @@ class _PanierScreenState extends State<PanierScreen> {
             Container(
               width: 4, height: 22,
               decoration: BoxDecoration(
-                color: const Color(0xFF6B21A8).withOpacity(0.5),
+                color: _primaryColor.withOpacity(0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(width: 10),
-            const FaIcon(FontAwesomeIcons.creditCard, color: Color(0xFF6B21A8), size: 17),
+            FaIcon(FontAwesomeIcons.creditCard, color: _primaryColor, size: 17),
             const SizedBox(width: 8),
             Text('Carte cadeau', style: GoogleFonts.inriaSerif(
               fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF1A1A2E))),
@@ -1292,7 +1275,7 @@ class _PanierScreenState extends State<PanierScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6B21A8),
+                    color: _primaryColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: _isValidatingGiftCard
@@ -1323,19 +1306,19 @@ class _PanierScreenState extends State<PanierScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF6B21A8).withOpacity(0.06),
+                color: _primaryColor.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF6B21A8).withOpacity(0.3)),
+                border: Border.all(color: _primaryColor.withOpacity(0.3)),
               ),
               child: Row(children: [
-                const FaIcon(FontAwesomeIcons.circleCheck, color: Color(0xFF6B21A8), size: 16),
+                FaIcon(FontAwesomeIcons.circleCheck, color: _primaryColor, size: 16),
                 const SizedBox(width: 10),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(_appliedGiftCard!.code, style: GoogleFonts.inriaSerif(
-                    fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF6B21A8))),
+                    fontSize: 13, fontWeight: FontWeight.w800, color: _primaryColor)),
                   Text(
                     'Solde: ${_appliedGiftCard!.balance} FCFA · −$_giftCardDiscount FCFA appliqué',
-                    style: GoogleFonts.inriaSerif(fontSize: 12, color: const Color(0xFF6B21A8)),
+                    style: GoogleFonts.inriaSerif(fontSize: 12, color: _primaryColor),
                   ),
                 ])),
                 GestureDetector(
@@ -1501,7 +1484,7 @@ class _PanierScreenState extends State<PanierScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '${item['price']}',
+                          fmtAmount(p is int ? p : (p is num ? p.toInt() : int.tryParse(p?.toString() ?? '0') ?? 0)),
                           style: GoogleFonts.inriaSerif(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,

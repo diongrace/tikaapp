@@ -397,81 +397,82 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
               // Logo boutique si disponible
               if (_order != null && !_isLoading) ...[
                 const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    // Logo boutique
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(13),
-                        child: _shopLogo != null && _shopLogo!.isNotEmpty
-                            ? Image.network(
-                                _shopLogo!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
+                Builder(builder: (context) {
+                  final firstDetail = _productsDetails.isNotEmpty ? _productsDetails.first : null;
+                  final firstItem = _order!.items.isNotEmpty ? _order!.items.first : null;
+                  final productImage = firstDetail?['image'] as String? ?? firstItem?.image;
+                  final imageUrl = productImage != null && productImage.isNotEmpty
+                      ? (productImage.startsWith('http') ? productImage : 'https://prepro.tika-ci.com/storage/$productImage')
+                      : (_shopLogo ?? '');
+                  final productName = (firstDetail?['name'] as String?) ?? firstItem?.productName ?? (_order!.shopName ?? 'Commande');
+
+                  return Row(
+                    children: [
+                      const SizedBox(width: 16),
+                      // Image produit (ou logo boutique en fallback)
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(13),
+                          child: imageUrl.isNotEmpty
+                              ? Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
                                     color: Colors.grey[100],
-                                    child: FaIcon(
-                                      FontAwesomeIcons.store,
-                                      size: 28,
-                                      color: primaryColor,
-                                    ),
-                                  );
-                                },
-                              )
-                            : Container(
-                                color: Colors.grey[100],
-                                child: FaIcon(
-                                  FontAwesomeIcons.store,
-                                  size: 28,
-                                  color: primaryColor,
+                                    child: FaIcon(FontAwesomeIcons.box, size: 24, color: primaryColor),
+                                  ),
+                                )
+                              : Container(
+                                  color: Colors.grey[100],
+                                  child: FaIcon(FontAwesomeIcons.box, size: 24, color: primaryColor),
                                 ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      // Nom produit + boutique + prix
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              productName,
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    // Infos boutique
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _order!.shopName ?? 'Boutique',
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${fmtAmount(_order!.totalAmount)} FCFA',
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            const SizedBox(height: 3),
+                            Text(
+                              '${_order!.shopName ?? ''} · ${fmtAmount(_order!.totalAmount)} FCFA',
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 11,
+                                color: Colors.white.withOpacity(0.80),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                }),
               ],
             ],
           ),

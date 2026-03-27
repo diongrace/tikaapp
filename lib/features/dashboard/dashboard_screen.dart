@@ -19,6 +19,7 @@ import '../boutique/home/home_online_screen.dart';
 import '../boutique/history/global_history_screen.dart';
 import '../boutique/favorites/favorites_boutiques_screen.dart';
 import '../boutique/loyalty/loyalty_card_page.dart';
+import '../boutique/loyalty/loyalty_card_list_item.dart';
 import '../boutique/loyalty/create_loyalty_card_page.dart';
 import '../boutique/notifications/notifications_list_screen.dart';
 import '../boutique/commande/order_tracking_api_page.dart';
@@ -845,13 +846,18 @@ class _DashboardScreenState extends State<DashboardScreen>
   void _showCardPicker() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollController) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Mes cartes de fidélité',
@@ -861,34 +867,17 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
             const SizedBox(height: 16),
-            ..._loyaltyCards.map((card) => ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const FaIcon(FontAwesomeIcons.gift,
-                        color: accentColor, size: 22),
-                  ),
-                  title: Text(
-                    card.shopName,
-                    style: GoogleFonts.inriaSerif(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${card.points} points',
-                    style: GoogleFonts.inriaSerif(
-                      fontSize: 13,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  trailing: const FaIcon(FontAwesomeIcons.arrowRight,
-                      size: 16, color: Colors.grey),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: _loyaltyCards.length,
+                itemBuilder: (_, i) {
+              final card = _loyaltyCards[i];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: LoyaltyCardListItem(
+                  card: card,
+                  index: i,
                   onTap: () async {
                     Navigator.pop(ctx);
                     final deleted = await Navigator.push<bool>(
@@ -917,9 +906,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                       }
                     }
                   },
-                )),
+                ),
+              );
+            },
+              ),
+            ),
             const SizedBox(height: 8),
           ],
+        ),
         ),
       ),
     );
@@ -959,7 +953,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.40),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
@@ -981,7 +975,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Text(
                   'Bonjour, $name !',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -992,7 +986,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Text(
                   'Bienvenue dans votre espace',
                   style: GoogleFonts.inriaSerif(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: Colors.white.withOpacity(0.85),
                   ),
                 ),
@@ -1001,8 +995,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Text(
                     _client!.formattedPhone,
                     style: GoogleFonts.robotoMono(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 11,
+                      color: Colors.white.withOpacity(0.65),
                     ),
                   ),
                 ],
@@ -1266,12 +1260,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
         // Liste horizontale
         SizedBox(
-          height: 132,
+          height: 110,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: shops.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final shop = shops[index];
               final shopId = shop['shopId'] as int;
@@ -1283,7 +1277,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ? () => _navigateTo(HomeScreen(shopId: shopId))
                     : null,
                 child: Container(
-                  width: 142,
+                  width: 120,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -1300,8 +1294,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        width: 54,
-                        height: 54,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: primaryColor.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(14),
@@ -1500,15 +1494,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.12),
+                    color: statusColor,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     statusLabel,
                     style: GoogleFonts.inriaSerif(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -1884,16 +1878,20 @@ class _DashboardScreenState extends State<DashboardScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'recue':
+      case 'reçue':
         return const Color(0xFFFFA726);
       case 'en_traitement':
         return const Color(0xFF42A5F5);
       case 'prete':
+      case 'prête':
         return const Color(0xFF9C27B0);
       case 'en_livraison':
         return const Color(0xFFFF9800);
       case 'livree':
+      case 'livrée':
         return const Color(0xFF4CAF50);
       case 'annulee':
+      case 'annulée':
         return const Color(0xFFE91E63);
       default:
         return Colors.grey;
@@ -1903,16 +1901,20 @@ class _DashboardScreenState extends State<DashboardScreen>
   String _getStatusLabel(String status) {
     switch (status) {
       case 'recue':
+      case 'reçue':
         return 'Reçue';
       case 'en_traitement':
         return 'En préparation';
       case 'prete':
+      case 'prête':
         return 'Prête';
       case 'en_livraison':
         return 'En livraison';
       case 'livree':
+      case 'livrée':
         return 'Livrée';
       case 'annulee':
+      case 'annulée':
         return 'Annulée';
       default:
         return status;
