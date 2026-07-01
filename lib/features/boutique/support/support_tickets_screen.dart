@@ -392,7 +392,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             ),
 
             // Indicateur de reponse
-            if (ticket.response != null) ...[
+            if (ticket.hasResponse) ...[
               const SizedBox(height: 8),
               Row(
                 children: [

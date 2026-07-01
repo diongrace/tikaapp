@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import './utils/api_endpoint.dart';
 import './models/loyalty_card_model.dart';
 import './auth_service.dart';
@@ -244,35 +245,52 @@ class LoyaltyService {
     String type = 'all',
     int perPage = 20,
   }) async {
+    final result = await getCardHistoryPaginated(cardId, type: type, perPage: perPage);
+    return result['transactions'] as List<LoyaltyTransaction>;
+  }
+
+  /// Retourne { 'transactions': [...], 'total': int, 'current_page': int, 'last_page': int }
+  static Future<Map<String, dynamic>> getCardHistoryPaginated(
+    int cardId, {
+    String type = 'all',
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
       await AuthService.ensureToken();
       final uri = Uri.parse(Endpoints.loyaltyCardHistory(cardId)).replace(
         queryParameters: {
           'type': type,
+          'page': page.toString(),
           'per_page': perPage.toString(),
         },
       );
 
-      print('GET /client/loyalty/cards/$cardId/history?type=$type');
+      print('GET /client/loyalty/cards/$cardId/history?type=$type&page=$page');
       final response = await http.get(uri, headers: _headers);
       print('Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true && data['data'] != null) {
-          final transactions = data['data']['transactions'];
-          if (transactions is List) {
-            return transactions
-                .map((e) => LoyaltyTransaction.fromJson(e as Map<String, dynamic>))
-                .toList();
-          }
+          final d = data['data'];
+          final transactions = (d['transactions'] as List? ?? [])
+              .map((e) => LoyaltyTransaction.fromJson(e as Map<String, dynamic>))
+              .toList();
+          final pagination = d['pagination'] as Map<String, dynamic>?;
+          return {
+            'transactions': transactions,
+            'total': pagination?['total'] ?? transactions.length,
+            'current_page': pagination?['current_page'] ?? page,
+            'last_page': pagination?['last_page'] ?? 1,
+          };
         }
-        return [];
+        return {'transactions': <LoyaltyTransaction>[], 'total': 0, 'current_page': 1, 'last_page': 1};
       } else {
         throw Exception('Erreur ${response.statusCode}');
       }
     } catch (e) {
-      print('Erreur getCardHistory: $e');
+      print('Erreur getCardHistoryPaginated: $e');
       rethrow;
     }
   }
@@ -416,6 +434,16 @@ class LoyaltyService {
   // ============================================================
   // HELPERS
   // ============================================================
+
+  /// Génère le PIN à 4 chiffres à partir du numéro de téléphone.
+  /// Reproduit l'algo back-end PHP :
+  ///   md5(digits) → 8 premiers hex → hexdec → % 10000 → pad 4
+  static String generatePinFromPhone(String phone) {
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    final hash = md5.convert(utf8.encode(digits)).toString();
+    final hashInt = int.parse(hash.substring(0, 8), radix: 16);
+    return (hashInt % 10000).toString().padLeft(4, '0');
+  }
 
   /// Verifier si le client a une carte pour une boutique
   static Future<bool> hasCard(int shopId) async {

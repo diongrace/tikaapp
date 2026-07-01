@@ -53,11 +53,78 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
-      );
       setState(() => _isProcessing = false);
+      _showErrorDialog();
     }
+  }
+
+  void _showErrorDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.qr_code_scanner_rounded, color: Colors.red.shade400, size: 36),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'QR code invalide',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1C1C1E),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Ce QR code ne correspond à aucune boutique.\nAssurez-vous de scanner le bon QR code.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8936A8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Réessayer',
+                    style: GoogleFonts.inriaSerif(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override

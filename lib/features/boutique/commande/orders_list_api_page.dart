@@ -239,20 +239,10 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
     if (confirm != true || !mounted) return;
 
     try {
-      final token = AuthService.authToken!;
-      final checkResult = await OrderService.reorder(order.id, token);
-
-      if (!mounted) return;
-
-      final reorderData = checkResult['data'];
-      final shopData = reorderData?['shop'];
-      final shopId = shopData?['id'] as int? ?? order.shopId;
-
-      // Rediriger vers la boutique sans pré-remplir le panier
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(shopId: shopId),
+          builder: (context) => HomeScreen(shopId: order.shopId),
         ),
       );
 
@@ -330,18 +320,59 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
       final response = await OrderService.cancelOrder(order.id, token, reason: result['reason']?.toString());
       if (mounted) {
         final success = response['success'] == true;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Commande annulée', textAlign: TextAlign.center),
-            backgroundColor: success ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
+        final message = response['message'] ?? 'Commande annulée';
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            icon: Icon(
+              success ? Icons.check_circle_rounded : Icons.info_rounded,
+              color: success ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
+              size: 48,
+            ),
+            title: Text(
+              success ? 'Commande annulée' : 'Information',
+              style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+            ),
+            content: Text(message, style: GoogleFonts.inriaSerif(fontSize: 13), textAlign: TextAlign.center),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: success ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text('OK', style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ],
           ),
         );
-        if (success) _loadOrders();
+        if (success && mounted) _loadOrders();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''), textAlign: TextAlign.center), backgroundColor: Colors.red),
+        final message = e.toString().replaceAll('Exception: ', '');
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            icon: const Icon(Icons.error_rounded, color: Color(0xFFEF4444), size: 48),
+            title: Text('Erreur', style: GoogleFonts.inriaSerif(fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+            content: Text(message, style: GoogleFonts.inriaSerif(fontSize: 13), textAlign: TextAlign.center),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text('OK', style: GoogleFonts.inriaSerif(color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
         );
       }
     }
@@ -604,7 +635,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
 
     try {
       final token = AuthService.authToken!;
-      final itemRatingsResult = result['item_ratings'] as Map<int, int>? ?? {};
+      final itemRatingsResult = ((result['item_ratings'] as Map<dynamic, dynamic>?) ?? {}).cast<int, int>();
       final itemsList = itemRatingsResult.entries
           .map((e) => {'order_item_id': e.key, 'rating': e.value})
           .toList();
@@ -911,6 +942,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(12),
@@ -1408,6 +1440,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       icon: FontAwesomeIcons.receipt,
                       label: 'Recu',
                       isDestructive: false,
+                      accentColor: BoutiqueThemeProvider.of(context).primary,
                       onTap: () => _viewReceipt(order),
                     ),
                     const SizedBox(width: 8),
@@ -1415,6 +1448,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                       icon: FontAwesomeIcons.arrowsRotate,
                       label: 'Recommander',
                       isDestructive: false,
+                      accentColor: BoutiqueThemeProvider.of(context).primary,
                       onTap: () => _reorder(order),
                     ),
                     if (order.status == 'livree' || order.status == 'livrée' ||
@@ -1424,6 +1458,7 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
                         icon: FontAwesomeIcons.solidStar,
                         label: 'Noter',
                         isDestructive: false,
+                        accentColor: Colors.amber.shade700,
                         onTap: () => _rateOrder(order),
                       ),
                     ],
@@ -1453,16 +1488,21 @@ class _OrdersListApiPageState extends State<OrdersListApiPage>
     required String label,
     required bool isDestructive,
     required VoidCallback onTap,
+    Color? accentColor,
   }) {
     final Color fg = isDestructive
         ? const Color(0xFFEF4444)
-        : Colors.grey.shade800;
+        : accentColor ?? Colors.grey.shade800;
     final Color bg = isDestructive
         ? const Color(0xFFFEF2F2)
-        : Colors.grey.shade50;
+        : accentColor != null
+            ? accentColor.withOpacity(0.08)
+            : Colors.grey.shade50;
     final Color border = isDestructive
         ? const Color(0xFFFECACA)
-        : Colors.grey.shade200;
+        : accentColor != null
+            ? accentColor.withOpacity(0.25)
+            : Colors.grey.shade200;
 
     return Expanded(
       child: Material(

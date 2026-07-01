@@ -1556,6 +1556,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     color: primaryColor.withOpacity(0.1),
+                                    alignment: Alignment.center,
                                     child: const FaIcon(
                                       FontAwesomeIcons.store,
                                       size: 26,
@@ -1566,6 +1567,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                               )
                             : Container(
                                 color: primaryColor.withOpacity(0.1),
+                                alignment: Alignment.center,
                                 child: const FaIcon(
                                   FontAwesomeIcons.store,
                                   size: 26,
@@ -1940,6 +1942,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                         errorBuilder: (context, error, stackTrace) {
                                           return Container(
                                             color: Colors.grey[100],
+                                            alignment: Alignment.center,
                                             child: const FaIcon(
                                               FontAwesomeIcons.store,
                                               size: 32,
@@ -1950,6 +1953,7 @@ class _GlobalHistoryScreenState extends State<GlobalHistoryScreen> {
                                       )
                                     : Container(
                                         color: Colors.grey[100],
+                                        alignment: Alignment.center,
                                         child: const FaIcon(
                                           FontAwesomeIcons.store,
                                           size: 32,

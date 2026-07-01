@@ -198,9 +198,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       ],
                     ),
+                    alignment: Alignment.center,
                     child: const FaIcon(
                       FontAwesomeIcons.lockOpen,
-                      size: 48,
+                      size: 40,
                       color: Colors.white,
                     ),
                   ),

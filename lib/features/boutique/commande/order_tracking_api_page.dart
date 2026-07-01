@@ -962,10 +962,12 @@ class _OrderTrackingApiPageState extends State<OrderTrackingApiPage>
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFFE53935).withOpacity(0.3), width: 2),
               ),
-              child: const FaIcon(
-                FontAwesomeIcons.xmark,
-                size: 44,
-                color: Color(0xFFE53935),
+              child: const Center(
+                child: FaIcon(
+                  FontAwesomeIcons.xmark,
+                  size: 36,
+                  color: Color(0xFFE53935),
+                ),
               ),
             ),
           ),

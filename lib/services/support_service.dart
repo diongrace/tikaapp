@@ -242,7 +242,8 @@ class SupportService {
   // 5. GET /client/support/{id}/status - Statut d'un ticket
   // ============================================================
 
-  static Future<String> getTicketStatus(int ticketId) async {
+  /// Retourne { status, status_label, has_response, responded_at }
+  static Future<Map<String, dynamic>> getTicketStatus(int ticketId) async {
     try {
       print('[Support] GET /client/support/$ticketId/status');
       final response = await http.get(
@@ -254,13 +255,13 @@ class SupportService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true && data['data'] != null) {
-          return data['data']['status']?.toString() ?? 'unknown';
+          return Map<String, dynamic>.from(data['data'] as Map);
         }
       }
-      return 'unknown';
+      return {};
     } catch (e) {
       print('[Support] Erreur getTicketStatus: $e');
-      return 'unknown';
+      return {};
     }
   }
 }

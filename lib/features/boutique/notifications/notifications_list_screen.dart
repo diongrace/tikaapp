@@ -28,8 +28,8 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     {'id': 'promo',   'label': 'Promos',    'icon': FontAwesomeIcons.tag},
   ];
 
-  static const _purple = Color(0xFF7C5CBF);
-  static const _purpleLight = Color(0xFF9E82CC);
+  static const _purple = Color.fromRGBO(193, 5, 231, 1);
+  static const _purpleLight = Color.fromARGB(255, 227, 46, 247);
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -82,8 +82,20 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
       _notifications = List.from(_allNotifications);
     } else {
       _notifications = _allNotifications
-          .where((n) => _resolveType(n) == _selectedFilter)
+          .where((n) => _matchesFilter(_resolveType(n), _selectedFilter))
           .toList();
+    }
+  }
+
+  /// Vérifie si un type de notification correspond au filtre sélectionné.
+  /// Gère les alias : wave_payment → payment, promotion → promo, delivery → order
+  bool _matchesFilter(String resolvedType, String filter) {
+    if (resolvedType == filter) return true;
+    switch (filter) {
+      case 'payment': return resolvedType == 'wave_payment';
+      case 'promo':   return resolvedType == 'promotion';
+      case 'order':   return resolvedType == 'delivery';
+      default:        return false;
     }
   }
 
@@ -247,6 +259,7 @@ class _NotificationsListScreenState extends State<NotificationsListScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6FA),
       body: Column(
+        
         children: [
           _buildHeader(),
           _buildTabChips(),

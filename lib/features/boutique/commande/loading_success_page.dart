@@ -14,6 +14,7 @@ import '../loyalty/create_loyalty_card_page.dart';
 import '../../../core/services/boutique_theme_provider.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/loyalty_service.dart';
+import '../../../services/models/loyalty_card_model.dart';
 
 /// Page de succès simple apres commande
 class LoadingSuccessPage extends StatefulWidget {
@@ -29,8 +30,10 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _checkController;
   late Animation<double> _checkAnimation;
-  bool _hasLoyaltyCard = false;
+  LoyaltyCard? _loyaltyCard;
   bool _isLoading = true;
+  // true uniquement si l'API a confirmé qu'il n'y a pas de carte (has_card: false)
+  bool _confirmedNoCard = false;
 
   @override
   void initState() {
@@ -51,16 +54,38 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
 
   Future<void> _checkLoyaltyCard() async {
     if (widget.orderData != null && widget.orderData!['shopId'] != null) {
+      final shopId = widget.orderData!['shopId'] as int;
       try {
-        _hasLoyaltyCard = await LoyaltyService.hasCard(
-          widget.orderData!['shopId'] as int,
-        );
+        LoyaltyCard? card = await LoyaltyService.getCardForShop(shopId);
+
+        // Double-check : getCardForShop peut retourner null par erreur API
+        // (race condition, 422...). On vérifie via getMyCards pour confirmer.
+        if (card == null) {
+          try {
+            final allCards = await LoyaltyService.getMyCards();
+            card = allCards.where((c) => c.shopId == shopId).firstOrNull;
+          } catch (_) {}
+        }
+
+        if (mounted) {
+          setState(() {
+            _loyaltyCard = card;
+            _confirmedNoCard = card == null;
+            _isLoading = false;
+          });
+        }
+        return;
       } catch (e) {
-        _hasLoyaltyCard = false;
+        // Erreur réseau — on ne sait pas si la carte existe ou non
+        // On n'affiche pas le bouton "Créer carte" par précaution
       }
     }
     if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _loyaltyCard = null;
+        _confirmedNoCard = false; // inconnu → ne pas proposer de créer
+        _isLoading = false;
+      });
     }
   }
 
@@ -189,17 +214,75 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
               const SizedBox(height: 16),
 
               // Banneau points de fidélité
-              if (widget.orderData?['loyaltyCardId'] != null) ...[
+              if (widget.orderData?['loyaltyCardId'] != null || _loyaltyCard != null) ...[
                 Builder(builder: (context) {
-                  final pointValue = widget.orderData?['loyaltyPointValue'] as int? ?? 10;
-                  final rawTotal = widget.orderData?['total'];
-                  final totalInt = rawTotal is int
-                      ? rawTotal
-                      : rawTotal is double
-                          ? rawTotal.toInt()
-                          : int.tryParse(rawTotal?.toString() ?? '') ?? 0;
-                  final pointsEarned = pointValue > 0 ? (totalInt / pointValue).floor() : 0;
+                  // Cas 1 : carte utilisée dans cette commande → points estimés
+                  if (widget.orderData?['loyaltyCardId'] != null) {
+                    final pointValue = widget.orderData?['loyaltyPointValue'] as int?
+                        ?? _loyaltyCard?.pointValue
+                        ?? 10;
+                    final rawTotal = widget.orderData?['total'];
+                    final totalInt = rawTotal is int
+                        ? rawTotal
+                        : rawTotal is double
+                            ? rawTotal.toInt()
+                            : int.tryParse(rawTotal?.toString() ?? '') ?? 0;
+                    final pointsEarned = pointValue > 0 ? (totalInt / pointValue).floor() : 0;
 
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3E8FF),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF7C3AED), size: 28),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Carte de fidélité détectée !',
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF5B21B6),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const FaIcon(FontAwesomeIcons.gift, color: Color(0xFF7C3AED), size: 16),
+                              const SizedBox(width: 6),
+                              RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF5B21B6)),
+                                  children: [
+                                    const TextSpan(text: 'Vous gagnerez '),
+                                    TextSpan(
+                                      text: '$pointsEarned points',
+                                      style: const TextStyle(fontWeight: FontWeight.w700),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Points ajoutés après livraison',
+                            style: GoogleFonts.inriaSerif(
+                              fontSize: 13,
+                              color: const Color(0xFF7C3AED).withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // Cas 2 : a une carte mais pas utilisée → solde actuel depuis l'API
                   return Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -213,7 +296,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                         const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF7C3AED), size: 28),
                         const SizedBox(height: 6),
                         Text(
-                          'Carte de fidélité détectée !',
+                          'Votre carte de fidélité',
                           style: GoogleFonts.inriaSerif(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -221,28 +304,21 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const FaIcon(FontAwesomeIcons.gift, color: Color(0xFF7C3AED), size: 16),
-                            const SizedBox(width: 6),
-                            RichText(
-                              text: TextSpan(
-                                style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF5B21B6)),
-                                children: [
-                                  const TextSpan(text: 'Vous gagnerez '),
-                                  TextSpan(
-                                    text: '$pointsEarned points',
-                                    style: const TextStyle(fontWeight: FontWeight.w700),
-                                  ),
-                                ],
+                        RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.inriaSerif(fontSize: 14, color: const Color(0xFF5B21B6)),
+                            children: [
+                              const TextSpan(text: 'Solde actuel : '),
+                              TextSpan(
+                                text: '${_loyaltyCard!.points} points',
+                                style: const TextStyle(fontWeight: FontWeight.w700),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Points ajoutés après livraison',
+                          'Des points seront ajoutés après livraison',
                           style: GoogleFonts.inriaSerif(
                             fontSize: 13,
                             color: const Color(0xFF7C3AED).withOpacity(0.7),
@@ -259,8 +335,11 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
 
               // Boutons d'action
               if (!_isLoading) ...[
-                // Carte de fidelite
-                if (!_hasLoyaltyCard)
+                // Carte de fidelite — uniquement si confirmé qu'elle n'existe pas
+                // ET qu'aucune carte n'est déjà détectée (via commande ou API)
+                if (_confirmedNoCard &&
+                    _loyaltyCard == null &&
+                    widget.orderData?['loyaltyCardId'] == null)
                   _buildActionButton(
                     label: 'Creer carte de fidelite',
                     icon: FontAwesomeIcons.gift,
@@ -285,7 +364,7 @@ class _LoadingSuccessPageState extends State<LoadingSuccessPage>
                     },
                   ),
 
-                if (!_hasLoyaltyCard) const SizedBox(height: 12),
+                if (_confirmedNoCard) const SizedBox(height: 12),
 
                 // Voir le recu
                 _buildActionButton(
@@ -950,8 +1029,9 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _checkController;
   late Animation<double> _checkAnimation;
-  bool _hasLoyaltyCard = false;
+  LoyaltyCard? _loyaltyCard;
   bool _isLoading = true;
+  bool _confirmedNoCard = false;
 
   @override
   void initState() {
@@ -972,16 +1052,37 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
 
   Future<void> _checkLoyaltyCard() async {
     if (widget.orderData != null && widget.orderData!['shopId'] != null) {
+      final shopId = widget.orderData!['shopId'] as int;
       try {
-        _hasLoyaltyCard = await LoyaltyService.hasCard(
-          widget.orderData!['shopId'] as int,
-        );
+        LoyaltyCard? card = await LoyaltyService.getCardForShop(shopId);
+
+        // Double-check : getCardForShop peut retourner null par erreur API
+        // (race condition, 422...). On vérifie via getMyCards pour confirmer.
+        if (card == null) {
+          try {
+            final allCards = await LoyaltyService.getMyCards();
+            card = allCards.where((c) => c.shopId == shopId).firstOrNull;
+          } catch (_) {}
+        }
+
+        if (mounted) {
+          setState(() {
+            _loyaltyCard = card;
+            _confirmedNoCard = card == null;
+            _isLoading = false;
+          });
+        }
+        return;
       } catch (e) {
-        _hasLoyaltyCard = false;
+        // Erreur réseau — inconnu, ne pas proposer de créer par précaution
       }
     }
     if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _loyaltyCard = null;
+        _confirmedNoCard = false;
+        _isLoading = false;
+      });
     }
   }
 
@@ -1122,7 +1223,9 @@ class _LoadingSuccessInStorePageState extends State<LoadingSuccessInStorePage>
 
               // Boutons
               if (!_isLoading) ...[
-                if (!_hasLoyaltyCard) ...[
+                if (_confirmedNoCard &&
+                    _loyaltyCard == null &&
+                    widget.orderData?['loyaltyCardId'] == null) ...[
                   SizedBox(
                     width: double.infinity,
                     height: 50,

@@ -6,6 +6,7 @@ import '../../../services/loyalty_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/models/loyalty_card_model.dart';
 import '../../../core/services/boutique_theme_provider.dart';
+import 'loyalty_history_screen.dart';
 
 /// Page d'affichage de la carte de fidelite
 class LoyaltyCardPage extends StatefulWidget {
@@ -27,6 +28,7 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
   String? _qrData;
   bool _isLoadingDetail = true;
   bool _isDeleting = false;
+  bool _pinVisible = false;
   Map<String, dynamic> _stats = {};
 
   Color _primaryColor = const Color(0xFF8936A8);
@@ -371,10 +373,8 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                       ],
 
                       // Transactions recentes
-                      if (_recentTransactions.isNotEmpty || _isLoadingDetail) ...[
-                        _buildTransactionsSection(),
-                        const SizedBox(height: 20),
-                      ],
+                      _buildTransactionsSection(),
+                      const SizedBox(height: 20),
 
                       const SizedBox(height: 16),
                     ],
@@ -535,34 +535,93 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                   Divider(color: Colors.white.withOpacity(0.18), height: 1),
                   const SizedBox(height: 18),
 
+                  // PIN
+                  if (AuthService.currentClient?.phone != null) ...[
+                    Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'CODE PIN',
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.60),
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Text(
+                                  _pinVisible
+                                      ? LoyaltyService.generatePinFromPhone(
+                                          AuthService.currentClient!.phone)
+                                      : '••••',
+                                  style: GoogleFonts.robotoMono(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: 4,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _pinVisible = !_pinVisible),
+                                  child: Icon(
+                                    _pinVisible
+                                        ? Icons.visibility_off_rounded
+                                        : Icons.visibility_rounded,
+                                    color: Colors.white.withOpacity(0.75),
+                                    size: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+
                   // Numéro et Points
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'NUMÉRO DE CARTE',
-                            style: GoogleFonts.inriaSerif(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.60),
-                              letterSpacing: 1.0,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'NUMÉRO DE CARTE',
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.60),
+                                letterSpacing: 1.0,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatCardNumber(_card.cardNumber),
-                            style: GoogleFonts.robotoMono(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              letterSpacing: 1.5,
+                            const SizedBox(height: 4),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _formatCardNumber(_card.cardNumber),
+                                style: GoogleFonts.robotoMono(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  letterSpacing: 1.5,
+                                ),
+                                maxLines: 1,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -578,50 +637,34 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
                                   letterSpacing: 1.0,
                                 ),
                               ),
-                              Text(
-                                '${_card.points}',
-                                style: GoogleFonts.inriaSerif(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  height: 1.0,
-                                ),
-                              ),
-                              if (_card.pointsValue > 0)
-                                Text(
-                                  '= ${_card.pointsValue} FCFA',
-                                  style: GoogleFonts.inriaSerif(
-                                    fontSize: 13,
-                                    color: Colors.white.withOpacity(0.72),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    '${_card.points}',
+                                    style: GoogleFonts.inriaSerif(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                      height: 1.0,
+                                    ),
                                   ),
-                                ),
+                                  if (_card.pointsValue > 0) ...[
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '= ${_card.pointsValue} FCFA',
+                                      style: GoogleFonts.inriaSerif(
+                                        fontSize: 12,
+                                        color: Colors.white.withOpacity(0.72),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ],
                           ),
-                          if (_card.visitsCount > 0) ...[
-                            const SizedBox(width: 18),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'VISITES',
-                                  style: GoogleFonts.inriaSerif(
-                                    fontSize: 12,
-                                    color: Colors.white.withOpacity(0.60),
-                                    letterSpacing: 1.0,
-                                  ),
-                                ),
-                                Text(
-                                  '${_card.visitsCount}',
-                                  style: GoogleFonts.inriaSerif(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                    height: 1.0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
                         ],
                       ),
                     ],
@@ -1178,6 +1221,37 @@ class _LoyaltyCardPageState extends State<LoyaltyCardPage> {
             )
           else
             ..._recentTransactions.take(5).map(_buildTransactionItem),
+
+          // Bouton voir tout l'historique
+          if (!_isLoadingDetail) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => LoyaltyHistoryScreen.show(context, card: _card),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFF8936A8).withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.history_rounded, size: 16, color: Color(0xFF8936A8)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Voir tout l\'historique',
+                      style: GoogleFonts.inriaSerif(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF8936A8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

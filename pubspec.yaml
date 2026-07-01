@@ -23,6 +23,7 @@ dependencies:
   # Gestion des requêtes HTTP
   dio: ^5.4.0
   http: ^1.2.0
+  crypto: ^3.0.3
 
   # Téléchargement et gestion de fichiers
   path_provider: ^2.1.2

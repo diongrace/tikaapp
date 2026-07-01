@@ -197,7 +197,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         if (_sortOrder == "Nom (A-Z)")         sortByParam = "name";
         else if (_sortOrder == "Prix croissant")  sortByParam = "price_asc";
         else if (_sortOrder == "En stock")        inStockParam = true;
-        else if (_sortOrder == "Rupture de stock") inStockParam = false;
         else if (_sortOrder == "Prix décroissant") sortByParam = "price_desc";
         else if (_sortOrder == "Plus récents")    sortByParam = "recent";
       }
@@ -208,7 +207,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         sortBy: sortByParam,
         inStock: inStockParam,
       );
-      if (mounted) setState(() => _products = result['products'] as List<Product>);
+      List<Product> products = result['products'] as List<Product>;
+      if (_sortOrder == "Rupture de stock") {
+        products = products.where((p) => p.stockQuantity == 0 || !p.isAvailable).toList();
+      }
+      if (mounted) setState(() => _products = products);
     } catch (e) {
       if (mounted) setState(() => _products = []);
     }

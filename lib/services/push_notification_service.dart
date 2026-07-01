@@ -119,9 +119,18 @@ String _buildTitleFromData(Map<String, dynamic> data) {
     return 'Carte d\'achat activée 🎁';
   }
 
-  // Commandes cadeaux
-  if (clickAction == 'OPEN_GIFT_TRACKING' || type == 'gift_order') {
-    return 'Cadeau en route 🎁';
+  // Commandes cadeaux — titre selon statut
+  if (clickAction == 'OPEN_GIFT_TRACKING' || clickAction == 'OPEN_GIFT_ORDER' || type == 'gift_order') {
+    switch (status) {
+      case 'paid':             return 'Cadeau pour vous ! 🎁';
+      case 'preparing':        return 'Cadeau en préparation 🍳';
+      case 'ready':            return 'Cadeau prêt ! 🎉';
+      case 'delivery_pending': return 'Commandez Yango 🚕';
+      case 'delivering':       return 'Livraison en cours 🛵';
+      case 'delivered':        return 'Cadeau livré ! ✅';
+      case 'cancelled':        return 'Cadeau annulé ❌';
+      default:                 return 'Mise à jour cadeau 🎁';
+    }
   }
 
   return 'Tika';
@@ -144,27 +153,111 @@ String _buildBodyFromData(Map<String, dynamic> data) {
     }
   }
 
-  // Carte cadeau activée → code + montant + boutique
+  // Carte cadeau — code + montant + boutique + expéditeur
   if (clickAction == 'OPEN_GIFT_CARD' || type == 'gift_card') {
-    final code     = data['code']      ?? '';
-    final amount   = data['amount']    ?? '';
-    final shopName = data['shop_name'] ?? '';
+    final code       = data['code']        ?? '';
+    final amount     = data['amount']      ?? '';
+    final shopName   = data['shop_name']   ?? '';
+    final senderName = data['sender_name'] ?? '';
+    // "{sender} vous offre une carte d'achat de {amount} FCFA chez {shop}! Code: {code}"
+    if (senderName.isNotEmpty && amount.isNotEmpty && shopName.isNotEmpty && code.isNotEmpty) {
+      return '$senderName vous offre une carte d\'achat de $amount FCFA chez $shopName ! Code : $code';
+    }
     if (code.isNotEmpty && amount.isNotEmpty) {
-      return 'Votre carte de $amount FCFA chez $shopName est activée ! Code : $code';
+      return 'Carte d\'achat de $amount FCFA activée ! Code : $code';
     }
     if (code.isNotEmpty) return 'Votre carte cadeau est activée ! Code : $code';
     return 'Votre carte cadeau a été activée.';
   }
 
-  // Commande cadeau
-  if (clickAction == 'OPEN_GIFT_TRACKING' || type == 'gift_order') {
+  // Commande cadeau — body selon statut
+  if (clickAction == 'OPEN_GIFT_TRACKING' || clickAction == 'OPEN_GIFT_ORDER' || type == 'gift_order') {
     final senderName    = data['sender_name']    ?? '';
+    final recipientName = data['recipient_name'] ?? '';
     final shopName      = data['shop_name']      ?? '';
     final trackingToken = data['tracking_token'] ?? '';
-    if (senderName.isNotEmpty && shopName.isNotEmpty) {
-      return '$senderName vous a envoyé un cadeau chez $shopName ! Réf : $trackingToken';
+    final reason        = data['reason']         ?? '';
+
+    switch (status) {
+      case 'paid':
+        // Bénéficiaire : "{recipient}, {sender} vous a offert un cadeau chez {shop}!"
+        if (senderName.isNotEmpty && shopName.isNotEmpty) {
+          final prefix = recipientName.isNotEmpty ? '$recipientName, ' : '';
+          return '${prefix}$senderName vous a offert un cadeau chez $shopName !';
+        }
+        return 'Vous avez reçu un cadeau !';
+      case 'preparing':
+        // Acheteur : "Cadeau en préparation"
+        if (recipientName.isNotEmpty && shopName.isNotEmpty) {
+          return 'Le cadeau pour $recipientName est en préparation chez $shopName.';
+        }
+        return 'Votre cadeau est en préparation.';
+      case 'ready':
+        // Acheteur (Yango) ou Bénéficiaire (perso)
+        if (recipientName.isNotEmpty && shopName.isNotEmpty) {
+          return 'Le cadeau pour $recipientName est prêt chez $shopName ! Commandez Yango pour la livraison.';
+        }
+        if (senderName.isNotEmpty && shopName.isNotEmpty) {
+          return 'Le cadeau de $senderName chez $shopName est prêt ! Un livreur vous contactera.';
+        }
+        return 'Votre cadeau est prêt !';
+      case 'delivery_pending':
+        if (recipientName.isNotEmpty && shopName.isNotEmpty) {
+          return 'Le cadeau pour $recipientName est prêt chez $shopName. Veuillez commander un Yango.';
+        }
+        return 'Le cadeau est prêt. Veuillez commander un Yango.';
+      case 'delivering':
+        // Bénéficiaire : "Livraison en cours"
+        if (shopName.isNotEmpty) {
+          return 'Votre cadeau de $shopName est en route !';
+        }
+        return 'Votre cadeau est en cours de livraison.';
+      case 'delivered':
+        // Acheteur ou Bénéficiaire
+        if (recipientName.isNotEmpty) {
+          return 'Votre cadeau pour $recipientName a été livré avec succès !';
+        }
+        if (senderName.isNotEmpty) {
+          return 'Le cadeau de $senderName vous a été livré !';
+        }
+        return 'Le cadeau a été livré !';
+      case 'cancelled':
+        if (recipientName.isNotEmpty && shopName.isNotEmpty) {
+          final msg = 'Le cadeau pour $recipientName chez $shopName a été annulé.';
+          return reason.isNotEmpty ? '$msg Raison : $reason' : msg;
+        }
+        if (senderName.isNotEmpty && shopName.isNotEmpty) {
+          return 'Le cadeau de $senderName chez $shopName a été annulé.';
+        }
+        return 'Le cadeau a été annulé.';
+      default:
+        if (senderName.isNotEmpty && shopName.isNotEmpty) {
+          return '$senderName vous a envoyé un cadeau chez $shopName ! Réf : $trackingToken';
+        }
+        return 'Vous avez reçu un cadeau !';
     }
-    return 'Vous avez reçu un cadeau !';
+  }
+
+  // Paiement
+  if (type == 'payment') {
+    final status      = data['status']       ?? '';
+    final orderNumber = data['order_number'] ?? '';
+    if (status == 'failed') {
+      return orderNumber.isNotEmpty
+          ? 'Le paiement pour la commande $orderNumber a échoué.'
+          : 'Votre paiement a échoué.';
+    }
+    return orderNumber.isNotEmpty
+        ? 'Paiement de la commande $orderNumber confirmé.'
+        : 'Votre paiement a été traité.';
+  }
+
+  // Fidélité
+  if (type == 'loyalty') {
+    final points = data['points'] ?? '';
+    return points.isNotEmpty
+        ? 'Vous avez gagné $points points de fidélité !'
+        : 'Vous avez reçu des points de fidélité.';
   }
 
   return '';
@@ -190,6 +283,10 @@ class PushNotificationService {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   static String? _fcmToken;
+
+  /// IDs des notifications déjà vues — évite de re-notifier au prochain poll
+  static final Set<int> _seenNotificationIds = {};
+  static bool _firstPoll = true;
 
   /// Recuperer le token FCM actuel
   static String? get fcmToken => _fcmToken;
@@ -388,11 +485,14 @@ class PushNotificationService {
   /// Demarrer le polling periodique du compteur (toutes les 30 secondes)
   static void startPolling() {
     stopPolling();
+    _firstPoll = true;
     // Rafraichir immediatement
     refreshUnreadCount();
+    _checkRecentNotifications(); // mémorise les IDs existants sans notifier
     // Puis toutes les 30 secondes
     _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       refreshUnreadCount();
+      _checkRecentNotifications();
     });
     print('[Push] Polling demarre (intervalle: 30s)');
   }
@@ -401,6 +501,57 @@ class PushNotificationService {
   static void stopPolling() {
     _pollingTimer?.cancel();
     _pollingTimer = null;
+  }
+
+  /// Vérifie les notifications récentes et affiche une notif locale pour chaque nouvelle
+  static Future<void> _checkRecentNotifications() async {
+    try {
+      final recent = await NotificationService.getRecentNotifications(limit: 10);
+
+      if (_firstPoll) {
+        // Premier appel : mémoriser les IDs sans notifier (évite de re-notifier l'historique)
+        for (final n in recent) {
+          _seenNotificationIds.add(n.id);
+        }
+        _firstPoll = false;
+        return;
+      }
+
+      for (final n in recent) {
+        if (!_seenNotificationIds.contains(n.id)) {
+          _seenNotificationIds.add(n.id);
+          _showLocalNotificationFromItem(n);
+        }
+      }
+    } catch (e) {
+      print('[Push] Erreur checkRecentNotifications: $e');
+    }
+  }
+
+  /// Affiche une notification locale à partir d'un NotificationItem de l'API
+  static void _showLocalNotificationFromItem(NotificationItem n) {
+    if (!_localNotificationsInitialized || _localNotifications == null) return;
+
+    _localNotifications!.show(
+      n.id.remainder(100000),
+      n.title,
+      n.message,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+    );
   }
 
   /// Gerer un message recu au premier plan

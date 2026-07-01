@@ -47,12 +47,10 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Récupérer la boutique via l'API
       final Shop shop = await ShopService.getShopByLink(url);
 
       if (mounted) {
         _linkController.clear();
-        // Naviguer vers l'écran d'accueil de la boutique avec les données
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -61,14 +59,83 @@ class _AccessBoutiqueScreenState extends State<AccessBoutiqueScreen> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: ${e.toString()}')),
-        );
-      }
+      if (mounted) _showErrorDialog(e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showErrorDialog(String error) {
+    final message = error.contains('introuvable')
+        ? 'Aucune boutique trouvée pour ce lien.\nVérifiez le lien et réessayez.'
+        : 'Une erreur est survenue.\nVérifiez votre connexion internet et réessayez.';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.error_outline_rounded, color: Colors.red.shade400, size: 36),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Boutique introuvable',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1C1C1E),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inriaSerif(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8936A8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Réessayer',
+                    style: GoogleFonts.inriaSerif(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showCreateCardDialog() {

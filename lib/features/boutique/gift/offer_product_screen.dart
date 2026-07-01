@@ -50,6 +50,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
   // Wave flow state
   bool _showWaveUpload = false;
   String? _pendingId;
+  String? _waveUrl;
   int? _waveTotalAmount;
   String? _waveScreenshotPath;
 
@@ -180,6 +181,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
         setState(() {
           _isLoading = false;
           _pendingId = result.pendingId;
+          _waveUrl = result.waveUrl;
           _waveTotalAmount = result.totalAmount;
           _showWaveUpload = true;
         });
@@ -887,11 +889,18 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 18),
         child: Row(children: [
           GestureDetector(
-            onTap: () => setState(() {
-              _showWaveUpload = false;
-              _pendingId = null;
-              _waveScreenshotPath = null;
-            }),
+            onTap: () async {
+              final pid = _pendingId;
+              setState(() {
+                _showWaveUpload = false;
+                _pendingId = null;
+                _waveUrl = null;
+                _waveScreenshotPath = null;
+              });
+              if (pid != null) {
+                try { await GiftService.cancelPendingGift(pid); } catch (_) {}
+              }
+            },
             child: Container(
               width: 36, height: 36, alignment: Alignment.center,
               decoration: BoxDecoration(
@@ -937,7 +946,7 @@ class _OfferProductScreenState extends State<OfferProductScreen> {
             // Rouvrir Wave si nécessaire
             const SizedBox(height: 12),
             GestureDetector(
-              onTap: _pendingId != null ? null : null,
+              onTap: _waveUrl != null ? () => _openWaveUrl(_waveUrl!) : null,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(

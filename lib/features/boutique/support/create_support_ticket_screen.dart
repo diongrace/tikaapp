@@ -27,6 +27,14 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
     'suggestion': 'Suggestion',
     'other': 'Autre',
   };
+  String _selectedPriority = 'medium';
+  List<String> _priorities = ['low', 'medium', 'high', 'urgent'];
+  Map<String, String> _priorityLabels = {
+    'low': 'Basse',
+    'medium': 'Moyenne',
+    'high': 'Haute',
+    'urgent': 'Urgente',
+  };
 
   @override
   void initState() {
@@ -37,10 +45,16 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
   Future<void> _loadOptions() async {
     try {
       final options = await SupportService.getOptions();
-      if (mounted && options.categories.isNotEmpty) {
+      if (mounted) {
         setState(() {
-          _types = options.categories;
-          _typeLabels = options.categoryLabels;
+          if (options.categories.isNotEmpty) {
+            _types = options.categories;
+            _typeLabels = options.categoryLabels;
+          }
+          if (options.priorities.isNotEmpty) {
+            _priorities = options.priorities;
+            _priorityLabels = options.priorityLabels;
+          }
         });
       }
     } catch (_) {}
@@ -86,7 +100,7 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
         subject: subject,
         message: message,
         category: _selectedType,
-        priority: 'low',
+        priority: _selectedPriority,
         screenshots: _selectedImages.map((x) => File(x.path)).toList(),
       );
 
@@ -121,6 +135,16 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
+  }
+
+  Color _priorityColor(String priority) {
+    switch (priority) {
+      case 'low':    return const Color(0xFF4CAF50);
+      case 'medium': return const Color(0xFF2196F3);
+      case 'high':   return const Color(0xFFFF9800);
+      case 'urgent': return const Color(0xFFF44336);
+      default:       return const Color(0xFF8936A8);
+    }
   }
 
   @override
@@ -230,6 +254,74 @@ class _CreateSupportTicketScreenState extends State<CreateSupportTicketScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: isSelected ? const Color(0xFF8936A8) : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Text(
+                                  label,
+                                  style: GoogleFonts.inriaSerif(
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    color: isSelected ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Section 0b : Priorité
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('🚦', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Priorité',
+                              style: GoogleFonts.inriaSerif(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _priorities.map((priority) {
+                            final label = _priorityLabels[priority] ?? priority;
+                            final isSelected = _selectedPriority == priority;
+                            final color = _priorityColor(priority);
+                            return GestureDetector(
+                              onTap: () => setState(() => _selectedPriority = priority),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? color : const Color(0xFFF8F8F8),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isSelected ? color : Colors.grey.shade300,
                                   ),
                                 ),
                                 child: Text(

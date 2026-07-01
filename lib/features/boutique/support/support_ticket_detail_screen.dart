@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +20,7 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
   SupportTicket? _ticket;
   bool _isLoading = true;
   String? _error;
+  Timer? _pollingTimer;
 
   @override
   void initState() {
@@ -26,14 +28,90 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
     _loadTicket();
   }
 
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _loadTicket() async {
     setState(() { _isLoading = true; _error = null; });
     try {
       final ticket = await SupportService.getTicketDetail(widget.ticketId);
-      if (mounted) setState(() { _ticket = ticket; _isLoading = false; });
+      if (mounted) {
+        setState(() { _ticket = ticket; _isLoading = false; });
+        _startPollingIfNeeded(ticket);
+      }
     } catch (e) {
       if (mounted) setState(() { _error = e.toString(); _isLoading = false; });
     }
+  }
+
+  /// Démarre le polling uniquement si le ticket n'est pas encore résolu/fermé
+  void _startPollingIfNeeded(SupportTicket? ticket) {
+    _pollingTimer?.cancel();
+    if (ticket == null || ticket.isResolved) return;
+
+    // Urgent: 30s, autres: 60s
+    final interval = ticket.priority == 'urgent'
+        ? const Duration(seconds: 30)
+        : const Duration(seconds: 60);
+
+    _pollingTimer = Timer.periodic(interval, (_) => _pollStatus());
+  }
+
+  Future<void> _pollStatus() async {
+    if (_ticket == null) return;
+    try {
+      final statusData = await SupportService.getTicketStatus(widget.ticketId);
+      if (!mounted || statusData.isEmpty) return;
+
+      final newStatus      = statusData['status']?.toString() ?? '';
+      final newStatusLabel = statusData['status_label']?.toString();
+      final hasResponse    = statusData['has_response'] == true;
+      final respondedAt    = statusData['responded_at']?.toString();
+
+      // Recharger le ticket complet si une réponse vient d'arriver
+      if (hasResponse && !_ticket!.hasResponse) {
+        final updated = await SupportService.getTicketDetail(widget.ticketId);
+        if (mounted && updated != null) {
+          setState(() => _ticket = updated);
+          _startPollingIfNeeded(updated);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Le support a répondu !', style: GoogleFonts.inriaSerif(color: Colors.white)),
+            backgroundColor: const Color(0xFF4CAF50),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ));
+        }
+        return;
+      }
+
+      // Mettre à jour le statut si changé
+      if (newStatus.isNotEmpty && newStatus != _ticket!.status) {
+        setState(() {
+          _ticket = SupportTicket(
+            id: _ticket!.id,
+            subject: _ticket!.subject,
+            message: _ticket!.message,
+            category: _ticket!.category,
+            typeLabel: _ticket!.typeLabel,
+            priority: _ticket!.priority,
+            priorityLabel: _ticket!.priorityLabel,
+            status: newStatus,
+            statusLabelApi: newStatusLabel,
+            hasResponse: hasResponse,
+            reference: _ticket!.reference,
+            response: _ticket!.response,
+            respondedAt: respondedAt ?? _ticket!.respondedAt,
+            createdAt: _ticket!.createdAt,
+            updatedAt: _ticket!.updatedAt,
+            screenshots: _ticket!.screenshots,
+          );
+        });
+        if (_ticket!.isResolved) _pollingTimer?.cancel();
+      }
+    } catch (_) {}
   }
 
   // Couleurs du gradient selon le statut
@@ -41,12 +119,6 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
     if (ticket.isResolved) return [const Color(0xFF4CAF50), const Color(0xFF388E3C)];
     if (ticket.isInProgress) return [const Color(0xFF2196F3), const Color(0xFF1565C0)];
     return [const Color(0xFFFBBF24), const Color(0xFFEA580C)]; // Open = orange/amber
-  }
-
-  Color _getStatusColor(SupportTicket ticket) {
-    if (ticket.isResolved) return const Color(0xFF4CAF50);
-    if (ticket.isInProgress) return const Color(0xFF2196F3);
-    return const Color(0xFFF59E0B);
   }
 
   String _getTypeLabel(String type) {
@@ -338,10 +410,16 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
                   ),
                 ),
 
+                // Screenshots (si présents)
+                if (ticket.screenshots.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  _buildScreenshotsCard(ticket.screenshots),
+                ],
+
                 const SizedBox(height: 14),
 
                 // Carte réponse ou attente
-                if (ticket.response != null)
+                if (ticket.response != null || ticket.hasResponse)
                   _buildResponseCard(ticket)
                 else
                   _buildWaitingCard(),
@@ -420,6 +498,62 @@ class _SupportTicketDetailScreenState extends State<SupportTicketDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildScreenshotsCard(List<String> urls) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            child: Row(children: [
+              FaIcon(FontAwesomeIcons.images, color: Colors.grey.shade500, size: 16),
+              const SizedBox(width: 8),
+              Text('Captures d\'écran jointes', style: GoogleFonts.inriaSerif(fontSize: 14, color: Colors.grey.shade800)),
+            ]),
+          ),
+          const Divider(height: 1),
+          SizedBox(
+            height: 110,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.all(12),
+              itemCount: urls.length,
+              itemBuilder: (context, i) => GestureDetector(
+                onTap: () => launchUrl(Uri.parse(urls[i]), mode: LaunchMode.externalApplication),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  width: 86,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      urls[i],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.grey.shade100,
+                        child: const FaIcon(FontAwesomeIcons.image, color: Colors.grey, size: 28),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -91,7 +91,7 @@ class OrderService {
         'customer_address': customerAddress,
       if (deliveryAddress != null && deliveryAddress.isNotEmpty)
         'delivery_address': deliveryAddress,
-      if (deliveryZoneId != null) 'delivery_zone_id': deliveryZoneId,
+      if (deliveryZoneId != null) 'delivery_zone_id': deliveryZoneId.toString(),
       if (deliveryFee != null) 'delivery_fee': deliveryFee, // ✅ AJOUTÉ
       if (notes != null && notes.isNotEmpty) 'notes': notes,
       if (couponCode != null && couponCode.isNotEmpty) 'coupon_code': couponCode,
@@ -633,9 +633,10 @@ class OrderService {
   /// POST /client/orders/{id}/reorder
   ///
   /// Vérifie la disponibilité des produits avant de confirmer
-  static Future<Map<String, dynamic>> reorder(int orderId, String token) async {
+  static Future<Map<String, dynamic>> reorder(int orderId, String token, {List<Map<String, dynamic>>? items}) async {
     final headers = Map<String, String>.from(_headers);
     headers['Authorization'] = 'Bearer $token';
+    headers['Content-Type'] = 'application/json';
 
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     print('📤 POST REORDER (vérification)');
@@ -643,9 +644,11 @@ class OrderService {
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     try {
+      final body = jsonEncode({'items': items ?? []});
       final response = await http.post(
         Uri.parse(Endpoints.orderReorder(orderId)),
         headers: headers,
+        body: body,
       );
 
       print('📥 Response Status: ${response.statusCode}');
@@ -693,7 +696,7 @@ class OrderService {
       if (items != null && items.isNotEmpty) 'items': items,
       if (serviceType != null && serviceType.isNotEmpty) 'service_type': serviceType,
       if (deliveryAddress != null && deliveryAddress.isNotEmpty) 'delivery_address': deliveryAddress,
-      if (deliveryZoneId != null) 'delivery_zone_id': deliveryZoneId,
+      if (deliveryZoneId != null) 'delivery_zone_id': deliveryZoneId.toString(),
       if (notes != null && notes.isNotEmpty) 'notes': notes,
       if (deviceFingerprint != null && deviceFingerprint.isNotEmpty) 'device_fingerprint': deviceFingerprint,
     };

@@ -4,46 +4,66 @@ class SupportTicket {
   final String subject;
   final String message;
   final String category;
+  final String? typeLabel;
   final String priority;
+  final String? priorityLabel;
   final String status;
+  final String? statusLabelApi; // label retourné par l'API (priorité sur calcul local)
+  final bool hasResponse;
   final String? reference;
   final String? response;
   final String? respondedAt;
   final String createdAt;
   final String? updatedAt;
+  final List<String> screenshots;
 
   SupportTicket({
     required this.id,
     required this.subject,
     required this.message,
     this.category = '',
+    this.typeLabel,
     this.priority = 'normal',
+    this.priorityLabel,
     this.status = 'open',
+    this.statusLabelApi,
+    this.hasResponse = false,
     this.reference,
     this.response,
     this.respondedAt,
     required this.createdAt,
     this.updatedAt,
+    this.screenshots = const [],
   });
 
   factory SupportTicket.fromJson(Map<String, dynamic> json) {
+    final rawScreenshots = json['screenshots'];
+    final List<String> screenshots = rawScreenshots is List
+        ? rawScreenshots.map((e) => e.toString()).toList()
+        : [];
     return SupportTicket(
       id: json['id'] ?? 0,
       subject: json['subject'] ?? json['title'] ?? '',
       message: json['message'] ?? json['description'] ?? json['content'] ?? '',
       category: json['category'] ?? json['type'] ?? '',
+      typeLabel: json['type_label'],
       priority: json['priority'] ?? 'normal',
+      priorityLabel: json['priority_label'],
       status: json['status'] ?? 'open',
+      statusLabelApi: json['status_label'],
+      hasResponse: json['has_response'] == true,
       reference: json['reference'] ?? json['ticket_number'],
       response: json['response'] ?? json['reply'] ?? json['admin_response'],
       respondedAt: json['responded_at'] ?? json['replied_at'],
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'],
+      screenshots: screenshots,
     );
   }
 
-  /// Label lisible du statut
+  /// Label lisible du statut (API en priorité, sinon calculé localement)
   String get statusLabel {
+    if (statusLabelApi != null && statusLabelApi!.isNotEmpty) return statusLabelApi!;
     switch (status.toLowerCase()) {
       case 'open':
       case 'ouvert':

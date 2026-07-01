@@ -55,9 +55,13 @@ class _PanierScreenState extends State<PanierScreen> {
   LoyaltyCard? _verifiedLoyaltyCard;
   bool _isLoadingCard = true;
   bool _isVerifyingLoyalty = false;
+  bool _isLoadingRewards = false;
   String? _loyaltyError;
   int _loyaltyDiscount = 0;
   int _loyaltyPointsUsed = 0;
+  List<LoyaltyReward> _availableRewards = [];
+  List<LoyaltyReward> _upcomingRewards = [];
+  LoyaltyReward? _selectedReward;
 
   // Carte cadeau
   final TextEditingController _giftCardController = TextEditingController();
@@ -174,6 +178,19 @@ class _PanierScreenState extends State<PanierScreen> {
           _isLoadingCard = false;
         });
       }
+
+      // Charger les récompenses en arrière-plan pour afficher la progression
+      if (card != null) {
+        try {
+          final rewardsMap = await LoyaltyService.getCardRewards(card.id);
+          if (mounted) {
+            setState(() {
+              _availableRewards = rewardsMap['available'] ?? [];
+              _upcomingRewards = rewardsMap['upcoming'] ?? [];
+            });
+          }
+        } catch (_) {}
+      }
     } catch (e) {
       print('🎴 [Fidélité] Erreur inattendue: $e');
       if (mounted) setState(() => _isLoadingCard = false);
@@ -190,22 +207,54 @@ class _PanierScreenState extends State<PanierScreen> {
       // 1. Vérifier le PIN via l'API
       await LoyaltyService.verifyPin(cardId: _autoLoadedCard!.id, pinCode: pin);
 
-      // 2. Calculer la réduction localement : pointsValue = points × point_value (en FCFA)
-      // Pas d'appel API — la valeur est déjà dans le modèle LoyaltyCard
-      int discountAmount = 0;
-      int pointsUsed = 0;
-      if (_autoLoadedCard!.points > 0) {
-        // Ne peut pas dépasser le total de la commande
-        discountAmount = _autoLoadedCard!.pointsValue.clamp(0, total);
-        pointsUsed = _autoLoadedCard!.points;
-      }
-
       setState(() {
         _verifiedLoyaltyCard = _autoLoadedCard;
-        _loyaltyDiscount = discountAmount;
-        _loyaltyPointsUsed = pointsUsed;
         _isVerifyingLoyalty = false;
+        _isLoadingRewards = _availableRewards.isEmpty; // pas de rechargement si déjà chargé
       });
+
+      // 2. Charger les récompenses disponibles (can_claim: true) si pas déjà en cache
+      if (_isLoadingRewards) {
+        try {
+          final rewardsMap = await LoyaltyService.getCardRewards(_autoLoadedCard!.id);
+          final available = rewardsMap['available'] ?? [];
+          final upcoming = rewardsMap['upcoming'] ?? [];
+
+          if (available.isNotEmpty) {
+            setState(() {
+              _availableRewards = available;
+              _upcomingRewards = upcoming;
+              _isLoadingRewards = false;
+            });
+          } else {
+            // Pas de récompense — fallback : tous les points convertis en FCFA
+            final discountAmount = _autoLoadedCard!.pointsValue.clamp(0, total);
+            setState(() {
+              _availableRewards = [];
+              _upcomingRewards = upcoming;
+              _loyaltyDiscount = discountAmount;
+              _loyaltyPointsUsed = _autoLoadedCard!.points;
+              _isLoadingRewards = false;
+            });
+          }
+        } catch (_) {
+          // Erreur rewards — fallback silencieux
+          final discountAmount = _autoLoadedCard!.pointsValue.clamp(0, total);
+          setState(() {
+            _availableRewards = [];
+            _loyaltyDiscount = discountAmount;
+            _loyaltyPointsUsed = _autoLoadedCard!.points;
+            _isLoadingRewards = false;
+          });
+        }
+      } else if (_availableRewards.isEmpty) {
+        // Récompenses déjà chargées mais aucune disponible — fallback direct
+        final discountAmount = _autoLoadedCard!.pointsValue.clamp(0, total);
+        setState(() {
+          _loyaltyDiscount = discountAmount;
+          _loyaltyPointsUsed = _autoLoadedCard!.points;
+        });
+      }
     } catch (e) {
       setState(() {
         _loyaltyError = e.toString().replaceFirst('Exception: ', '');
@@ -213,8 +262,34 @@ class _PanierScreenState extends State<PanierScreen> {
         _loyaltyDiscount = 0;
         _loyaltyPointsUsed = 0;
         _isVerifyingLoyalty = false;
+        _isLoadingRewards = false;
       });
     }
+  }
+
+  /// Applique une récompense choisie par le client
+  void _applyReward(LoyaltyReward reward, int total) {
+    int discount = 0;
+    switch (reward.rewardType) {
+      case 'fixed_discount':
+        discount = int.tryParse(reward.rewardValue ?? '0') ?? 0;
+        break;
+      case 'percent_discount':
+        final percent = double.tryParse(reward.rewardValue ?? '0') ?? 0;
+        discount = (total * percent / 100).floor();
+        break;
+      case 'free_delivery':
+      case 'gift_product':
+      case 'custom':
+        // Avantage non monétaire — le backend le gère via loyaltyPointsUsed
+        discount = 0;
+        break;
+    }
+    setState(() {
+      _selectedReward = reward;
+      _loyaltyDiscount = discount.clamp(0, total);
+      _loyaltyPointsUsed = reward.pointsRequired;
+    });
   }
 
   Future<void> _applyPromoCode(int total) async {
@@ -808,7 +883,63 @@ class _PanierScreenState extends State<PanierScreen> {
                                   ),
                                 ]
 
-                                // Carte détectée — non encore vérifiée
+                                // Carte détectée — 0 points, pas de PIN
+                                else if (_verifiedLoyaltyCard == null && _autoLoadedCard!.points == 0) ...[
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            FaIcon(FontAwesomeIcons.solidStar, size: 16, color: Colors.grey.shade400),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Solde : 0 point',
+                                              style: GoogleFonts.inriaSerif(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (_upcomingRewards.isNotEmpty) ...[
+                                          const SizedBox(height: 8),
+                                          ..._upcomingRewards.map((r) => Padding(
+                                            padding: const EdgeInsets.only(bottom: 4),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  r.name,
+                                                  style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade700),
+                                                ),
+                                                Text(
+                                                  'Encore ${r.pointsNeeded} pt${r.pointsNeeded > 1 ? 's' : ''}',
+                                                  style: GoogleFonts.inriaSerif(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey.shade500),
+                                                ),
+                                              ],
+                                            ),
+                                          )),
+                                        ] else ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Accumulez des points pour débloquer des récompenses',
+                                            style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade600),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ]
+
+                                // Carte détectée — points disponibles, afficher PIN
                                 else if (_verifiedLoyaltyCard == null) ...[
                                   Text(
                                     'Utilisez vos points de fidélité',
@@ -830,14 +961,11 @@ class _PanierScreenState extends State<PanierScreen> {
                                     String hint;
                                     if (_autoLoadedCard!.pinCodeHint != null) {
                                       hint = _autoLoadedCard!.pinCodeHint!;
-                                    } else if (phone != null && phone.length >= 4) {
-                                      final digits = phone.replaceAll(RegExp(r'\D'), '');
-                                      final masked = digits.length >= 4
-                                          ? '••••${digits.substring(digits.length - 4)}'
-                                          : phone;
-                                      hint = 'PIN = 4 derniers chiffres de votre tél. ($masked)';
+                                    } else if (phone != null && phone.isNotEmpty) {
+                                      final pin = LoyaltyService.generatePinFromPhone(phone);
+                                      hint = 'Votre code PIN : $pin';
                                     } else {
-                                      hint = 'PIN = 4 derniers chiffres de votre numéro de compte';
+                                      hint = 'Votre code PIN est disponible sur votre carte de fidélité';
                                     }
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 8),
@@ -920,43 +1048,160 @@ class _PanierScreenState extends State<PanierScreen> {
 
                                 // Carte vérifiée avec succès
                                 else ...[
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEDF7ED),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF2E7D32), size: 20),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Carte vérifiée ✓',
-                                                style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF2E7D32)),
+                                  // Chargement des récompenses
+                                  if (_isLoadingRewards)
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                    )
+
+                                  // Récompense sélectionnée
+                                  else if (_selectedReward != null || (_availableRewards.isEmpty && _loyaltyDiscount >= 0))
+                                    Builder(builder: (ctx) {
+                                      final total = _cartManager.totalPrice;
+                                      return Column(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFEDF7ED),
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF2E7D32), size: 20),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        _selectedReward != null
+                                                            ? _selectedReward!.name
+                                                            : 'Carte vérifiée ✓',
+                                                        style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF2E7D32)),
+                                                      ),
+                                                      Text(
+                                                        _loyaltyDiscount > 0
+                                                            ? '${_loyaltyPointsUsed} pts · −$_loyaltyDiscount FCFA'
+                                                            : _selectedReward != null
+                                                                ? '${_loyaltyPointsUsed} pts utilisés'
+                                                                : '${_verifiedLoyaltyCard!.points} pts appliqués',
+                                                        style: GoogleFonts.inriaSerif(fontSize: 13, color: const Color(0xFF4CAF50)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () => setState(() {
+                                                    _verifiedLoyaltyCard = null;
+                                                    _loyaltyDiscount = 0;
+                                                    _loyaltyPointsUsed = 0;
+                                                    _availableRewards = [];
+                                                    _selectedReward = null;
+                                                    _loyaltyPinController.clear();
+                                                  }),
+                                                  child: const FaIcon(FontAwesomeIcons.xmark, size: 16, color: Color(0xFF2E7D32)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          // Changer de récompense si d'autres sont disponibles
+                                          if (_availableRewards.length > 1) ...[
+                                            const SizedBox(height: 8),
+                                            GestureDetector(
+                                              onTap: () => setState(() {
+                                                _selectedReward = null;
+                                                _loyaltyDiscount = 0;
+                                                _loyaltyPointsUsed = 0;
+                                              }),
+                                              child: Text(
+                                                'Changer de récompense',
+                                                style: GoogleFonts.inriaSerif(
+                                                  fontSize: 13,
+                                                  color: _primaryColor,
+                                                  decoration: TextDecoration.underline,
+                                                ),
                                               ),
+                                            ),
+                                          ],
+                                        ],
+                                      );
+                                    })
+
+                                  // Choix de récompense
+                                  else ...[
+                                    Builder(builder: (ctx) {
+                                      final total = _cartManager.totalPrice;
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF7C3AED), size: 16),
+                                              const SizedBox(width: 6),
                                               Text(
-                                                '${_verifiedLoyaltyCard!.points} pts${_loyaltyDiscount > 0 ? ' · −$_loyaltyDiscount FCFA appliqué' : ' utilisés'}',
-                                                style: GoogleFonts.inriaSerif(fontSize: 13, color: const Color(0xFF4CAF50)),
+                                                'Choisissez une récompense',
+                                                style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF5B21B6)),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () => setState(() {
-                                            _verifiedLoyaltyCard = null;
-                                            _loyaltyDiscount = 0;
-                                            _loyaltyPointsUsed = 0;
-                                            _loyaltyPinController.clear();
+                                          const SizedBox(height: 8),
+                                          ..._availableRewards.map((reward) {
+                                            final discount = () {
+                                              switch (reward.rewardType) {
+                                                case 'fixed_discount':
+                                                  return int.tryParse(reward.rewardValue ?? '0') ?? 0;
+                                                case 'percent_discount':
+                                                  final p = double.tryParse(reward.rewardValue ?? '0') ?? 0;
+                                                  return (total * p / 100).floor();
+                                                default:
+                                                  return 0;
+                                              }
+                                            }();
+
+                                            return GestureDetector(
+                                              onTap: () => _applyReward(reward, total),
+                                              child: Container(
+                                                margin: const EdgeInsets.only(bottom: 8),
+                                                padding: const EdgeInsets.all(12),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF3E8FF),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.3)),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            reward.name,
+                                                            style: GoogleFonts.inriaSerif(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF5B21B6)),
+                                                          ),
+                                                          if (reward.description != null)
+                                                            Text(
+                                                              reward.description!,
+                                                              style: GoogleFonts.inriaSerif(fontSize: 12, color: Colors.grey.shade700),
+                                                            ),
+                                                          Text(
+                                                            '${reward.pointsRequired} pts requis${discount > 0 ? ' · −$discount FCFA' : ''}',
+                                                            style: GoogleFonts.inriaSerif(fontSize: 12, color: const Color(0xFF7C3AED)),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const FaIcon(FontAwesomeIcons.chevronRight, size: 14, color: Color(0xFF7C3AED)),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
                                           }),
-                                          child: const FaIcon(FontAwesomeIcons.xmark, size: 16, color: Color(0xFF2E7D32)),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                        ],
+                                      );
+                                    }),
+                                  ],
                                 ],
                               ],
                             ),

@@ -1,4 +1,4 @@
-package com.example.tika_app
+package com.revolusys.tika
 
 import io.flutter.embedding.android.FlutterActivity
 
