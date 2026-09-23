@@ -5,6 +5,7 @@ import 'personal_info_screen.dart';
 import 'addresses_screen.dart';
 import 'notifications_screen.dart';
 import 'help_support_screen.dart';
+import 'security_screen.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../services/auth_service.dart';
@@ -888,6 +889,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   shop: BoutiqueThemeProvider.shopOf(context),
                                   child: const HelpSupportScreen(),
                                 ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _buildMenuOption(
+                          icon: FontAwesomeIcons.shieldHalved,
+                          title: 'Securite',
+                          subtitle: 'Mot de passe, supprimer mon compte',
+                          locked: !_isAuthenticated,
+                          onTap: () {
+                            if (!_isAuthenticated) {
+                              _goToAuth();
+                              return;
+                            }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SecurityScreen(),
                               ),
                             );
                           },
