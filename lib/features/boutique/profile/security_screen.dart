@@ -790,9 +790,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           if (!context.mounted) return;
                           Navigator.pop(context);
                           _showConfirmationSnackBar('Compte supprime');
-                          // Retour a l'ecran principal
+                          // Vider toute la pile (dont le dashboard) : le compte n'existe plus
                           if (mounted) {
-                            Navigator.of(this.context).popUntil((route) => route.isFirst);
+                            Navigator.of(this.context).pushNamedAndRemoveUntil(
+                              '/access-boutique',
+                              (route) => false,
+                            );
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
